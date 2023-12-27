@@ -47,7 +47,7 @@ services:
       - "NEXT_PUBLIC_DATASET_LIST_BY=${DATASET_LIST_BY}"
     volumes:
       - ./StarSeeker/StarSeeker/frontend:/app/frontend
-      - ./StarSeeker/StarSeeker/site/frontend/public:/app/frontend/public
+      - ./site/frontend/public:/app/frontend/public
     networks:
       - nw
 
