@@ -125,7 +125,7 @@ services:
     image: fiware/orion:3.10.1
     hostname: orion
     container_name: orion
-    ports:
+    expose:
       - "1026:1026"
     depends_on:
       - mongo
