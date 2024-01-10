@@ -61,6 +61,8 @@ services:
     image: mongo:6.0.12
     hostname: mongo
     container_name: mongo
+    expose:
+      - "27017"
     environment:
       - "MONGO_INITDB_ROOT_USERNAME=${MONGOUSERNAME}"
       - "MONGO_INITDB_ROOT_PASSWORD=${MONGOPASSWORD}"
