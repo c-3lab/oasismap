@@ -168,6 +168,6 @@ services:
 networks:
   nw:
     driver: bridge
-  frontend:
+  frontend-network:
     driver: bridge
 
