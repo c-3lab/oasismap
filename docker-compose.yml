@@ -10,12 +10,11 @@ services:
         condition: service_healthy
       orion:
         condition: service_healthy
-    working_dir: /app
+    working_dir: /app/backend
     ports:
       - "4000:4000"
     command: >
       sh -c "
-      cd backend &&
       npm install &&
       npm run start"
     environment:
