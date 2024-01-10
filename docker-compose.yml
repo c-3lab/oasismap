@@ -3,8 +3,8 @@ version: "3"
 services:
   backend:
     image: node:20.10.0
-    hostname: nodeb
-    container_name: nodeb
+    hostname: backend
+    container_name: backend
     depends_on:
       postgres:
         condition: service_healthy
@@ -30,8 +30,8 @@ services:
 
   frontend:
     image: node:20.10.0
-    hostname: nodef
-    container_name: nodef
+    hostname: frontend
+    container_name: frontend
     working_dir: /app
     ports:
       - "3000:3000"
@@ -140,7 +140,7 @@ services:
   cygnus:
     image: fiware/cygnus-ngsi:2.15.0
     hostname: cygnus
-    container_name: fiware-cygnus
+    container_name: cygnus
     depends_on:
       postgres:
         condition: service_healthy
