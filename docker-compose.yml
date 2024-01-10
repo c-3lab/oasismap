@@ -55,7 +55,7 @@ services:
       - ./StarSeeker/StarSeeker/frontend:/app/frontend
       - ./site/frontend/public:/app/frontend/public
     networks:
-      - nw
+      - frontend-network
 
   mongo:
     image: mongo:6.0.12
@@ -166,5 +166,6 @@ services:
 networks:
   nw:
     driver: bridge
-    
+  frontend:
+    driver: bridge
 
