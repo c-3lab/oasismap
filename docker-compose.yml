@@ -11,6 +11,8 @@ services:
       orion:
         condition: service_healthy
     working_dir: /app
+    ports:
+      - "4000:4000"
     command: >
       sh -c "
       cd backend &&
