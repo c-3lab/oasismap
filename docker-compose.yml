@@ -8,6 +8,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      orion:
+        condition: service_healthy
     working_dir: /app
     command: >
       sh -c "
@@ -136,6 +138,12 @@ services:
       - "ORION_MULTI_SERVICE=true"
     networks:
       - nw
+    healthcheck:
+      test: "curl -f http://orion:1026/version"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   cygnus:
     image: fiware/cygnus-ngsi:2.15.0
