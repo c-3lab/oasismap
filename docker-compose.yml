@@ -35,7 +35,7 @@ services:
     image: node:20.10.0
     hostname: frontend
     container_name: frontend
-    working_dir: /app
+    working_dir: /app/frontend
     ports:
       - "3000:3000"
     depends_on:
@@ -43,9 +43,6 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-      sleep 60 &&
-      cd frontend &&
-      cp -R public_template/* public &&
       npm install --legacy-peer-deps &&
       npm run dev &&
       sleep 30"
