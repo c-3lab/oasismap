@@ -102,7 +102,7 @@ services:
       start_period: 10s
 
   keycloak:
-    image: quay.io/keycloak/keycloak:23.0.1
+    image: quay.io/keycloak/keycloak:23.0.4
     hostname: keycloak
     container_name: keycloak
     ports:
