@@ -31,7 +31,7 @@ services:
     volumes:
       - ./StarSeeker/StarSeeker/backend:/app/backend
     networks:
-      - nw
+      - backend-network
 
   frontend:
     image: node:20.10.0
@@ -73,7 +73,7 @@ services:
       - ./site/mongo/db:/data/db
       - ./site/mongo/configdb:/data/configdb
     networks:
-      - nw
+      - backend-network
 
   postgres:
     image: postgres:16.1
@@ -93,7 +93,7 @@ services:
       - ./StarSeeker/StarSeeker/postgres/initdb:/docker-entrypoint-initdb.d
       - ./operator/env:/work
     networks:
-      - nw
+      - backend-network
     healthcheck:
       test: "psql -U ${POSTGREUSER}"
       interval: 10s
@@ -121,7 +121,7 @@ services:
     command:
       - start-dev
     networks:
-      - nw
+      - backend-network
     healthcheck:
       test: "echo > /dev/tcp/localhost/8080"
       interval: 10s
@@ -146,7 +146,7 @@ services:
       - "ORION_PORT=1026"
       - "ORION_MULTI_SERVICE=true"
     networks:
-      - nw
+      - backend-network
     healthcheck:
       test: "curl -f http://orion:1026/version"
       interval: 10s
@@ -172,10 +172,10 @@ services:
       - "CYGNUS_SERVICE_PORT=5055"
       - "CYGNUS_API_PORT=5080"
     networks:
-      - nw
+      - backend-network
 
 networks:
-  nw:
+  backend-network:
     driver: bridge
   frontend-network:
     driver: bridge
