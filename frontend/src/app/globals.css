@@ -25,3 +25,13 @@ body {
     )
     rgb(var(--background-start-rgb));
 }
+
+@layer utilities {
+  .h-300 {
+    height: 300px;
+  }
+}
+
+.leaflet-container {
+  @apply relative w-full h-300;
+}
