@@ -22,8 +22,8 @@ const Map = dynamic(() => import('starseeker-frontend'), {
 });
 
 const pinData = [
-  { latitude: 34.967169, longitude: 138.394617, title: 'ピン1' },
-  { latitude: 35.678, longitude: 139.789, title: 'ピン2' },
+  { latitude: 35.967169, longitude: 139.394617, title: 'ピン1' },
+  { latitude: 35.948169, longitude: 139.365617, title: 'ピン2' },
   // ... 他のピンデータ
 ];
 
