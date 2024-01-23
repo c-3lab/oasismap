@@ -1,3 +1,3 @@
 [submodule "StarSeeker"]
-	path = StarSeeker
+	path = frontend/externals/StarSeeker
 	url = https://github.com/c-3lab/StarSeeker
