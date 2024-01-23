@@ -5,7 +5,7 @@ import { DateTime } from 'luxon';
 import StarseekerFrontend from 'starseeker-frontend';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { BarChart, Bar, Cell } from 'recharts';
-import React from 'react';
+import React, { useState } from 'react';
 
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', 'red', 'pink'];
@@ -22,7 +22,7 @@ const Map = dynamic(() => import('starseeker-frontend'), {
 });
 
 const pinData = [
-  { latitude: 35.967169, longitude: 139.394617, title: 'ピン1' },
+  { latitude: 34.967169, longitude: 138.394617, title: 'ピン1' },
   { latitude: 35.678, longitude: 139.789, title: 'ピン2' },
   // ... 他のピンデータ
 ];
@@ -149,6 +149,10 @@ const BPlot = (props: any) => {
 // })
 
 export default function Home() {
+  const [viewMode, setViewMode] = useState('Day')
+  const handleViewModeChange = (mode: React.SetStateAction<string>) => {
+    setViewMode(mode);
+  };
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       {/* マップコンポーネントにピンデータを渡す */}
@@ -178,26 +182,37 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Container 1 */}
+      {/* Container */}
       <div className="w-full h-96 lg:w-1/2 xl:w-1/2 p-4 lg:p-8 bg-gray-200">
-        <h1 className="text-2xl font-bold">Container 1</h1>
-          <div className="h-[300px] bg-gray-700 rounded">
-          <BPlot plotdata={oneDay2} title="Day"/>
-          </div>
+        <h1 className="text-2xl font-bold">Container ({viewMode})</h1>
+        <div className="h-[300px] bg-gray-700 rounded">
+          {/* BPlotコンポーネントのplotdataを表示モードに基づいて選択 */}
+          {viewMode === 'Day' && <BPlot plotdata={oneDay2} title="Day" />}
+          {viewMode === 'Month' && <BPlot plotdata={oneMonth2} title="Month" />}
+          {viewMode === 'Year' && <BPlot plotdata={oneYear2} title="Year" />}
+        </div>
       </div>
-      {/* Container 2 */}
-      <div className="w-full h-96 lg:w-1/2 xl:w-1/2 p-4 lg:p-8 bg-gray-300">
-        <h1 className="text-2xl font-bold">Container 2</h1>
-          <div className="h-[300px] bg-gray-700 rounded">
-            <BPlot plotdata={oneMonth2} title="Month"/>
-          </div>
-      </div>
-      {/* Container 3 */}
-      <div className="w-full h-96 lg:w-1/2 xl:w-1/2 p-4 lg:p-8 bg-gray-300">
-        <h1 className="text-2xl font-bold">Container 3</h1>
-          <div className="h-[300px] bg-gray-700 rounded">
-            <BPlot plotdata={oneYear2} title="Year"/>
-          </div>
+
+      {/* ボタンで表示モードを切り替える */}
+      <div className="flex mt-4 space-x-4">
+        <button
+          onClick={() => handleViewModeChange('Day')}
+          className={`px-4 py-2 ${viewMode === 'Day' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
+        >
+          Day
+        </button>
+        <button
+          onClick={() => handleViewModeChange('Month')}
+          className={`px-4 py-2 ${viewMode === 'Month' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
+        >
+          Month
+        </button>
+        <button
+          onClick={() => handleViewModeChange('Year')}
+          className={`px-4 py-2 ${viewMode === 'Year' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
+        >
+          Year
+        </button>
       </div>
 
       <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
