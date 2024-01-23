@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  oasismap-frontend:
+    build:
+      context: .
+      dockerfile: Node/Dockerfile
+    container_name: oasismap-frontend
+    ports:
+      - "3000:3000"
+    tty: true
+    volumes:
+      - ../../:/var/www/oasismap
+      - ~/.ssh:/tmp/.ssh
+      - ~/.gitconfig:/tmp/.gitconfig
+    working_dir: /var/www/oasismap
+    entrypoint : ["sh", "-c", "./Frontend/Docker/Scripts/setup.sh && /bin/bash"]
