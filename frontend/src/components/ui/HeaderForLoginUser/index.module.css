@@ -1,0 +1,8 @@
+/* @import 'bootstrap/dist/css/bootstrap.css'; */
+
+.user_name_display {
+  margin: auto 10px auto 10px !important;
+  /* color: red !important; */
+  cursor: pointer;
+  /* text-decoration: underline red; */
+}

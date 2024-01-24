@@ -1,0 +1,18 @@
+
+.keycloak {
+  margin: 100px 80px auto 80px;
+  text-align: center;
+  /* TODO:こちらのサイズを変更する必要があります。 */
+  width: auto !important; 
+}
+
+.span_google_link_display {
+  border: solid 1px;
+  height: 80px;
+  margin: auto 200px auto 200px;
+}
+
+.button_styling {
+  width: 100px;
+  border: solid 1px !important;
+}

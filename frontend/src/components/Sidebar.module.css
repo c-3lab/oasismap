@@ -1,0 +1,21 @@
+.menu_icon_user {
+  margin: 100px auto 50px 10px !important;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.menu_icon_all {
+  margin: 50px auto 50px 10px !important;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.menu_icon_logout {
+  margin: 50px auto 50px 10px !important;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.separated_item {
+  text-align: left !important;
+}

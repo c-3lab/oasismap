@@ -1,0 +1,14 @@
+.input_label {
+  float: left !important;
+}
+
+.box_container {
+  text-align: center !important;
+}
+
+@media (max-width: 427px) {
+  .box_container {
+    display: inline !important;
+    width: auto !important;
+  }
+}

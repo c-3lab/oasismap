@@ -1,0 +1,46 @@
+.container_wrapper_styling {
+  text-align: center;
+  margin-top: 100px;
+}
+
+.text_field_wrapper {
+  top: 100px !important;
+}
+
+.nickname_styling {
+  margin: 20px auto 20px auto !important;
+}
+
+.age_styling {
+  margin: 20px auto 20px auto !important;
+}
+
+.gender_styling {
+  margin: 20px auto 20px auto !important;
+}
+
+.address_styling {
+  margin: 20px auto 20px auto !important;
+}
+
+.link_styling {
+  text-decoration: underline !important;
+  color: rgb(185, 144, 68);
+  margin: 20px auto 20px auto !important;
+}
+
+.button_styling {
+  width: 150px;
+  height: 30px;
+  color: #FFFFFF !important;
+  background-color: rgb(79, 79, 150) !important;
+  margin-bottom: 20px !important;
+}
+
+.button_styling:hover {
+  background-color: rgb(25, 25, 153);
+}
+
+.checkobox_styling {
+  text-decoration: underline !important;
+}

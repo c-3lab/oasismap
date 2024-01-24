@@ -18,20 +18,43 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
+  background: linear-gradient(to bottom,
       transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+      rgb(var(--background-end-rgb))) rgb(var(--background-start-rgb));
 }
 
-@layer utilities {
-  .h-300 {
-    height: 300px;
-  }
+.oasismap-container {
+  text-align: center !important;
+}
+
+.map-container {
+  height: 400px !important;
 }
 
 .leaflet-container {
-  @apply relative w-full h-300;
+  position: relative;
+  width: 100%;
+  height: 300px;
+}
+
+.button-field {
+  text-align: center !important;
+  align-items: center !important;
+  top: 50px !important;
+  height: 50px;
+  width: 219px;
+  border-radius: 4px !important;
+  color: #FFFFFF !important;
+  background-color: rgb(79, 79, 150) !important;
+}
+
+/*TODO: ButtonのHoverフォントを変更する場合は、以下の項目で変更して下さい。*/
+.button-field:hover {
+  background-color: rgb(25, 25, 153);
+}
+
+@media (max-width: 427px) {
+  .button-field {
+    /* margin: calc(100% - 219px) / 2 !important; */
+  }
 }

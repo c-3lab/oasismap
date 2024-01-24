@@ -1,0 +1,10 @@
+.link_display_1 {
+  margin: auto 20px auto auto !important;
+  color: red !important;
+  cursor: pointer;
+  text-decoration: underline red;
+}
+
+.link_display_2 {
+  margin: auto 20px auto 20px !important;
+}

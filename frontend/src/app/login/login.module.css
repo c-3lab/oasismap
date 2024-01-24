@@ -1,0 +1,30 @@
+/* 後ほどCSSの変数名は統一致します。 */
+
+.login_all_part {
+  margin-top: 100px;
+  background-color: #FFFFFF;
+  text-align: center !important;
+  background-repeat: no-repeat !important;
+}
+
+.button_styling {
+  margin-top: 20px !important;
+}
+
+.button_styling {
+  top: 50px !important;
+  width: 100% !important;
+  height: 50px;
+  width: 200px;
+  border-radius: 4px !important;
+  color: #FFFFFF !important;
+  background-color: rgb(79, 79, 150) !important;
+}
+
+.button_styling:hover {
+  background-color: rgb(25, 25, 153);
+}
+
+#outlined-search {
+  margin: auto auto 40px auto !important;
+}

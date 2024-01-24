@@ -1,0 +1,35 @@
+.month {
+  width: 73px;
+  height: 40px;
+}
+
+.day {
+  width: 73px;
+  height: 40px;
+}
+
+.time {
+  width: 73px;
+  height: 40px;
+}
+
+.box_container {
+  text-align: center !important;
+}
+
+/* @media(min-width: 375px) {
+} */
+
+@media (max-width: 375px) {
+  .month {
+    width: 66px !important;
+  }
+
+  .day {
+    width: 66px !important;
+  }
+
+  .time {
+    width: 66px !important;
+  }
+}
