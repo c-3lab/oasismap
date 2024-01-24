@@ -23,7 +23,7 @@ const Map = dynamic(() => import('starseeker-frontend'), {
 
 const pinData = [
   { latitude: 35.967169, longitude: 139.394617, title: 'ピン1' },
-  { latitude: 35.948169, longitude: 139.365617, title: 'ピン2' },
+  { latitude: 35.968169, longitude: 139.39617, title: 'ピン12' },
   // ... 他のピンデータ
 ];
 
@@ -111,35 +111,32 @@ const oneDay2 = mergeWithTime(oneDay, 0, 23, now.hour);
 const oneMonth2 = mergeWithTime(oneMonth, 1, 31, now.day);
 const oneYear2 = mergeWithTime(oneYear, 1, 12, now.month);
 
-//console.log('現在', now.toFormat('y/MM/dd HH:mm:ss'))
-//console.log('一日前', lastDay.toFormat('y/MM/dd HH:mm:ss'))
-//console.log('一ヶ月前', lastMonth.toFormat('y/MM/dd HH:mm:ss'))
-//console.log('一年前', lastYear.toFormat('y/MM/dd HH:mm:ss'))
 console.log("整形前", oneDay.filter(item => item.timestamp))
 console.log("整形後", oneDay2.filter(item => item.timestamp))
 
 // 積立棒グラフ
 const BPlot = (props: any) => {
+  const { title, plotdata, xTickFormatter } = props;
+
   return (
     <>
-    <h3 className="text-white text-center">{props.title}</h3>
-    <ResponsiveContainer width="100%" height="100%" >
-      <BarChart width={730} height={250} data={props.plotdata}
-        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-        <XAxis dataKey="timestamp" />
-        <YAxis />
-        <Tooltip/>
-        <Bar dataKey="q1" stackId="a" fill={COLORS[0]} />
-        <Bar dataKey="q2" stackId="a" fill={COLORS[1]} />
-        <Bar dataKey="q3" stackId="a" fill={COLORS[2]} />
-        <Bar dataKey="q4" stackId="a" fill={COLORS[3]} />
-        <Bar dataKey="q5" stackId="a" fill={COLORS[4]} />
-        <Bar dataKey="q6" stackId="a" fill={COLORS[5]} />
-      </BarChart>
-    </ResponsiveContainer>
+      <h3 className="text-white text-center">{title}</h3>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart width={730} height={250} data={plotdata} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+          <XAxis dataKey="timestamp" tick={xTickFormatter} interval={0} />
+          <YAxis />
+          <Tooltip />
+          <Bar dataKey="q1" stackId="a" fill={COLORS[0]} />
+          <Bar dataKey="q2" stackId="a" fill={COLORS[1]} />
+          <Bar dataKey="q3" stackId="a" fill={COLORS[2]} />
+          <Bar dataKey="q4" stackId="a" fill={COLORS[3]} />
+          <Bar dataKey="q5" stackId="a" fill={COLORS[4]} />
+          <Bar dataKey="q6" stackId="a" fill={COLORS[5]} />
+        </BarChart>
+      </ResponsiveContainer>
     </>
-  )
-}
+  );
+};
 
 
 // or
@@ -153,6 +150,32 @@ export default function Home() {
   const handleViewModeChange = (mode: React.SetStateAction<string>) => {
     setViewMode(mode);
   };
+  const renderCustomDayTick = (tickProps: any) => {
+    const { x, y, payload } = tickProps;
+    const hour = payload.value;
+    if (hour % 2 === 0) {
+      return (
+        <text x={x} y={y} dy={16} fill="#666" textAnchor="middle">
+          {hour}
+        </text>
+      );
+    }
+    return null;
+  };
+
+  const renderCustomMonthTick = (tickProps: any) => {
+    const { x, y, payload } = tickProps;
+    const day = payload.value;
+    if (day % 2 === 0) {
+      return (
+        <text x={x} y={y} dy={16} fill="#666" textAnchor="middle">
+          {day}
+        </text>
+      );
+    }
+    return null;
+  };
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       {/* マップコンポーネントにピンデータを渡す */}
@@ -187,8 +210,12 @@ export default function Home() {
         <h1 className="text-2xl font-bold">Container ({viewMode})</h1>
         <div className="h-[300px] bg-gray-700 rounded">
           {/* BPlotコンポーネントのplotdataを表示モードに基づいて選択 */}
-          {viewMode === 'Day' && <BPlot plotdata={oneDay2} title="Day" />}
-          {viewMode === 'Month' && <BPlot plotdata={oneMonth2} title="Month" />}
+          {viewMode === 'Day' && (
+            <BPlot plotdata={oneDay2} title="Day" xTickFormatter={renderCustomDayTick} />
+          )}
+          {viewMode === 'Month' && (
+            <BPlot plotdata={oneMonth2} title="Month" xTickFormatter={renderCustomMonthTick} />
+          )}
           {viewMode === 'Year' && <BPlot plotdata={oneYear2} title="Year" />}
         </div>
       </div>
