@@ -48,8 +48,8 @@ services:
       cd /app/frontend/externals/StarSeeker/StarSeeker/frontend &&
       npm install --legacy-peer-deps &&
       cd /app/frontend/ &&
-      npm ci && 
-      npm run start &&
+      npm install && 
+      npm run dev &&
       sleep 30"
     environment:
       - "NEXT_PUBLIC_MAP_DEFAULT_LATITUDE=${MAP_DEFAULT_LATITUDE}"
