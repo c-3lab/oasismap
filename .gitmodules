@@ -1,0 +1,4 @@
+[submodule "StarSeeker"]
+	path = StarSeeker
+	url = https://github.com/i-kaneko-abel/StarSeeker
+    branch = feature/verification
