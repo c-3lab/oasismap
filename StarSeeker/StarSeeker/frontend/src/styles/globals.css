@@ -1,0 +1,99 @@
+html {
+  height: 100%;
+  margin: 0;
+}
+body {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+#__next {
+  height: 100%;
+}
+
+.main {
+  height: 100%;
+}
+
+.leaflet-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+th {
+  background-color: #ee8133;
+  color: #ffffff;
+  border: solid 1px;
+  border-color: #a9a9a9;
+  padding: 10px;
+  min-width: 100px;
+  word-wrap: break-word;
+}
+
+td {
+  border: solid 1px;
+  border-color: #a9a9a9;
+  padding: 10px;
+  min-width: 200px;
+  word-wrap: break-word;
+}
+
+table {
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.fa-stack {
+  filter: saturate(70%);
+}
+
+.popup {
+  z-index: 1;
+  border-radius: 12px;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.8);
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 60vw;
+  min-height: 32vw;
+}
+
+.popup-content {
+  margin: 25px;
+}
+
+#popup-on {
+  display: none;
+}
+
+#popup-on:checked + .popup {
+  display: block;
+}
+
+.icon-close {
+  color: #c3c3c3;
+  font-size: 25px;
+  padding: 0 10px;
+  position: absolute;
+  right: 0;
+}
+
+.img-cursor {
+  cursor: pointer;
+}
