@@ -17,10 +17,13 @@
       "prettier --write"
     ]
   },
+  "author": "c-3lab",
+  "license": "AGPL",
   "dependencies": {
     "next": "14.1.0",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "starseeker-frontend": "file:externals/StarSeeker/StarSeeker/frontend"
   },
   "devDependencies": {
     "@types/node": "^20",
