@@ -47,10 +47,7 @@ services:
       sh -c "
       cd /app/frontend/externals/StarSeeker/StarSeeker/frontend &&
       npm install --legacy-peer-deps &&
-      cd /app/frontend/ &&
-      npm install && 
-      npm run dev &&
-      sleep 30"
+      sleep infinity"
     environment:
       - "NEXT_PUBLIC_MAP_DEFAULT_LATITUDE=${MAP_DEFAULT_LATITUDE}"
       - "NEXT_PUBLIC_MAP_DEFAULT_LONGITUDE=${MAP_DEFAULT_LONGITUDE}"
@@ -113,7 +110,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      - "KEYCLOAK_ADMIN=${POSTGREUSER}" 
+      - "KEYCLOAK_ADMIN=${POSTGREUSER}"
       - "KEYCLOAK_ADMIN_PASSWORD=${POSTGREPASSWORD}"
       - "KC_DB=postgres"
       - "KC_DB_URL=jdbc:postgresql://postgres:5432/postgres"
