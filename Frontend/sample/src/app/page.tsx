@@ -37,36 +37,24 @@ interface MyObject {
   q6: number;
 }
 
-let next = now;
-let sampleData = [...Array(MAX_DATA_COUNT)].map((_, i) => {
-    next = next.minus({ hour: Math.floor(Math.random()*3 )})
-    return {
-      timestamp: next,
-      q1: Math.round(Math.random()),
-      q2: Math.round(Math.random()),
-      q3: Math.round(Math.random()),
-      q4: Math.round(Math.random()),
-      q5: Math.round(Math.random()),
-      q6: Math.round(Math.random()),
-    };
-  }).reverse();
+const customData = [
+  { timestamp: DateTime.fromObject({ year: 2023, month: 1, day: 1, hour: 0, minute: 0, second: 0 }), q1: 0, q2: 1, q3: 0, q4: 1, q5: 1, q6: 0 },
+  { timestamp: DateTime.fromObject({ year: 2023, month: 1, day: 2, hour: 5, minute: 0, second: 0 }), q1: 1, q2: 1, q3: 0, q4: 1, q5: 0, q6: 1 },
+  { timestamp: DateTime.fromObject({ year: 2023, month: 11, day: 3, hour: 8, minute: 0, second: 0 }), q1: 0, q2: 0, q3: 1, q4: 0, q5: 1, q6: 1 },
+  // 他にもデータを追加
+];
 
-const oneYear = sampleData.filter(
-  item => item.timestamp.equals(DateTime.max(lastYear,item.timestamp))
-).map((obj) => ({
+const oneYear = customData.map((obj) => ({
   ...obj,
   timestamp: Number(obj.timestamp.toFormat('MM')),
 }));
-const oneMonth = sampleData.filter(
-  item => item.timestamp.equals(DateTime.max(lastMonth,item.timestamp))
-).map((obj) => ({
+
+const oneMonth = customData.map((obj) => ({
   ...obj,
   timestamp: Number(obj.timestamp.toFormat('dd')),
 }));
 
-const oneDay = sampleData.filter(
-  item => item.timestamp.equals(DateTime.max(lastDay,item.timestamp))
-).map((obj) => ({
+const oneDay = customData.map((obj) => ({
   ...obj,
   timestamp: Number(obj.timestamp.toFormat('HH')),
 }));
