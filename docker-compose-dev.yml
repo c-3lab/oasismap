@@ -1,4 +1,4 @@
-version: "3"
+version: "3.8"
 
 services:
   backend:
@@ -43,15 +43,7 @@ services:
     # depends_on:
     #   backend:
     #     condition: service_healthy
-    command: >
-      sh -c "
-      cd /app/frontend/externals/StarSeeker/StarSeeker/frontend &&
-      npm install --legacy-peer-deps &&
-      cd /app/frontend/ &&
-      npm ci && 
-      npm build && 
-      npm run start &&
-      sleep 30"
+    command: sleep infinity
     environment:
       - "NEXT_PUBLIC_MAP_DEFAULT_LATITUDE=${MAP_DEFAULT_LATITUDE}"
       - "NEXT_PUBLIC_MAP_DEFAULT_LONGITUDE=${MAP_DEFAULT_LONGITUDE}"
@@ -180,4 +172,3 @@ networks:
     driver: bridge
   frontend-network:
     driver: bridge
-
