@@ -21,12 +21,6 @@ const Map = dynamic(() => import('starseeker-frontend'), {
   ssr: false,
 });
 
-const pinData = [
-  { latitude: 35.967169, longitude: 139.394617, title: 'ピン1' },
-  { latitude: 35.958169, longitude: 139.38617, title: 'ピン2' },
-  // ... 他のピンデータ
-];
-
 interface MyObject {
   timestamp: any;
   q1: number;
@@ -38,11 +32,18 @@ interface MyObject {
 }
 
 const customData = [
-  { timestamp: DateTime.fromObject({ year: 2023, month: 1, day: 1, hour: 0, minute: 0, second: 0 }), q1: 0, q2: 1, q3: 0, q4: 1, q5: 1, q6: 0 },
-  { timestamp: DateTime.fromObject({ year: 2023, month: 1, day: 2, hour: 5, minute: 0, second: 0 }), q1: 1, q2: 1, q3: 0, q4: 1, q5: 0, q6: 1 },
-  { timestamp: DateTime.fromObject({ year: 2023, month: 11, day: 3, hour: 8, minute: 0, second: 0 }), q1: 0, q2: 0, q3: 1, q4: 0, q5: 1, q6: 1 },
+  { latitude: 35.967169, longitude: 139.394617, timestamp: DateTime.fromObject({ year: 2023, month: 1, day: 1, hour: 0, minute: 0, second: 0 }), q1: 0, q2: 1, q3: 0, q4: 1, q5: 1, q6: 0 },
+  { latitude: 35.958169, longitude: 139.38617, timestamp: DateTime.fromObject({ year: 2023, month: 1, day: 2, hour: 5, minute: 0, second: 0 }), q1: 1, q2: 1, q3: 0, q4: 1, q5: 0, q6: 1 },
+  { latitude: 35.988169, longitude: 139.36617, timestamp: DateTime.fromObject({ year: 2023, month: 11, day: 3, hour: 8, minute: 0, second: 0 }), q1: 0, q2: 0, q3: 1, q4: 0, q5: 1, q6: 1 },
   // 他にもデータを追加
 ];
+
+const pinData = customData.map(data => ({
+  latitude: data.latitude,
+  longitude: data.longitude,
+  title: `ピン${customData.indexOf(data) + 1}`, // ピンのタイトルには適当な番号を付ける例
+}));
+
 
 const oneYear = customData.map((obj) => ({
   ...obj,
