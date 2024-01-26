@@ -23,7 +23,7 @@ const Map = dynamic(() => import('starseeker-frontend'), {
 
 const pinData = [
   { latitude: 35.967169, longitude: 139.394617, title: 'ピン1' },
-  { latitude: 35.968169, longitude: 139.39617, title: 'ピン12' },
+  { latitude: 35.958169, longitude: 139.38617, title: 'ピン2' },
   // ... 他のピンデータ
 ];
 
@@ -210,35 +210,35 @@ export default function Home() {
         <h1 className="text-2xl font-bold">Container ({viewMode})</h1>
         <div className="h-[300px] bg-gray-700 rounded">
           {/* BPlotコンポーネントのplotdataを表示モードに基づいて選択 */}
-          {viewMode === 'Day' && (
-            <BPlot plotdata={oneDay2} title="Day" xTickFormatter={renderCustomDayTick} />
+          {viewMode === '時間' && (
+            <BPlot plotdata={oneDay2} title="時間" xTickFormatter={renderCustomDayTick} />
           )}
-          {viewMode === 'Month' && (
-            <BPlot plotdata={oneMonth2} title="Month" xTickFormatter={renderCustomMonthTick} />
+          {viewMode === '日' && (
+            <BPlot plotdata={oneMonth2} title="日" xTickFormatter={renderCustomMonthTick} />
           )}
-          {viewMode === 'Year' && <BPlot plotdata={oneYear2} title="Year" />}
+          {viewMode === '月' && <BPlot plotdata={oneYear2} title="月" />}
         </div>
       </div>
 
       {/* ボタンで表示モードを切り替える */}
       <div className="flex mt-4 space-x-4">
         <button
-          onClick={() => handleViewModeChange('Day')}
-          className={`px-4 py-2 ${viewMode === 'Day' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
+          onClick={() => handleViewModeChange('月')}
+          className={`px-4 py-2 ${viewMode === '月' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
         >
-          Day
+          月
         </button>
         <button
-          onClick={() => handleViewModeChange('Month')}
-          className={`px-4 py-2 ${viewMode === 'Month' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
+          onClick={() => handleViewModeChange('日')}
+          className={`px-4 py-2 ${viewMode === '日' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
         >
-          Month
+          日
         </button>
         <button
-          onClick={() => handleViewModeChange('Year')}
-          className={`px-4 py-2 ${viewMode === 'Year' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
+          onClick={() => handleViewModeChange('時間')}
+          className={`px-4 py-2 ${viewMode === '時間' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
         >
-          Year
+          時間
         </button>
       </div>
 
