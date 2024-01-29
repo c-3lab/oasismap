@@ -1,11 +1,10 @@
 'use client'
 import dynamic from 'next/dynamic';
 import { DateTime } from 'luxon';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Legend, Line } from 'recharts';
-import { BarChart, Bar, Cell } from 'recharts';
 import React, { useState } from 'react';
 import customData from './customData.json';
 import LineData from './LineData.json'
+import {BPlot, LPlot} from './graph';
 
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', 'red', 'pink'];
@@ -136,49 +135,6 @@ const oneYear4 = mergeWithTime(oneYear3, 1, 12, now.month);
 console.log("整形前", oneDay3.filter(item => item.timestamp))
 console.log("整形後", oneDay4.filter(item => item.timestamp))
 
-// 積立棒グラフ
-const BPlot = (props: any) => {
-  const { title, plotdata, xTickFormatter } = props;
-
-  return (
-    <>
-      <h3 className="text-white text-center">{title}</h3>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart width={730} height={250} data={plotdata} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-          <XAxis dataKey="timestamp" tick={xTickFormatter} interval={0} />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey="q1" stackId="a" fill={COLORS[0]} />
-          <Bar dataKey="q2" stackId="a" fill={COLORS[1]} />
-          <Bar dataKey="q3" stackId="a" fill={COLORS[2]} />
-          <Bar dataKey="q4" stackId="a" fill={COLORS[3]} />
-          <Bar dataKey="q5" stackId="a" fill={COLORS[4]} />
-          <Bar dataKey="q6" stackId="a" fill={COLORS[5]} />
-        </BarChart>
-      </ResponsiveContainer>
-    </>
-  );
-};
-
-// 折れ線グラフ
-const LPlot = (props: any) => {
-  const { title, plotdata, xTickFormatter } = props;
-
-  return (
-    <>
-      <h3 className="text-white text-center">{title}</h3>
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart width={730} height={250} data={plotdata} margin={{ top: 10, right: 30, left: 0, bottom: 0}}>
-          <XAxis dataKey="timestamp" tick={xTickFormatter} interval={0} />
-          <YAxis tickCount={7} domain={[0, 6]} />
-          <Tooltip />
-          <Legend verticalAlign='bottom' />
-          <Line type="monotone" dataKey="total" stroke={COLORS[1]} dot={true} /> 
-        </LineChart>
-      </ResponsiveContainer>
-    </>
-  );
-};
 
 export default function Home() {
   const [viewMode, setViewMode] = useState('Day')
@@ -222,12 +178,12 @@ export default function Home() {
         <div className="h-[300px] bg-gray-700 rounded">
           {/* BPlotコンポーネントのplotdataを表示モードに基づいて選択 */}
           {viewMode === '時間' && (
-            <BPlot plotdata={oneDay2} title="時間" xTickFormatter={renderCustomDayTick} />
+            <BPlot plotdata={oneDay2} title="時間" color={COLORS} xTickFormatter={renderCustomDayTick} />
           )}
           {viewMode === '日' && (
-            <BPlot plotdata={oneMonth2} title="日" xTickFormatter={renderCustomMonthTick} />
+            <BPlot plotdata={oneMonth2} title="日" color={COLORS} xTickFormatter={renderCustomMonthTick} />
           )}
-          {viewMode === '月' && <BPlot plotdata={oneYear2} title="月" />}
+          {viewMode === '月' && <BPlot plotdata={oneYear2} title="月" color={COLORS} />}
         </div>
       </div>
 
@@ -259,12 +215,12 @@ export default function Home() {
         <div className="h-[300px] bg-gray-700 rounded">
           {/* BPlotコンポーネントのplotdataを表示モードに基づいて選択 */}
           {viewMode === '時間' && (
-            <LPlot plotdata={oneDay4} title="時間" xTickFormatter={renderCustomDayTick} />
+            <LPlot plotdata={oneDay4} title="時間" color={COLORS} xTickFormatter={renderCustomDayTick} />
           )}
           {viewMode === '日' && (
-            <LPlot plotdata={oneMonth4} title="日" xTickFormatter={renderCustomMonthTick} />
+            <LPlot plotdata={oneMonth4} title="日" color={COLORS} xTickFormatter={renderCustomMonthTick} />
           )}
-          {viewMode === '月' && <LPlot plotdata={oneYear4} title="月" />}
+          {viewMode === '月' && <LPlot plotdata={oneYear4} title="月" color={COLORS} />}
         </div>
       </div>
 
