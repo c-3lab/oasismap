@@ -6,6 +6,7 @@ import StarseekerFrontend from 'starseeker-frontend';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { BarChart, Bar, Cell } from 'recharts';
 import React, { useState } from 'react';
+import customData from './customData.json';
 
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', 'red', 'pink'];
@@ -30,12 +31,6 @@ interface MyObject {
   q6: number;
 }
 
-const customData = [
-  { latitude: 35.967169, longitude: 139.394617, timestamp: DateTime.fromObject({ year: 2023, month: 1, day: 1, hour: 0, minute: 0, second: 0 }), q1: 0, q2: 1, q3: 0, q4: 1, q5: 1, q6: 0 },
-  { latitude: 35.958169, longitude: 139.38617, timestamp: DateTime.fromObject({ year: 2023, month: 1, day: 2, hour: 5, minute: 0, second: 0 }), q1: 1, q2: 1, q3: 0, q4: 1, q5: 0, q6: 1 },
-  { latitude: 35.988169, longitude: 139.36617, timestamp: DateTime.fromObject({ year: 2023, month: 11, day: 3, hour: 8, minute: 0, second: 0 }), q1: 0, q2: 0, q3: 1, q4: 0, q5: 1, q6: 1 },
-];
-
 const pinData = customData.map(data => ({
   latitude: data.latitude,
   longitude: data.longitude,
@@ -45,17 +40,17 @@ const pinData = customData.map(data => ({
 
 const oneYear = customData.map((obj) => ({
   ...obj,
-  timestamp: Number(obj.timestamp.toFormat('MM')),
+  timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
 }));
 
 const oneMonth = customData.map((obj) => ({
   ...obj,
-  timestamp: Number(obj.timestamp.toFormat('dd')),
+  timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
 }));
 
 const oneDay = customData.map((obj) => ({
   ...obj,
-  timestamp: Number(obj.timestamp.toFormat('HH')),
+  timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
 }));
 
 function mergeWithTime(objects: MyObject[], start: number, end: number, currentTime: number): MyObject[] {
