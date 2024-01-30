@@ -5,21 +5,13 @@ import React, { useState } from 'react';
 import customData from './customData.json';
 import LineData from './LineData.json'
 import {BPlot, LPlot} from './graph';
-
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', 'red', 'pink'];
-const MAX_DATA_COUNT = 6000;
-
-const now = DateTime.local();
-const lastDay = now.minus({ day: 1 })
-const lastMonth = now.minus({ month: 1 })
-const lastYear = now.minus({ year: 1 })
-
 const Map = dynamic(() => import('starseeker-frontend'), {
   ssr: false,
 });
 
-interface MyObject {
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', 'red', 'pink'];
+
+interface happinessObj {
   timestamp: any;
   q1: number;
   q2: number;
@@ -36,47 +28,9 @@ const pinData = customData.map(data => ({
   title: `ピン${customData.indexOf(data) + 1}`, 
 }));
 
-// 積み上げグラフ用データ
-const oneYear = customData.map((obj) => ({
-  ...obj,
-  timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
-  total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
-}));
-
-const oneMonth = customData.map((obj) => ({
-  ...obj,
-  timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
-  total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
-}));
-
-const oneDay = customData.map((obj) => ({
-  ...obj,
-  timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
-  total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
-}));
-
-//折れ線グラフ用データ
-const oneYear3 = LineData.map((obj) => ({
-  ...obj,
-  timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
-  total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
-}));
-
-const oneMonth3 = LineData.map((obj) => ({
-  ...obj,
-  timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
-  total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
-}));
-
-const oneDay3 = LineData.map((obj) => ({
-  ...obj,
-  timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
-  total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
-}));
-
-function mergeWithTime(objects: MyObject[], start: number, end: number, currentTime: number): MyObject[] {
+function mergeWithTime(objects: happinessObj[], start: number, end: number, currentTime: number): happinessObj[] {
   const sortedObjects = objects.sort((a, b) => a.timestamp - b.timestamp);
-  const result: MyObject[] = [];
+  const result: happinessObj[] = [];
 
   for (let timestamp = start; timestamp <= end; timestamp++) {
     const matchingObjects = sortedObjects.filter(obj => obj.timestamp === timestamp);
@@ -121,20 +75,73 @@ function mergeWithTime(objects: MyObject[], start: number, end: number, currentT
   return result;
 }
 
-const oneDay2 = mergeWithTime(oneDay, 0, 23, now.hour);
-const oneMonth2 = mergeWithTime(oneMonth, 1, 31, now.day);
-const oneYear2 = mergeWithTime(oneYear, 1, 12, now.month);
+const now = DateTime.local();
+// 積み上げグラフ用データ
+const myHappiness = [
+  mergeWithTime(
+    customData.map((obj) => ({
+      ...obj,
+      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
+      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+    })),
+    1,
+    12,
+    now.month
+  ),
+  mergeWithTime(
+    customData.map((obj) => ({
+      ...obj,
+      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
+      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+    })),
+    1,
+    31,
+    now.day
+  ),
+  mergeWithTime(
+    customData.map((obj) => ({
+      ...obj,
+      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
+      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+    })),
+    0,
+    23,
+    now.hour
+  ),
+]
 
-console.log("整形前", oneDay.filter(item => item.timestamp))
-console.log("整形後", oneDay2.filter(item => item.timestamp))
-
-const oneDay4 = mergeWithTime(oneDay3, 0, 23, now.hour);
-const oneMonth4 = mergeWithTime(oneMonth3, 1, 31, now.day);
-const oneYear4 = mergeWithTime(oneYear3, 1, 12, now.month);
-
-console.log("整形前", oneDay3.filter(item => item.timestamp))
-console.log("整形後", oneDay4.filter(item => item.timestamp))
-
+//折れ線グラフ用データ
+const ourHappiness = [
+  mergeWithTime(
+    LineData.map((obj) => ({
+      ...obj,
+      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
+      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+    })),
+    1,
+    12,
+    now.month
+  ),
+  mergeWithTime(
+    LineData.map((obj) => ({
+      ...obj,
+      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
+      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+    })),
+    1,
+    31,
+    now.day
+  ),
+  mergeWithTime(
+    LineData.map((obj) => ({
+      ...obj,
+      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
+      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+    })),
+    0,
+    23,
+    now.hour),
+]
 
 export default function Home() {
   const [viewMode, setViewMode] = useState('Day')
@@ -178,12 +185,12 @@ export default function Home() {
         <div className="h-[300px] bg-gray-700 rounded">
           {/* BPlotコンポーネントのplotdataを表示モードに基づいて選択 */}
           {viewMode === '時間' && (
-            <BPlot plotdata={oneDay2} title="時間" color={COLORS} xTickFormatter={renderCustomDayTick} />
+            <BPlot plotdata={myHappiness[2]} title="時間" color={COLORS} xTickFormatter={renderCustomDayTick} />
           )}
           {viewMode === '日' && (
-            <BPlot plotdata={oneMonth2} title="日" color={COLORS} xTickFormatter={renderCustomMonthTick} />
+            <BPlot plotdata={myHappiness[1]} title="日" color={COLORS} xTickFormatter={renderCustomMonthTick} />
           )}
-          {viewMode === '月' && <BPlot plotdata={oneYear2} title="月" color={COLORS} />}
+          {viewMode === '月' && <BPlot plotdata={myHappiness[0]} title="月" color={COLORS} />}
         </div>
       </div>
 
@@ -215,12 +222,12 @@ export default function Home() {
         <div className="h-[300px] bg-gray-700 rounded">
           {/* BPlotコンポーネントのplotdataを表示モードに基づいて選択 */}
           {viewMode === '時間' && (
-            <LPlot plotdata={oneDay4} title="時間" color={COLORS} xTickFormatter={renderCustomDayTick} />
+            <LPlot plotdata={ourHappiness[2]} title="時間" color={COLORS} xTickFormatter={renderCustomDayTick} />
           )}
           {viewMode === '日' && (
-            <LPlot plotdata={oneMonth4} title="日" color={COLORS} xTickFormatter={renderCustomMonthTick} />
+            <LPlot plotdata={ourHappiness[1]} title="日" color={COLORS} xTickFormatter={renderCustomMonthTick} />
           )}
-          {viewMode === '月' && <LPlot plotdata={oneYear4} title="月" color={COLORS} />}
+          {viewMode === '月' && <LPlot plotdata={ourHappiness[0]} title="月" color={COLORS} />}
         </div>
       </div>
 
