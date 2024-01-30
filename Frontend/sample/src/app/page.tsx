@@ -83,7 +83,7 @@ const myHappiness = [
     customData.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
-      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
     })),
     1,
     12,
@@ -93,7 +93,7 @@ const myHappiness = [
     customData.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
-      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
     })),
     1,
     31,
@@ -103,7 +103,7 @@ const myHappiness = [
     customData.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
-      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
     })),
     0,
     23,
@@ -117,7 +117,7 @@ const ourHappiness = [
     LineData.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
-      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
     })),
     1,
     12,
@@ -127,7 +127,7 @@ const ourHappiness = [
     LineData.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
-      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
     })),
     1,
     31,
@@ -137,7 +137,7 @@ const ourHappiness = [
     LineData.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
-      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
     })),
     0,
     23,
