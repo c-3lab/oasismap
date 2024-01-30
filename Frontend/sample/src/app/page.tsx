@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import customData from './customData.json';
 import LineData from './LineData.json'
 import {BPlot, LPlot} from './graph';
+
 const Map = dynamic(() => import('starseeker-frontend'), {
   ssr: false,
 });
@@ -19,7 +20,7 @@ interface happinessObj {
   q4: number;
   q5: number;
   q6: number;
-  total: number;
+  average: number;
 }
 
 const pinData = customData.map(data => ({
@@ -28,31 +29,31 @@ const pinData = customData.map(data => ({
   title: `ピン${customData.indexOf(data) + 1}`, 
 }));
 
-function mergeWithTime(objects: happinessObj[], start: number, end: number, currentTime: number): happinessObj[] {
+function mergeWithTime(objects: MyObject[], start: number, end: number, currentTime: number): MyObject[] {
   const sortedObjects = objects.sort((a, b) => a.timestamp - b.timestamp);
   const result: happinessObj[] = [];
 
   for (let timestamp = start; timestamp <= end; timestamp++) {
     const matchingObjects = sortedObjects.filter(obj => obj.timestamp === timestamp);
     if (matchingObjects.length > 0) {
-      const totalQ1 = matchingObjects.reduce((acc, obj) => acc + obj.q1, 0);
-      const totalQ2 = matchingObjects.reduce((acc, obj) => acc + obj.q2, 0);
-      const totalQ3 = matchingObjects.reduce((acc, obj) => acc + obj.q3, 0);
-      const totalQ4 = matchingObjects.reduce((acc, obj) => acc + obj.q4, 0);
-      const totalQ5 = matchingObjects.reduce((acc, obj) => acc + obj.q5, 0);
-      const totalQ6 = matchingObjects.reduce((acc, obj) => acc + obj.q6, 0);
+      const Q1 = matchingObjects.reduce((acc, obj) => acc + obj.q1, 0);
+      const Q2 = matchingObjects.reduce((acc, obj) => acc + obj.q2, 0);
+      const Q3 = matchingObjects.reduce((acc, obj) => acc + obj.q3, 0);
+      const Q4 = matchingObjects.reduce((acc, obj) => acc + obj.q4, 0);
+      const Q5 = matchingObjects.reduce((acc, obj) => acc + obj.q5, 0);
+      const Q6 = matchingObjects.reduce((acc, obj) => acc + obj.q6, 0);
       
-      const total = totalQ1 + totalQ2 + totalQ3 + totalQ4 + totalQ5 + totalQ6;
+      const average = (Q1 + Q2 + Q3 + Q4 + Q5 + Q6)/6 ;
 
       result.push({ 
         timestamp, 
-        q1: totalQ1,
-        q2: totalQ2,
-        q3: totalQ3,
-        q4: totalQ4,
-        q5: totalQ5,
-        q6: totalQ6,
-        total: total,
+        q1: Q1,
+        q2: Q2,
+        q3: Q3,
+        q4: Q4,
+        q5: Q5,
+        q6: Q6,
+        average: average,
       });
     } else {
       result.push({ 
@@ -63,7 +64,7 @@ function mergeWithTime(objects: happinessObj[], start: number, end: number, curr
         q4: 0,
         q5: 0,
         q6: 0,
-        total: 0,
+        average: 0,
       });
     }
   }
@@ -82,7 +83,7 @@ const myHappiness = [
     customData.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
-      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
     })),
     1,
     12,
@@ -92,7 +93,7 @@ const myHappiness = [
     customData.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
-      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
     })),
     1,
     31,
@@ -102,7 +103,7 @@ const myHappiness = [
     customData.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
-      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
     })),
     0,
     23,
@@ -116,7 +117,7 @@ const ourHappiness = [
     LineData.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
-      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
     })),
     1,
     12,
@@ -126,7 +127,7 @@ const ourHappiness = [
     LineData.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
-      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
     })),
     1,
     31,
@@ -136,7 +137,7 @@ const ourHappiness = [
     LineData.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
-      total: obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6,
+      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
     })),
     0,
     23,
@@ -192,28 +193,6 @@ export default function Home() {
           )}
           {viewMode === '月' && <BPlot plotdata={myHappiness[0]} title="月" color={COLORS} />}
         </div>
-      </div>
-
-      {/* ボタンで表示モードを切り替える */}
-      <div className="flex mt-4 space-x-4">
-        <button
-          onClick={() => handleViewModeChange('月')}
-          className={`px-4 py-2 ${viewMode === '月' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
-        >
-          月
-        </button>
-        <button
-          onClick={() => handleViewModeChange('日')}
-          className={`px-4 py-2 ${viewMode === '日' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
-        >
-          日
-        </button>
-        <button
-          onClick={() => handleViewModeChange('時間')}
-          className={`px-4 py-2 ${viewMode === '時間' ? 'bg-blue-500 text-white' : 'bg-gray-300'}`}
-        >
-          時間
-        </button>
       </div>
 
       {/* Container */}

@@ -33,10 +33,10 @@ export const LPlot = (props: any) => {
         <ResponsiveContainer width="100%" height="100%">
           <LineChart width={730} height={250} data={plotdata} margin={{ top: 10, right: 30, left: 0, bottom: 0}}>
             <XAxis dataKey="timestamp" tick={xTickFormatter} interval={0} />
-            <YAxis tickCount={7} domain={[0, 6]} />
+            <YAxis tickCount={11} domain={[0, 1]} ticks={[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]} />
             <Tooltip />
             <Legend verticalAlign='bottom' />
-            <Line type="monotone" dataKey="total" stroke={color[1]} dot={true} /> 
+            <Line type="monotone" dataKey="average" stroke={color[1]} dot={true} /> 
           </LineChart>
         </ResponsiveContainer>
       </>
