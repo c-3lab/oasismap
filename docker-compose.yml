@@ -40,13 +40,14 @@ services:
     working_dir: /app/frontend
     ports:
       - "3000:3000"
-    depends_on:
-      postgres:
-        condition: service_healthy
     command: >
       sh -c "
+      cd /app/frontend/externals/StarSeeker/StarSeeker/frontend &&
       npm install --legacy-peer-deps &&
-      npm run dev &&
+      cd /app/frontend/ &&
+      npm ci && 
+      npm run build && 
+      npm run start &&
       sleep 30"
     environment:
       - "NEXT_PUBLIC_MAP_DEFAULT_LATITUDE=${MAP_DEFAULT_LATITUDE}"
@@ -54,8 +55,7 @@ services:
       - "NEXT_PUBLIC_MAP_DEFAULT_ZOOM=${MAP_DEFAULT_ZOOM}"
       - "NEXT_PUBLIC_DATASET_LIST_BY=${DATASET_LIST_BY}"
     volumes:
-      - ./StarSeeker/StarSeeker/frontend:/app/frontend
-      - ./StarSeeker/StarSeeker/frontend/site:/app/frontend/site
+      - ./frontend/:/app/frontend/
     networks:
       - frontend-network
 
