@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  frontend:
+    image: node:20.10.0
+    hostname: frontend
+    container_name: frontend
+    working_dir: /app/frontend
+    ports:
+      - "3000:3000"
+    command: sleep infinity
+    environment:
+      - "NEXT_PUBLIC_MAP_DEFAULT_LATITUDE=${MAP_DEFAULT_LATITUDE}"
+      - "NEXT_PUBLIC_MAP_DEFAULT_LONGITUDE=${MAP_DEFAULT_LONGITUDE}"
+      - "NEXT_PUBLIC_MAP_DEFAULT_ZOOM=${MAP_DEFAULT_ZOOM}"
+      - "NEXT_PUBLIC_DATASET_LIST_BY=${DATASET_LIST_BY}"
+    volumes:
+      - ./frontend/:/app/frontend/
+    networks:
+      - frontend-network
+
+networks:
+  frontend-network:
+    driver: bridge
