@@ -11,7 +11,7 @@ interface DateTimeTextboxProps {
 function DateTimeTextbox(props: DateTimeTextboxProps) {
   return (
     <>
-      <Grid item xs={8}>
+      <Grid item xs={8} md={8} lg={5}>
         <TextField
           label={props.dateLabel}
           name="date"
@@ -24,7 +24,7 @@ function DateTimeTextbox(props: DateTimeTextboxProps) {
           fullWidth
         />
       </Grid>
-      <Grid item xs={4}>
+      <Grid item xs={4} md={4} lg={3}>
         <TextField
           label={props.timeLabel}
           name="time"

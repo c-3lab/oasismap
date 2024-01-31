@@ -10,6 +10,7 @@ import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
 
 import SidebarHeader from '@/components/sidebar/header'
+import Link from 'next/link'
 
 interface GeneralSidebarProps {
   drawerWidth: number
@@ -46,12 +47,12 @@ const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
       <List>
         <ListItem key="happiness" disablePadding>
           <ListItemButton>
-            <ListItemText primary="利用者の幸福度" />
+            <Link href="/happiness/me">利用者の幸福度</Link>
           </ListItemButton>
         </ListItem>
         <ListItem key="happiness-all" disablePadding>
           <ListItemButton>
-            <ListItemText primary="全体の幸福度" />
+            <Link href="/happiness/all">全体の幸福度</Link>
           </ListItemButton>
         </ListItem>
         <ListItem key="logout" disablePadding>
