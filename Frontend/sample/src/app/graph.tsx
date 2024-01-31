@@ -36,7 +36,12 @@ export const LPlot = (props: any) => {
             <YAxis tickCount={11} domain={[0, 1]} ticks={[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]} />
             <Tooltip />
             <Legend verticalAlign='bottom' />
-            <Line type="monotone" dataKey="average" stroke={color[1]} dot={true} /> 
+            <Line type="monotone" dataKey="averageQ1" stroke={color[0]} dot={true} />
+            <Line type="monotone" dataKey="averageQ2" stroke={color[1]} dot={true} />
+            <Line type="monotone" dataKey="averageQ3" stroke={color[2]} dot={true} />
+            <Line type="monotone" dataKey="averageQ4" stroke={color[3]} dot={true} />
+            <Line type="monotone" dataKey="averageQ5" stroke={color[4]} dot={true} />
+            <Line type="monotone" dataKey="averageQ6" stroke={color[5]} dot={true} /> 
           </LineChart>
         </ResponsiveContainer>
       </>

@@ -20,7 +20,12 @@ interface happinessObj {
   q4: number;
   q5: number;
   q6: number;
-  average: number;
+  averageQ1: number;
+  averageQ2: number;
+  averageQ3: number;
+  averageQ4: number;
+  averageQ5: number;
+  averageQ6: number;
 }
 
 const pinData = customData.map(data => ({
@@ -29,7 +34,7 @@ const pinData = customData.map(data => ({
   title: `ピン${customData.indexOf(data) + 1}`, 
 }));
 
-function mergeWithTime(objects: happinessObj[], start: number, end: number, currentTime: number): happinessObj[] {
+function mergeWithTime(objects: { timestamp: number; latitude: number; longitude: number; q1: number; q2: number; q3: number; q4: number; q5: number; q6: number; }[], start: number, end: number, currentTime: number): happinessObj[] {
   const sortedObjects = objects.sort((a, b) => a.timestamp - b.timestamp);
   const result: happinessObj[] = [];
 
@@ -43,7 +48,12 @@ function mergeWithTime(objects: happinessObj[], start: number, end: number, curr
       const Q5 = matchingObjects.reduce((acc, obj) => acc + obj.q5, 0);
       const Q6 = matchingObjects.reduce((acc, obj) => acc + obj.q6, 0);
       
-      const average = (Q1 + Q2 + Q3 + Q4 + Q5 + Q6)/6 ;
+      const averageQ1 = Q1/matchingObjects.length ;
+      const averageQ2 = Q2/matchingObjects.length ;
+      const averageQ3 = Q3/matchingObjects.length ;
+      const averageQ4 = Q4/matchingObjects.length ;
+      const averageQ5 = Q5/matchingObjects.length ;
+      const averageQ6 = Q6/matchingObjects.length ;
 
       result.push({ 
         timestamp, 
@@ -53,7 +63,12 @@ function mergeWithTime(objects: happinessObj[], start: number, end: number, curr
         q4: Q4,
         q5: Q5,
         q6: Q6,
-        average: average,
+        averageQ1: Q1/matchingObjects.length,
+        averageQ2: Q2/matchingObjects.length,
+        averageQ3: Q3/matchingObjects.length,
+        averageQ4: Q4/matchingObjects.length,
+        averageQ5: Q5/matchingObjects.length,
+        averageQ6: Q6/matchingObjects.length,
       });
     } else {
       result.push({ 
@@ -64,7 +79,12 @@ function mergeWithTime(objects: happinessObj[], start: number, end: number, curr
         q4: 0,
         q5: 0,
         q6: 0,
-        average: 0,
+        averageQ1: 0,
+        averageQ2: 0,
+        averageQ3: 0,
+        averageQ4: 0,
+        averageQ5: 0,
+        averageQ6: 0,
       });
     }
   }
@@ -83,7 +103,6 @@ const myHappiness = [
     customData.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
-      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
     })),
     1,
     12,
