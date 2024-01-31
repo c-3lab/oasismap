@@ -47,6 +47,34 @@ myHappiness = [
         location={"type": "geo:json", "value": {"type": "Point", "coordinates": [35.717701, 139.744862]}},
         answer={"type": "number", "value": 1},
         time=datetime.strptime("2021-08-29T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ")
+    ),
+    myHappinessData(
+        id=UUID("123e4567-e89b-12d3-a456-426614174001"),
+        type="happiness3",
+        location={"type": "geo:json", "value": {"type": "Point", "coordinates": [35.717701, 139.744862]}},
+        answer={"type": "number", "value": 1},
+        time=datetime.strptime("2021-08-29T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ")
+    ),
+    myHappinessData(
+        id=UUID("123e4567-e89b-12d3-a456-426614174001"),
+        type="happiness4",
+        location={"type": "geo:json", "value": {"type": "Point", "coordinates": [35.717701, 139.744862]}},
+        answer={"type": "number", "value": 1},
+        time=datetime.strptime("2021-08-29T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ")
+    ),
+    myHappinessData(
+        id=UUID("123e4567-e89b-12d3-a456-426614174001"),
+        type="happiness5",
+        location={"type": "geo:json", "value": {"type": "Point", "coordinates": [35.717701, 139.744862]}},
+        answer={"type": "number", "value": 1},
+        time=datetime.strptime("2021-08-29T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ")
+    ),
+    myHappinessData(
+        id=UUID("123e4567-e89b-12d3-a456-426614174001"),
+        type="happiness6",
+        location={"type": "geo:json", "value": {"type": "Point", "coordinates": [35.717701, 139.744862]}},
+        answer={"type": "number", "value": 1},
+        time=datetime.strptime("2021-08-29T00:00:00.000Z", "%Y-%m-%dT%H:%M:%S.%fZ")
     )
 ]
 
