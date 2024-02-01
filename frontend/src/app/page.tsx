@@ -1,23 +1,16 @@
 'use client'
-import dynamic from 'next/dynamic'
-import styles from './page.module.css'
-
-const Map = dynamic(
-  () => import('starseeker-frontend').then((module) => module.Map),
-  { ssr: false }
-)
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
-  return (
-    <main className={styles.main}>
-      <div>
-        <h1>OASISmap</h1>
-      </div>
-      <Map
-        pointEntities={[]}
-        surfaceEntities={[]}
-        fiware={{ servicePath: '', tenant: '' }}
-      />
-    </main>
-  )
+  const router = useRouter()
+
+  useEffect(() => {
+    // TODO: ログインユーザーの種類によって遷移先を変更
+    // TODO: 利用者の幸福度画面のモック完成後はモック用実装として /happiness/me に遷移
+    router.push('/happiness/all')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return <></>
 }
