@@ -11,6 +11,8 @@ import GeneralSidebar from '@/components/sidebar/general'
 import Main from '@/components/main'
 import DateTimeTextbox from '@/components/textbox/datetime'
 import useDateTimeText from '@/hooks/textbox/datetime'
+import { PERIOD_TYPE } from '@/consts/period'
+import { PeriodType } from '@/types/period'
 
 const Map = dynamic(
   () => import('starseeker-frontend').then((module) => module.Map),
@@ -21,6 +23,7 @@ const Home: React.FC = () => {
   const drawerWidth = 240
 
   const [open, setOpen] = useState(false)
+  const [period, setPeriod] = useState<PeriodType>(PERIOD_TYPE.MONTH)
 
   const startDateTime = useDateTimeText({
     date: '2024-01-26',
@@ -31,24 +34,15 @@ const Home: React.FC = () => {
     time: '12:00',
   })
 
-  const handleDrawerOpen = () => {
-    setOpen(true)
-  }
-
-  const handleDrawerClose = () => {
-    setOpen(false)
-  }
-
-  type PeriodType = 'month' | 'day' | 'time'
-  const [period, setPeriod] = useState<PeriodType>('month')
-
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
       <LoggedinHeader
         drawerWidth={drawerWidth}
         open={open}
-        handleDrawerOpen={handleDrawerOpen}
+        handleDrawerOpen={() => {
+          setOpen(true)
+        }}
       />
       <Main drawerWidth={drawerWidth}>
         <SidebarHeader />
@@ -59,7 +53,7 @@ const Home: React.FC = () => {
               item
               xs={12}
               md={6}
-              sx={{ height: { xs: '50vh', md: '90vh' } }}
+              sx={{ height: { xs: '50vh', md: '100%' } }}
             >
               <Grid item xs={12} md={12}>
                 <Map
@@ -103,13 +97,22 @@ const Home: React.FC = () => {
                     aria-label="large button group"
                     fullWidth
                   >
-                    <Button key="month" onClick={() => setPeriod('month')}>
+                    <Button
+                      key="month"
+                      onClick={() => setPeriod(PERIOD_TYPE.MONTH)}
+                    >
                       月
                     </Button>
-                    <Button key="day" onClick={() => setPeriod('day')}>
+                    <Button
+                      key="day"
+                      onClick={() => setPeriod(PERIOD_TYPE.DAY)}
+                    >
                       日
                     </Button>
-                    <Button key="time" onClick={() => setPeriod('time')}>
+                    <Button
+                      key="time"
+                      onClick={() => setPeriod(PERIOD_TYPE.TIME)}
+                    >
                       時間
                     </Button>
                   </ButtonGroup>
@@ -150,7 +153,9 @@ const Home: React.FC = () => {
       <GeneralSidebar
         drawerWidth={drawerWidth}
         open={open}
-        handleDrawerClose={handleDrawerClose}
+        handleDrawerClose={() => {
+          setOpen(false)
+        }}
       />
     </Box>
   )

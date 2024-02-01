@@ -1,5 +1,5 @@
 import { Grid, TextField } from '@mui/material'
-import { DateTimeText } from './type'
+import { DateTimeText } from '@/types/datetime'
 
 interface DateTimeTextboxProps {
   dateLabel: string
