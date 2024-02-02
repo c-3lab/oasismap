@@ -99,8 +99,6 @@ services:
       - "PGDATABASE=postgres"
     volumes:
       - ./site/postgres/data:/var/lib/postgresql/data
-      - ./StarSeeker/StarSeeker/postgres/initdb:/docker-entrypoint-initdb.d
-      - ./operator/env:/work
     networks:
       - backend-network
     healthcheck:
