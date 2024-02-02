@@ -4,6 +4,8 @@ import React from 'react';
 import 'leaflet/dist/leaflet.css';
 import DisplayPoints from './DisplayPoints';
 import DisplaySurfaces from './DisplaySurfaces';
+import L from 'leaflet'
+L.Icon.Default.imagePath = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/';
 
 const defaultPosition: LatLngTuple = [
   process.env.NEXT_PUBLIC_MAP_DEFAULT_LATITUDE,
