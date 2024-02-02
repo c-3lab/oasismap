@@ -48,12 +48,12 @@ function mergeWithTime(objects: { timestamp: number; latitude: number; longitude
       const Q5 = matchingObjects.reduce((acc, obj) => acc + obj.q5, 0);
       const Q6 = matchingObjects.reduce((acc, obj) => acc + obj.q6, 0);
       
-      const averageQ1 = Q1/matchingObjects.length ;
-      const averageQ2 = Q2/matchingObjects.length ;
-      const averageQ3 = Q3/matchingObjects.length ;
-      const averageQ4 = Q4/matchingObjects.length ;
-      const averageQ5 = Q5/matchingObjects.length ;
-      const averageQ6 = Q6/matchingObjects.length ;
+      const averageQ1 = (Q1 / matchingObjects.length).toFixed(1);
+      const averageQ2 = (Q2 / matchingObjects.length).toFixed(1);
+      const averageQ3 = (Q3 / matchingObjects.length).toFixed(1);
+      const averageQ4 = (Q4 / matchingObjects.length).toFixed(1);
+      const averageQ5 = (Q5 / matchingObjects.length).toFixed(1);
+      const averageQ6 = (Q6 / matchingObjects.length).toFixed(1);
 
       result.push({ 
         timestamp, 
@@ -63,12 +63,12 @@ function mergeWithTime(objects: { timestamp: number; latitude: number; longitude
         q4: Q4,
         q5: Q5,
         q6: Q6,
-        averageQ1: Q1/matchingObjects.length,
-        averageQ2: Q2/matchingObjects.length,
-        averageQ3: Q3/matchingObjects.length,
-        averageQ4: Q4/matchingObjects.length,
-        averageQ5: Q5/matchingObjects.length,
-        averageQ6: Q6/matchingObjects.length,
+        averageQ1: parseFloat(averageQ1),
+        averageQ2: parseFloat(averageQ2),
+        averageQ3: parseFloat(averageQ3),
+        averageQ4: parseFloat(averageQ4),
+        averageQ5: parseFloat(averageQ5),
+        averageQ6: parseFloat(averageQ6),
       });
     } else {
       result.push({ 
@@ -111,8 +111,7 @@ const myHappiness = [
   mergeWithTime(
     customData.map((obj) => ({
       ...obj,
-      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
-      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
+      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd'))
     })),
     1,
     31,
@@ -121,8 +120,7 @@ const myHappiness = [
   mergeWithTime(
     customData.map((obj) => ({
       ...obj,
-      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
-      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
+      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH'))
     })),
     0,
     23,
@@ -135,8 +133,7 @@ const ourHappiness = [
   mergeWithTime(
     LineData.map((obj) => ({
       ...obj,
-      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
-      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
+      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM'))
     })),
     1,
     12,
@@ -145,8 +142,7 @@ const ourHappiness = [
   mergeWithTime(
     LineData.map((obj) => ({
       ...obj,
-      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
-      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
+      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd'))
     })),
     1,
     31,
@@ -155,8 +151,7 @@ const ourHappiness = [
   mergeWithTime(
     LineData.map((obj) => ({
       ...obj,
-      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
-      average: (obj.q1 + obj.q2 + obj.q3 + obj.q4 + obj.q5 + obj.q6)/6,
+      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH'))
     })),
     0,
     23,

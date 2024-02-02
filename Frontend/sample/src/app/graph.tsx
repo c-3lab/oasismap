@@ -10,14 +10,14 @@ export const BPlot = (props: any) => {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart width={730} height={250} data={plotdata} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
             <XAxis dataKey="timestamp" tick={xTickFormatter} interval={0} />
-            <YAxis />
+            <YAxis tickCount={7} domain={[0, 1]} ticks={[0, 1, 2, 3, 4, 5, 6]} />
             <Tooltip />
-            <Bar dataKey="q1" stackId="a" fill={color[0]} />
-            <Bar dataKey="q2" stackId="a" fill={color[1]} />
-            <Bar dataKey="q3" stackId="a" fill={color[2]} />
-            <Bar dataKey="q4" stackId="a" fill={color[3]} />
-            <Bar dataKey="q5" stackId="a" fill={color[4]} />
-            <Bar dataKey="q6" stackId="a" fill={color[5]} />
+            <Bar dataKey="averageQ1" stackId="a" fill={color[0]} />
+            <Bar dataKey="averageQ2" stackId="a" fill={color[1]} />
+            <Bar dataKey="averageQ3" stackId="a" fill={color[2]} />
+            <Bar dataKey="averageQ4" stackId="a" fill={color[3]} />
+            <Bar dataKey="averageQ5" stackId="a" fill={color[4]} />
+            <Bar dataKey="averageQ6" stackId="a" fill={color[5]} />
           </BarChart>
         </ResponsiveContainer>
       </>
