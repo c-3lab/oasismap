@@ -2,7 +2,20 @@
 import { useState } from 'react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 
-import Map from '@/components/happiness/map'
+/* 暫定的にMapを直接import*/
+//import Map from '@/components/happiness/map'
+import dynamic from 'next/dynamic'
+import customData from './customData.json'
+const Map = dynamic(
+  () => import('starseeker-frontend').then((module) => module.Map),
+  { ssr: false }
+)
+const pinData = customData.map((data) => ({
+  latitude: data.latitude,
+  longitude: data.longitude,
+  title: `ピン${customData.indexOf(data) + 1}`,
+}))
+
 import {
   DateTimeTextbox,
   useDateTime,
@@ -34,6 +47,7 @@ const HappinessAll: React.FC = () => {
           pointEntities={[]}
           surfaceEntities={[]}
           fiware={{ servicePath: '', tenant: '' }}
+          pinData={pinData}
         />
       </Grid>
       <Grid
