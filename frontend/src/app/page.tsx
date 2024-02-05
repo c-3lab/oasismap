@@ -17,6 +17,7 @@ export default function Home() {
         pointEntities={[]}
         surfaceEntities={[]}
         fiware={{ servicePath: '', tenant: '' }}
+        pinData={[]}
       />
     </main>
   )
