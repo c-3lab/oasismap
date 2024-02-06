@@ -22,6 +22,8 @@ services:
     environment:
       - "API_PORT=4000"
       - "ORION_URI=http://orion:1026"
+      - "ORION_FIWARE_SERVICE=oasismap"
+      - "ORION_FIWARE_SERVISE_PATH=/"
       - "POSTGRES_HOST=postgres"
       - "POSTGRES_PORT=5432"
       - "POSTGRES_USERNAME=${POSTGREUSER}"
@@ -140,6 +142,8 @@ services:
     image: fiware/orion:3.10.1
     hostname: orion
     container_name: orion
+    ports:
+      - "1026:1026"
     expose:
       - "1026"
     depends_on:
