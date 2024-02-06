@@ -2,18 +2,16 @@
 import { useState } from 'react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 
-/* 暫定的にMapを直接import*/
-//import Map from '@/components/happiness/map'
-import dynamic from 'next/dynamic'
+import Map from '@/components/happiness/map'
 import customData from './customData.json'
-const Map = dynamic(
-  () => import('starseeker-frontend').then((module) => module.Map),
-  { ssr: false }
-)
-const pinData = customData.map((data) => ({
-  latitude: data.latitude,
-  longitude: data.longitude,
-  title: `ピン${customData.indexOf(data) + 1}`,
+
+const pointEntities = customData.map((data) => ({
+  datasetId: 0,
+  id: 0, //entityId
+  location: {
+    value: data.latitude.toString() + ', ' + data.longitude.toString(), //"0.0, 0.0"
+  },
+  iconColor: '#0088FE',
 }))
 
 import {
@@ -192,10 +190,9 @@ const HappinessAll: React.FC = () => {
         sx={{ height: { xs: '50vh', md: 'calc(100vh - 64px)' } }}
       >
         <Map
-          pointEntities={[]}
+          pointEntities={pointEntities}
           surfaceEntities={[]}
           fiware={{ servicePath: '', tenant: '' }}
-          pinData={pinData}
         />
       </Grid>
       <Grid

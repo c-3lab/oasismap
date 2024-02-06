@@ -1,4 +1,3 @@
-[submodule "frontend/externals/StarSeeker"]
+[submodule "StarSeeker"]
 	path = frontend/externals/StarSeeker
-	url = https://github.com/hiromu-bit/StarSeeker.git
-	branch = feature/export-map-component
+	url = https://github.com/c-3lab/StarSeeker
