@@ -2,12 +2,132 @@
 import { useState } from 'react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 
-import Map from '@/components/happiness/map'
+/* 暫定的にMapを作成して対応 */
+//import Map from '@/components/happiness/map'
+import dynamic from 'next/dynamic'
+const Map = dynamic(() => import('@/components/map/Map'), { ssr: false })
+import customData from './customData.json'
+
+const pinData = customData.map((data) => ({
+  latitude: data.latitude,
+  longitude: data.longitude,
+  title: `ピン${customData.indexOf(data) + 1}`,
+}))
+
 import {
   DateTimeTextbox,
   useDateTime,
 } from '@/components/fields/date-time-textbox'
 import { PeriodType } from '@/types/period'
+
+import { DateTime } from 'luxon'
+
+import { BPlot } from '@/components/happiness/graph'
+import { ResponsiveContainer } from 'recharts'
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', 'red', 'pink']
+
+interface happinessObj {
+  timestamp: any
+  q1: number
+  q2: number
+  q3: number
+  q4: number
+  q5: number
+  q6: number
+}
+
+function mergeWithTime(
+  objects: {
+    timestamp: number
+    latitude: number
+    longitude: number
+    q1: number
+    q2: number
+    q3: number
+    q4: number
+    q5: number
+    q6: number
+  }[],
+  start: number,
+  end: number,
+  currentTime: number
+): happinessObj[] {
+  const sortedObjects = objects.sort((a, b) => a.timestamp - b.timestamp)
+  const result: happinessObj[] = []
+
+  for (let timestamp = start; timestamp <= end; timestamp++) {
+    const matchingObjects = sortedObjects.filter(
+      (obj) => obj.timestamp === timestamp
+    )
+    if (matchingObjects.length > 0) {
+      const Q1 = matchingObjects.reduce((acc, obj) => acc + obj.q1, 0)
+      const Q2 = matchingObjects.reduce((acc, obj) => acc + obj.q2, 0)
+      const Q3 = matchingObjects.reduce((acc, obj) => acc + obj.q3, 0)
+      const Q4 = matchingObjects.reduce((acc, obj) => acc + obj.q4, 0)
+      const Q5 = matchingObjects.reduce((acc, obj) => acc + obj.q5, 0)
+      const Q6 = matchingObjects.reduce((acc, obj) => acc + obj.q6, 0)
+
+      result.push({
+        timestamp,
+        q1: Q1,
+        q2: Q2,
+        q3: Q3,
+        q4: Q4,
+        q5: Q5,
+        q6: Q6,
+      })
+    } else {
+      result.push({
+        timestamp,
+        q1: 0,
+        q2: 0,
+        q3: 0,
+        q4: 0,
+        q5: 0,
+        q6: 0,
+      })
+    }
+  }
+  const currentIndex = result.findIndex((obj) => obj.timestamp === currentTime)
+  if (currentIndex !== -1) {
+    result.unshift(...result.splice(currentIndex, result.length - currentIndex))
+  }
+
+  return result
+}
+
+const now = DateTime.local()
+//積み上げ棒グラフ用データ
+const MyHappiness = [
+  mergeWithTime(
+    customData.map((obj) => ({
+      ...obj,
+      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
+    })),
+    1,
+    12,
+    now.month
+  ),
+  mergeWithTime(
+    customData.map((obj) => ({
+      ...obj,
+      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
+    })),
+    1,
+    31,
+    now.day
+  ),
+  mergeWithTime(
+    customData.map((obj) => ({
+      ...obj,
+      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
+    })),
+    0,
+    23,
+    now.hour
+  ),
+]
 
 const HappinessMe: React.FC = () => {
   const [period, setPeriod] = useState(PeriodType.Month)
@@ -20,6 +140,19 @@ const HappinessMe: React.FC = () => {
     date: '2024-01-27',
     time: '12:00',
   })
+
+  const renderCustomDayTick = (tickProps: any) => {
+    const { x, y, payload } = tickProps
+    const hour = payload.value
+    if (hour % 2 === 0) {
+      return (
+        <text x={x} y={y} dy={16} fill="#666" textAnchor="middle">
+          {hour}
+        </text>
+      )
+    }
+    return null
+  }
 
   return (
     <Grid container>
@@ -34,6 +167,7 @@ const HappinessMe: React.FC = () => {
           pointEntities={[]}
           surfaceEntities={[]}
           fiware={{ servicePath: '', tenant: '' }}
+          pinData={pinData}
         />
       </Grid>
       <Grid
@@ -56,6 +190,14 @@ const HappinessMe: React.FC = () => {
           }}
         >
           グラフ表示エリア
+          <ResponsiveContainer width="100%" height={300}>
+            <BPlot
+              plotdata={MyHappiness[period]}
+              title="時間"
+              color={COLORS}
+              xTickFormatter={renderCustomDayTick}
+            />
+          </ResponsiveContainer>
         </Grid>
         <Grid
           container
@@ -69,21 +211,27 @@ const HappinessMe: React.FC = () => {
               <Button
                 key="month"
                 variant={period === PeriodType.Month ? 'contained' : 'outlined'}
-                onClick={() => setPeriod(PeriodType.Month)}
+                onClick={() => {
+                  setPeriod(PeriodType.Month)
+                }}
               >
                 月
               </Button>
               <Button
                 key="day"
                 variant={period === PeriodType.Day ? 'contained' : 'outlined'}
-                onClick={() => setPeriod(PeriodType.Day)}
+                onClick={() => {
+                  setPeriod(PeriodType.Day)
+                }}
               >
                 日
               </Button>
               <Button
                 key="time"
                 variant={period === PeriodType.Time ? 'contained' : 'outlined'}
-                onClick={() => setPeriod(PeriodType.Time)}
+                onClick={() => {
+                  setPeriod(PeriodType.Time)
+                }}
               >
                 時間
               </Button>
