@@ -2,14 +2,13 @@
 import { useState } from 'react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 
-/* 暫定的にMapを直接import*/
+/* 暫定的にMapを作成して対応 */
 //import Map from '@/components/happiness/map'
 import dynamic from 'next/dynamic'
+const Map = dynamic(() => import('@/components/map/Map'), { ssr: false })
+
 import customData from './customData.json'
-const Map = dynamic(
-  () => import('starseeker-frontend').then((module) => module.Map),
-  { ssr: false }
-)
+
 const pinData = customData.map((data) => ({
   latitude: data.latitude,
   longitude: data.longitude,
