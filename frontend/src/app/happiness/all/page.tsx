@@ -6,13 +6,12 @@ import { Button, ButtonGroup, Grid } from '@mui/material'
 //import Map from '@/components/happiness/map'
 import dynamic from 'next/dynamic'
 const Map = dynamic(() => import('@/components/map/Map'), { ssr: false })
+import LineData from './LineData.json'
 
-import customData from './customData.json'
-
-const pinData = customData.map((data) => ({
+const pinData = LineData.map((data) => ({
   latitude: data.latitude,
   longitude: data.longitude,
-  title: `ピン${customData.indexOf(data) + 1}`,
+  title: `ピン${LineData.indexOf(data) + 1}`,
 }))
 
 import {
@@ -21,7 +20,6 @@ import {
 } from '@/components/fields/date-time-textbox'
 import { PeriodType } from '@/types/period'
 
-import LineData from './LineData.json'
 import { DateTime } from 'luxon'
 
 import { LPlot } from '@/components/happiness/graph'
