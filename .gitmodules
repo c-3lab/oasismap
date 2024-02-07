@@ -1,3 +1,4 @@
 [submodule "StarSeeker"]
 	path = frontend/externals/StarSeeker
 	url = https://github.com/c-3lab/StarSeeker
+	branch = feature/export-map-component
