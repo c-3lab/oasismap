@@ -1,5 +1,5 @@
 import { XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
-import { LineChart, Legend, Line } from 'recharts'
+import { BarChart, Bar, LineChart, Legend, Line } from 'recharts'
 
 export const LPlot = (props: any) => {
   const { title, plotdata, color, xTickFormatter } = props
@@ -59,6 +59,35 @@ export const LPlot = (props: any) => {
             dot={true}
           />
         </LineChart>
+      </ResponsiveContainer>
+    </>
+  )
+}
+
+export const BPlot = (props: any) => {
+  const { title, plotdata, color, xTickFormatter } = props
+
+  return (
+    <>
+      <h3 className="text-white text-center">{title}</h3>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          width={730}
+          height={250}
+          data={plotdata}
+          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+        >
+          <XAxis dataKey="timestamp" tick={xTickFormatter} interval={0} />
+          <YAxis />
+          <Tooltip />
+          <Legend verticalAlign="bottom" />
+          <Bar dataKey="q1" stackId={1} fill={color[0]} />
+          <Bar dataKey="q2" stackId={1} fill={color[1]} />
+          <Bar dataKey="q3" stackId={1} fill={color[2]} />
+          <Bar dataKey="q4" stackId={1} fill={color[3]} />
+          <Bar dataKey="q5" stackId={1} fill={color[4]} />
+          <Bar dataKey="q6" stackId={1} fill={color[5]} />
+        </BarChart>
       </ResponsiveContainer>
     </>
   )
