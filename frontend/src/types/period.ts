@@ -1,5 +1,5 @@
 export enum PeriodType {
-  Month = 'month',
-  Day = 'day',
-  Time = 'time',
+  Month = 0,
+  Day = 1,
+  Time = 2,
 }

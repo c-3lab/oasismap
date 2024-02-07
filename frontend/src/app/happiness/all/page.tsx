@@ -219,7 +219,7 @@ const HappinessAll: React.FC = () => {
           グラフ表示エリア
           <ResponsiveContainer width="100%" height={300}>
             <LPlot
-              plotdata={ourHappiness[2]}
+              plotdata={ourHappiness[period]}
               title="時間"
               color={COLORS}
               xTickFormatter={renderCustomDayTick}
@@ -238,21 +238,27 @@ const HappinessAll: React.FC = () => {
               <Button
                 key="month"
                 variant={period === PeriodType.Month ? 'contained' : 'outlined'}
-                onClick={() => setPeriod(PeriodType.Month)}
+                onClick={() => {
+                  setPeriod(PeriodType.Month)
+                }}
               >
                 月
               </Button>
               <Button
                 key="day"
                 variant={period === PeriodType.Day ? 'contained' : 'outlined'}
-                onClick={() => setPeriod(PeriodType.Day)}
+                onClick={() => {
+                  setPeriod(PeriodType.Day)
+                }}
               >
                 日
               </Button>
               <Button
                 key="time"
                 variant={period === PeriodType.Time ? 'contained' : 'outlined'}
-                onClick={() => setPeriod(PeriodType.Time)}
+                onClick={() => {
+                  setPeriod(PeriodType.Time)
+                }}
               >
                 時間
               </Button>
