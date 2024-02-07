@@ -159,7 +159,6 @@ const ourHappiness = [
 
 const HappinessAll: React.FC = () => {
   const [period, setPeriod] = useState(PeriodType.Month)
-  const [currentGraphIndex, setCurrentGraphIndex] = useState(2)
 
   const startDateTimeProps = useDateTime({
     date: '2024-01-26',
@@ -221,7 +220,7 @@ const HappinessAll: React.FC = () => {
           グラフ表示エリア
           <ResponsiveContainer width="100%" height={300}>
             <LPlot
-              plotdata={ourHappiness[currentGraphIndex]}
+              plotdata={ourHappiness[period]}
               title="時間"
               color={COLORS}
               xTickFormatter={renderCustomDayTick}
@@ -242,7 +241,6 @@ const HappinessAll: React.FC = () => {
                 variant={period === PeriodType.Month ? 'contained' : 'outlined'}
                 onClick={() => {
                   setPeriod(PeriodType.Month)
-                  setCurrentGraphIndex(0)
                 }}
               >
                 月
@@ -252,7 +250,6 @@ const HappinessAll: React.FC = () => {
                 variant={period === PeriodType.Day ? 'contained' : 'outlined'}
                 onClick={() => {
                   setPeriod(PeriodType.Day)
-                  setCurrentGraphIndex(1)
                 }}
               >
                 日
@@ -262,7 +259,6 @@ const HappinessAll: React.FC = () => {
                 variant={period === PeriodType.Time ? 'contained' : 'outlined'}
                 onClick={() => {
                   setPeriod(PeriodType.Time)
-                  setCurrentGraphIndex(2)
                 }}
               >
                 時間
