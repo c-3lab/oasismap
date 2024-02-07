@@ -7,8 +7,7 @@ export default function Home() {
 
   useEffect(() => {
     // TODO: ログインユーザーの種類によって遷移先を変更
-    // TODO: 利用者の幸福度画面のモック完成後はモック用実装として /happiness/me に遷移
-    router.push('/happiness/all')
+    router.push('/happiness/me')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
