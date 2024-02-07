@@ -1,0 +1,44 @@
+{
+    "values": [
+        {
+            "key": "KeycloakRootURL",
+            "value": "http://keycloak:8080"
+        },
+        {
+            "key": "KeycloakTokenEndpoint",
+            "value": "http://keycloak:8080/realms/master/protocol/openid-connect/token"
+        },
+        {
+            "key": "RealmName",
+            "value": "OASIS-Map"
+        },
+        {
+            "key": "RealmLoginTheme",
+            "value": "keycloak"
+        },
+        {
+            "key": "RealmMunicipalUserGroupName",
+            "value": "managers"
+        },
+        {
+            "key": "RealmEventUserGroupName",
+            "value": "users"
+        },
+        {
+            "key": "RealmSSLRequired",
+            "value": "none"
+        },
+        {
+            "key": "GoogleClientID",
+            "value": ""
+        },
+        {
+            "key": "GoogleClientSecret",
+            "value": ""
+        },
+        {
+            "key": "PostBrokerLoginFlowAlias",
+            "value": ""
+        }
+    ]
+}
