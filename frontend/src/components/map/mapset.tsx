@@ -21,17 +21,17 @@ import {
 } from '../utils/marker'
 const getIconByType = (type: string) => {
   switch (type) {
-    case 'hapiness1':
+    case 'happiness1':
       return blueIcon
-    case 'hapiness2':
+    case 'happiness2':
       return greenIcon
-    case 'hapiness3':
+    case 'happiness3':
       return violetIcon
-    case 'hapiness4':
+    case 'happiness4':
       return yellowIcon
-    case 'hapiness5':
+    case 'happiness5':
       return orangeIcon
-    case 'hapiness6':
+    case 'happiness6':
       return redIcon
     default:
       return redIcon
@@ -80,21 +80,21 @@ const ClosePopup = () => {
 }
 
 const questionTitle = {
-  hapiness1: 'ワクワクする場所',
-  hapiness2: '発見の学びの場所',
-  hapiness3: 'ホッとする場所',
-  hapiness4: '自分を取り戻せる場所',
-  hapiness5: '自慢の場所',
-  hapiness6: '思い出の場所',
+  happiness1: 'ワクワクする場所',
+  happiness2: '発見の学びの場所',
+  happiness3: 'ホッとする場所',
+  happiness4: '自分を取り戻せる場所',
+  happiness5: '自慢の場所',
+  happiness6: '思い出の場所',
 }
 
 const MapSet: React.FC<Props> = ({ pinData }) => {
-  const h1 = pinData.filter((pin) => pin.type === 'hapiness1')
-  const h2 = pinData.filter((pin) => pin.type === 'hapiness2')
-  const h3 = pinData.filter((pin) => pin.type === 'hapiness3')
-  const h4 = pinData.filter((pin) => pin.type === 'hapiness4')
-  const h5 = pinData.filter((pin) => pin.type === 'hapiness5')
-  const h6 = pinData.filter((pin) => pin.type === 'hapiness6')
+  const h1 = pinData.filter((pin) => pin.type === 'happiness1')
+  const h2 = pinData.filter((pin) => pin.type === 'happiness2')
+  const h3 = pinData.filter((pin) => pin.type === 'happiness3')
+  const h4 = pinData.filter((pin) => pin.type === 'happiness4')
+  const h5 = pinData.filter((pin) => pin.type === 'happiness5')
+  const h6 = pinData.filter((pin) => pin.type === 'happiness6')
 
   return (
     <MapContainer
@@ -109,7 +109,7 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <LayersControl position="topright">
-        <LayersControl.Overlay checked name={questionTitle['hapiness1']}>
+        <LayersControl.Overlay checked name={questionTitle['happiness1']}>
           <LayerGroup>
             {h1.map((pin, index) => (
               <Marker
@@ -125,7 +125,7 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
           </LayerGroup>
         </LayersControl.Overlay>
 
-        <LayersControl.Overlay checked name={questionTitle['hapiness2']}>
+        <LayersControl.Overlay checked name={questionTitle['happiness2']}>
           <LayerGroup>
             {h2.map((pin, index) => (
               <Marker
@@ -141,7 +141,7 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
           </LayerGroup>
         </LayersControl.Overlay>
 
-        <LayersControl.Overlay checked name={questionTitle['hapiness3']}>
+        <LayersControl.Overlay checked name={questionTitle['happiness3']}>
           <LayerGroup>
             {h3.map((pin, index) => (
               <Marker
@@ -157,7 +157,7 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
           </LayerGroup>
         </LayersControl.Overlay>
 
-        <LayersControl.Overlay checked name={questionTitle['hapiness4']}>
+        <LayersControl.Overlay checked name={questionTitle['happiness4']}>
           <LayerGroup>
             {h4.map((pin, index) => (
               <Marker
@@ -173,7 +173,7 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
           </LayerGroup>
         </LayersControl.Overlay>
 
-        <LayersControl.Overlay checked name={questionTitle['hapiness5']}>
+        <LayersControl.Overlay checked name={questionTitle['happiness5']}>
           <LayerGroup>
             {h5.map((pin, index) => (
               <Marker
@@ -189,7 +189,7 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
           </LayerGroup>
         </LayersControl.Overlay>
 
-        <LayersControl.Overlay checked name={questionTitle['hapiness6']}>
+        <LayersControl.Overlay checked name={questionTitle['happiness6']}>
           <LayerGroup>
             {h6.map((pin, index) => (
               <Marker

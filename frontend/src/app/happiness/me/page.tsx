@@ -7,7 +7,7 @@ import { DateTime } from 'luxon'
 import { ResponsiveContainer } from 'recharts'
 //import Map from '@/components/happiness/map'
 const MapSet = dynamic(() => import('@/components/map/mapset'), { ssr: false })
-import { GetPin } from '@/components/utils/pin'
+import { GetPin, COLORS } from '@/components/utils/pin'
 import {
   DateTimeTextbox,
   useDateTime,
@@ -17,16 +17,15 @@ import { BPlot } from '@/components/happiness/graph'
 import data from './myHappiness.json'
 
 const pinData = GetPin(data)
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', 'red', 'pink']
 
 interface happinessObj {
   timestamp: any
-  q1: number
-  q2: number
-  q3: number
-  q4: number
-  q5: number
-  q6: number
+  happiness1: number
+  happiness2: number
+  happiness3: number
+  happiness4: number
+  happiness5: number
+  happiness6: number
 }
 
 function mergeWithTime(
@@ -34,12 +33,14 @@ function mergeWithTime(
     timestamp: number
     latitude: number
     longitude: number
-    q1: number
-    q2: number
-    q3: number
-    q4: number
-    q5: number
-    q6: number
+    answers: {
+      happiness1: number
+      happiness2: number
+      happiness3: number
+      happiness4: number
+      happiness5: number
+      happiness6: number
+    }
   }[],
   start: number,
   end: number,
@@ -53,31 +54,49 @@ function mergeWithTime(
       (obj) => obj.timestamp === timestamp
     )
     if (matchingObjects.length > 0) {
-      const Q1 = matchingObjects.reduce((acc, obj) => acc + obj.q1, 0)
-      const Q2 = matchingObjects.reduce((acc, obj) => acc + obj.q2, 0)
-      const Q3 = matchingObjects.reduce((acc, obj) => acc + obj.q3, 0)
-      const Q4 = matchingObjects.reduce((acc, obj) => acc + obj.q4, 0)
-      const Q5 = matchingObjects.reduce((acc, obj) => acc + obj.q5, 0)
-      const Q6 = matchingObjects.reduce((acc, obj) => acc + obj.q6, 0)
+      const Q1 = matchingObjects.reduce(
+        (acc, obj) => acc + obj.answers.happiness1,
+        0
+      )
+      const Q2 = matchingObjects.reduce(
+        (acc, obj) => acc + obj.answers.happiness2,
+        0
+      )
+      const Q3 = matchingObjects.reduce(
+        (acc, obj) => acc + obj.answers.happiness3,
+        0
+      )
+      const Q4 = matchingObjects.reduce(
+        (acc, obj) => acc + obj.answers.happiness4,
+        0
+      )
+      const Q5 = matchingObjects.reduce(
+        (acc, obj) => acc + obj.answers.happiness5,
+        0
+      )
+      const Q6 = matchingObjects.reduce(
+        (acc, obj) => acc + obj.answers.happiness6,
+        0
+      )
 
       result.push({
         timestamp,
-        q1: Q1,
-        q2: Q2,
-        q3: Q3,
-        q4: Q4,
-        q5: Q5,
-        q6: Q6,
+        happiness1: Q1,
+        happiness2: Q2,
+        happiness3: Q3,
+        happiness4: Q4,
+        happiness5: Q5,
+        happiness6: Q6,
       })
     } else {
       result.push({
         timestamp,
-        q1: 0,
-        q2: 0,
-        q3: 0,
-        q4: 0,
-        q5: 0,
-        q6: 0,
+        happiness1: 0,
+        happiness2: 0,
+        happiness3: 0,
+        happiness4: 0,
+        happiness5: 0,
+        happiness6: 0,
       })
     }
   }

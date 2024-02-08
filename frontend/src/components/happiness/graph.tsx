@@ -83,12 +83,12 @@ export const BPlot = (props: any) => {
           <YAxis />
           <Tooltip />
           <Legend verticalAlign="bottom" />
-          <Bar dataKey="q1" stackId={1} fill={color[0]} />
-          <Bar dataKey="q2" stackId={1} fill={color[1]} />
-          <Bar dataKey="q3" stackId={1} fill={color[2]} />
-          <Bar dataKey="q4" stackId={1} fill={color[3]} />
-          <Bar dataKey="q5" stackId={1} fill={color[4]} />
-          <Bar dataKey="q6" stackId={1} fill={color[5]} />
+          <Bar dataKey="happiness1" stackId={1} fill={color[0]} />
+          <Bar dataKey="happiness2" stackId={1} fill={color[1]} />
+          <Bar dataKey="happiness3" stackId={1} fill={color[2]} />
+          <Bar dataKey="happiness4" stackId={1} fill={color[3]} />
+          <Bar dataKey="happiness5" stackId={1} fill={color[4]} />
+          <Bar dataKey="happiness6" stackId={1} fill={color[5]} />
         </BarChart>
       </ResponsiveContainer>
     </>
