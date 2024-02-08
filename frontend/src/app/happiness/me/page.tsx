@@ -185,7 +185,7 @@ const HappinessMe: React.FC = () => {
           xs={12}
           md={12}
           sx={{
-            backgroundColor: '#a0a0a0',
+            backgroundColor: '#FFFFFF',
             minHeight: '300px',
           }}
         >

@@ -13,6 +13,7 @@ export const LPlot = (props: any) => {
           height={250}
           data={plotdata}
           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+          style={{ backgroundColor: '#FFFFFF' }}
         >
           <XAxis dataKey="timestamp" tick={xTickFormatter} interval={0} />
           <YAxis
@@ -76,6 +77,7 @@ export const BPlot = (props: any) => {
           height={250}
           data={plotdata}
           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+          style={{ backgroundColor: '#FFFFFF' }}
         >
           <XAxis dataKey="timestamp" tick={xTickFormatter} interval={0} />
           <YAxis />
