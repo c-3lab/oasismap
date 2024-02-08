@@ -9,6 +9,7 @@ const Map = dynamic(() => import('@/components/map/Map'), { ssr: false })
 import customData from './customData.json'
 
 const pinData = customData.map((data) => ({
+  type: data.type,
   latitude: data.latitude,
   longitude: data.longitude,
   title: `ピン${customData.indexOf(data) + 1}`,
