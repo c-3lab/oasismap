@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import Box from '@mui/material/Box'
 import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
@@ -15,6 +15,14 @@ interface GeneralSidebarProps {
 }
 
 const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
+  const router = useRouter()
+
+  // ページ遷移と同時にサイドバーを閉じる
+  const onPageTransitionSidebarClose = (path: string) => {
+    router.push(path) // ページ遷移
+    props.handleDrawerClose() // サイドバーを閉じる
+  }
+
   return (
     <Drawer
       anchor="right"
@@ -31,13 +39,17 @@ const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
         <Divider />
         <List>
           <ListItem key="happiness" disablePadding>
-            <ListItemButton>
-              <Link href="/happiness/me">利用者の幸福度</Link>
+            <ListItemButton
+              onClick={() => onPageTransitionSidebarClose('/happiness/me')}
+            >
+              <ListItemText primary="利用者の幸福度" />
             </ListItemButton>
           </ListItem>
           <ListItem key="happiness-all" disablePadding>
-            <ListItemButton>
-              <Link href="/happiness/all">全体の幸福度</Link>
+            <ListItemButton
+              onClick={() => onPageTransitionSidebarClose('/happiness/all')}
+            >
+              <ListItemText primary="全体の幸福度" />
             </ListItemButton>
           </ListItem>
           <ListItem key="logout" disablePadding>
