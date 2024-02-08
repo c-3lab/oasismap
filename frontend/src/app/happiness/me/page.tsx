@@ -1,31 +1,22 @@
 'use client'
+import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
-
-/* 暫定的にMapを作成して対応 */
+import { PeriodType } from '@/types/period'
+import { DateTime } from 'luxon'
+import { ResponsiveContainer } from 'recharts'
 //import Map from '@/components/happiness/map'
-import dynamic from 'next/dynamic'
 const MapSet = dynamic(() => import('@/components/map/mapset'), { ssr: false })
-import customData from './customData.json'
-
-const pinData = customData.map((data) => ({
-  type: data.type,
-  latitude: data.latitude,
-  longitude: data.longitude,
-  title: `ピン${customData.indexOf(data) + 1}`,
-}))
-
+import { GetPin } from '@/components/utils/pin'
 import {
   DateTimeTextbox,
   useDateTime,
 } from '@/components/fields/date-time-textbox'
-import { PeriodType } from '@/types/period'
-
-import { DateTime } from 'luxon'
 
 import { BPlot } from '@/components/happiness/graph'
-import { ResponsiveContainer } from 'recharts'
+import data from './myHappiness.json'
 
+const pinData = GetPin(data)
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', 'red', 'pink']
 
 interface happinessObj {
@@ -102,7 +93,7 @@ const now = DateTime.local()
 //積み上げ棒グラフ用データ
 const MyHappiness = [
   mergeWithTime(
-    customData.map((obj) => ({
+    data.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
     })),
@@ -111,7 +102,7 @@ const MyHappiness = [
     now.month
   ),
   mergeWithTime(
-    customData.map((obj) => ({
+    data.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
     })),
@@ -120,7 +111,7 @@ const MyHappiness = [
     now.day
   ),
   mergeWithTime(
-    customData.map((obj) => ({
+    data.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
     })),

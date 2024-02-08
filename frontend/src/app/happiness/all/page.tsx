@@ -1,30 +1,22 @@
 'use client'
+import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
-
-/* 暫定的にMapを作成して対応 */
+import { PeriodType } from '@/types/period'
+import { DateTime } from 'luxon'
+import { ResponsiveContainer } from 'recharts'
 //import Map from '@/components/happiness/map'
-import dynamic from 'next/dynamic'
-const Map = dynamic(() => import('@/components/map/Map'), { ssr: false })
-import LineData from './LineData.json'
-
-const pinData = LineData.map((data) => ({
-  latitude: data.latitude,
-  longitude: data.longitude,
-  title: `ピン${LineData.indexOf(data) + 1}`,
-}))
-
+const MapSet = dynamic(() => import('@/components/map/mapset'), { ssr: false })
+import { GetPin } from '@/components/utils/pin'
 import {
   DateTimeTextbox,
   useDateTime,
 } from '@/components/fields/date-time-textbox'
-import { PeriodType } from '@/types/period'
-
-import { DateTime } from 'luxon'
 
 import { LPlot } from '@/components/happiness/graph'
-import { ResponsiveContainer } from 'recharts'
+import data from './ourHappiness.json'
 
+const pinData = GetPin(data)
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', 'red', 'pink']
 
 interface happinessObj {
@@ -126,7 +118,7 @@ const now = DateTime.local()
 //折れ線グラフ用データ
 const ourHappiness = [
   mergeWithTime(
-    LineData.map((obj) => ({
+    data.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
     })),
@@ -135,7 +127,7 @@ const ourHappiness = [
     now.month
   ),
   mergeWithTime(
-    LineData.map((obj) => ({
+    data.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
     })),
@@ -144,7 +136,7 @@ const ourHappiness = [
     now.day
   ),
   mergeWithTime(
-    LineData.map((obj) => ({
+    data.map((obj) => ({
       ...obj,
       timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
     })),
@@ -188,7 +180,7 @@ const HappinessAll: React.FC = () => {
         md={6}
         sx={{ height: { xs: '50vh', md: 'calc(100vh - 64px)' } }}
       >
-        <Map
+        <MapSet
           pointEntities={[]}
           surfaceEntities={[]}
           fiware={{ servicePath: '', tenant: '' }}
