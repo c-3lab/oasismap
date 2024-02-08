@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import Box from '@mui/material/Box'
 import CssBaseline from '@mui/material/CssBaseline'
 import Toolbar from '@mui/material/Toolbar'
@@ -13,6 +14,12 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false)
+  const pathname = usePathname()
+
+  // パス名が変更されたらサイドバーを閉じる
+  useEffect(() => {
+    setIsOpen(false)
+  }, [pathname])
 
   return (
     <Box sx={{ display: 'flex' }}>
