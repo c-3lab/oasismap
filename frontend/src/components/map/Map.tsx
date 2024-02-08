@@ -9,75 +9,14 @@ import {
 import { LatLngTuple } from 'leaflet'
 import React from 'react'
 import 'leaflet/dist/leaflet.css'
-import DisplayPoints from './DisplayPoints'
-//import DisplaySurfaces from './DisplaySurfaces';
-import L from 'leaflet'
-
-const redIcon = new L.Icon({
-  iconUrl:
-    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-  shadowUrl:
-    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-shadow.png',
-})
-
-const blueIcon = new L.Icon({
-  iconUrl:
-    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-  shadowUrl:
-    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-shadow.png',
-})
-
-const greenIcon = new L.Icon({
-  iconUrl:
-    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-  shadowUrl:
-    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-shadow.png',
-})
-
-const yellowIcon = new L.Icon({
-  iconUrl:
-    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-  shadowUrl:
-    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-shadow.png',
-})
-
-const orangeIcon = new L.Icon({
-  iconUrl:
-    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-  shadowUrl:
-    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-shadow.png',
-})
-
-const violetIcon = new L.Icon({
-  iconUrl:
-    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-  shadowUrl:
-    'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-shadow.png',
-})
+import {
+  redIcon,
+  blueIcon,
+  greenIcon,
+  yellowIcon,
+  orangeIcon,
+  violetIcon,
+} from '../utils/marker'
 
 const getIconByType = (type: string) => {
   switch (type) {
@@ -140,7 +79,7 @@ const ClosePopup = () => {
 }
 
 //const Map: React.FC<Props> = ({ pointEntities, surfaceEntities, fiware, pinData }) => {
-const Map: React.FC<Props> = ({ pointEntities, fiware, pinData }) => {
+const Map: React.FC<Props> = ({ pinData }) => {
   return (
     <MapContainer
       center={defaultPosition}
@@ -153,10 +92,10 @@ const Map: React.FC<Props> = ({ pointEntities, fiware, pinData }) => {
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      {/*
       {pointEntities.map((data, index) => (
         <DisplayPoints key={index} data={data} fiware={fiware} />
       ))}
-      {/*
       {surfaceEntities.map((data, index) => (
          <DisplaySurfaces key={index} data={data} fiware={fiware} />
       ))}

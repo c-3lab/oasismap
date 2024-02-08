@@ -5,7 +5,7 @@ import { Button, ButtonGroup, Grid } from '@mui/material'
 /* 暫定的にMapを作成して対応 */
 //import Map from '@/components/happiness/map'
 import dynamic from 'next/dynamic'
-const Map = dynamic(() => import('@/components/map/Map'), { ssr: false })
+const MapSet = dynamic(() => import('@/components/map/mapset'), { ssr: false })
 import customData from './customData.json'
 
 const pinData = customData.map((data) => ({
@@ -164,7 +164,7 @@ const HappinessMe: React.FC = () => {
         md={6}
         sx={{ height: { xs: '50vh', md: 'calc(100vh - 64px)' } }}
       >
-        <Map
+        <MapSet
           pointEntities={[]}
           surfaceEntities={[]}
           fiware={{ servicePath: '', tenant: '' }}
