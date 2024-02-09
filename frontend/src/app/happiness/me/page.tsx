@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
-import { Button, ButtonGroup, Grid } from '@mui/material'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button, ButtonGroup, Grid, Snackbar, Alert } from '@mui/material'
 
 import Map from '@/components/happiness/map'
 import {
@@ -10,7 +11,9 @@ import {
 import { PeriodType } from '@/types/period'
 
 const HappinessMe: React.FC = () => {
+  const router = useRouter()
   const [period, setPeriod] = useState(PeriodType.Month)
+  const [openSnackbar, setOpenSnackbar] = useState(false)
 
   const startDateTimeProps = useDateTime({
     date: '2024-01-26',
@@ -20,6 +23,25 @@ const HappinessMe: React.FC = () => {
     date: '2024-01-27',
     time: '12:00',
   })
+
+  // ページ遷移
+  const onPageChange = (path: string) => {
+    router.push(path)
+  }
+
+  useEffect(() => {
+    const success = localStorage.getItem('happinessSubmissionSuccess')
+    if (success === 'true') {
+      setOpenSnackbar(true)
+      // 使用後はフラグをクリア
+      localStorage.removeItem('happinessSubmissionSuccess')
+    }
+  }, [])
+
+  // スナックバーを閉じる
+  const onCloseSnackbar = () => {
+    setOpenSnackbar(false)
+  }
 
   return (
     <Grid container>
@@ -112,12 +134,33 @@ const HappinessMe: React.FC = () => {
             </Grid>
           </Grid>
           <Grid item xs={12} md={12} lg={8}>
-            <Button variant="contained" color="primary" size="large" fullWidth>
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
+              fullWidth
+              onClick={() => onPageChange('/happiness/input')}
+            >
               幸福度を入力
             </Button>
           </Grid>
         </Grid>
       </Grid>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000} // 6秒で閉じる
+        onClose={onCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} // 右下に表示
+      >
+        <Alert
+          onClose={onCloseSnackbar}
+          severity="success"
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          送信完了
+        </Alert>
+      </Snackbar>
     </Grid>
   )
 }
