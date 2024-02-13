@@ -3,6 +3,8 @@ import { useState } from 'react'
 import Box from '@mui/material/Box'
 import CssBaseline from '@mui/material/CssBaseline'
 import Toolbar from '@mui/material/Toolbar'
+import { ThemeProvider } from '@mui/material'
+import theme from '@/theme'
 
 import Header from '@/components/header'
 import GeneralSidebar from '@/components/sidebar/general-sidebar'
@@ -15,24 +17,26 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
-      <Header
-        handleDrawerOpen={() => {
-          setIsOpen(true)
-        }}
-      />
-      <Box sx={{ width: 1 }}>
-        <Toolbar />
-        {children}
+    <ThemeProvider theme={theme}>
+      <Box sx={{ display: 'flex' }}>
+        <CssBaseline />
+        <Header
+          handleDrawerOpen={() => {
+            setIsOpen(true)
+          }}
+        />
+        <Box sx={{ width: 1 }}>
+          <Toolbar />
+          {children}
+        </Box>
+        <GeneralSidebar
+          isOpen={isOpen}
+          handleDrawerClose={() => {
+            setIsOpen(false)
+          }}
+        />
       </Box>
-      <GeneralSidebar
-        isOpen={isOpen}
-        handleDrawerClose={() => {
-          setIsOpen(false)
-        }}
-      />
-    </Box>
+    </ThemeProvider>
   )
 }
 
