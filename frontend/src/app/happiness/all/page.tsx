@@ -1,7 +1,7 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button, ButtonGroup, Grid, Snackbar, Alert } from '@mui/material'
+import { Button, ButtonGroup, Grid } from '@mui/material'
 
 import Map from '@/components/happiness/map'
 import {
@@ -13,7 +13,6 @@ import { PeriodType } from '@/types/period'
 const HappinessAll: React.FC = () => {
   const router = useRouter()
   const [period, setPeriod] = useState(PeriodType.Month)
-  const [openSnackbar, setOpenSnackbar] = useState(false)
 
   const startDateTimeProps = useDateTime({
     date: '2024-01-26',
@@ -27,20 +26,6 @@ const HappinessAll: React.FC = () => {
   // ページ遷移
   const onPageChange = (path: string) => {
     router.push(path)
-  }
-
-  useEffect(() => {
-    const success = localStorage.getItem('happinessSubmissionSuccess')
-    if (success === 'true') {
-      setOpenSnackbar(true)
-      // 使用後はフラグをクリア
-      localStorage.removeItem('happinessSubmissionSuccess')
-    }
-  }, [])
-
-  // スナックバーを閉じる
-  const onCloseSnackbar = () => {
-    setOpenSnackbar(false)
   }
 
   return (
@@ -146,21 +131,6 @@ const HappinessAll: React.FC = () => {
           </Grid>
         </Grid>
       </Grid>
-      <Snackbar
-        open={openSnackbar}
-        autoHideDuration={6000} // 6秒で閉じる
-        onClose={onCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} // 右下に表示
-      >
-        <Alert
-          onClose={onCloseSnackbar}
-          severity="success"
-          variant="filled"
-          sx={{ width: '100%' }}
-        >
-          送信完了
-        </Alert>
-      </Snackbar>
     </Grid>
   )
 }

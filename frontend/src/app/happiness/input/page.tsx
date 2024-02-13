@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Checkbox,
@@ -10,7 +10,10 @@ import {
   ListItemButton,
 } from '@mui/material'
 
+import { MessagesContext } from '@/Contexts'
+
 const HappinessInput: React.FC = () => {
+  const messagesContext = useContext(MessagesContext)
   const router = useRouter()
 
   // チェックボックスの状態管理用オブジェクト
@@ -43,8 +46,7 @@ const HappinessInput: React.FC = () => {
 
   // 元いたページに戻る
   const onPageBack = () => {
-    // 送信成功フラグをローカルストレージに設定
-    localStorage.setItem('happinessSubmissionSuccess', 'true')
+    messagesContext.addMessage('送信成功')
     router.back()
   }
 
