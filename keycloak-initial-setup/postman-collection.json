@@ -353,7 +353,7 @@
 							"\"identityProviders\": ` + JSON.stringify(response.json().identityProviders) + `,\r",
 							"\"identityProviderMappers\": ` + JSON.stringify(response.json().identityProviderMappers) + `,\r",
 							"\"internationalizationEnabled\": true,\r",
-							"\"supportedLocales\": [\"ja\", \"en\"],\r",
+							"\"supportedLocales\": [\"ja\"],\r",
 							"\"defaultLocale\": \"ja\",\r",
 							"\"browserFlow\": ` + JSON.stringify(response.json().browserFlow) + `,\r",
 							"\"registrationFlow\": ` + JSON.stringify(response.json().registrationFlow) + `,\r",
