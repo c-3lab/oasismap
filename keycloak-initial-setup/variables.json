@@ -29,6 +29,14 @@
             "value": "none"
         },
         {
+            "key": "RealmSSOSessionIdleTimeout",
+            "value": 1800
+        },
+        {
+            "key": "RealmSSOSessionMaxLifespan",
+            "value": 36000
+        },
+        {
             "key": "GoogleClientID",
             "value": ""
         },

@@ -34,6 +34,8 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
    - RealmMunicipalUserGroupName: 追加したいレルムの自治体向けグループ名
    - RealmEventUserGroupName: 追加したいレルムのイベント参加者向けグループ名
    - RealmSSLRequired: 追加したいレルムの SSL 必須に関する設定 (設定可能な値: all, external, none のいずれか)
+   - RealmSSOSessionIdleTimeout: 追加したいレルムの SSO セッション・アイドル  (単位は秒で、SSO セッション最大の設定値を上限とする)
+   - RealmSSOSessionMaxLifespan: 追加したいレルムの SSO セッション最大  (単位は秒)
    - GoogleClientID: アイデンティティプロバイダー Google と接続する場合の Google Cloud Platform から発行されるクライアント ID
    - GoogleClientSecret: アイデンティティプロバイダー Google と接続する場合の Google Cloud Platform から発行されるクライアントシークレット
    - PostBrokerLoginFlowAlias: アイデンティティプロバイダー Google を通したログイン後に実行する認証フロー名
