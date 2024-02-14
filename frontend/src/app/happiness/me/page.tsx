@@ -113,28 +113,34 @@ const now = DateTime.local()
 //積み上げ棒グラフ用データ
 const MyHappiness = [
   mergeWithTime(
-    data.map((obj) => ({
-      ...obj,
-      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
-    })),
+    data
+      .filter((h) => h.type == 'happiness1')
+      .map((obj) => ({
+        ...obj,
+        timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
+      })),
     1,
     12,
     now.month
   ),
   mergeWithTime(
-    data.map((obj) => ({
-      ...obj,
-      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
-    })),
+    data
+      .filter((h) => h.type == 'happiness1')
+      .map((obj) => ({
+        ...obj,
+        timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
+      })),
     1,
     31,
     now.day
   ),
   mergeWithTime(
-    data.map((obj) => ({
-      ...obj,
-      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
-    })),
+    data
+      .filter((h) => h.type == 'happiness1')
+      .map((obj) => ({
+        ...obj,
+        timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
+      })),
     0,
     23,
     now.hour
