@@ -39,6 +39,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             handleDrawerOpen={() => {
               setIsOpen(true)
             }}
+            simpleHeader={false}
           />
           <Box sx={{ width: 1 }}>
             <Toolbar />

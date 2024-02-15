@@ -49,7 +49,7 @@ const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
             </ListItemButton>
           </ListItem>
           <ListItem key="logout" disablePadding>
-            <ListItemButton>
+            <ListItemButton onClick={() => router.push(`/login`)}>
               <ListItemText primary="ログアウト" />
             </ListItemButton>
           </ListItem>
