@@ -265,7 +265,11 @@ const HappinessMe: React.FC = () => {
           <Grid container item xs={12} md={12} lg={8} columnSpacing={1}>
             <Grid item xs={8} md={8} />
             <Grid item xs={4} md={4}>
-              <Button variant="outlined" color="secondary" fullWidth>
+              <Button
+                variant="outlined"
+                fullWidth
+                sx={{ borderColor: 'primary.light' }}
+              >
                 検索
               </Button>
             </Grid>

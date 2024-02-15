@@ -10,7 +10,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = (props) => {
   return (
-    <AppBar>
+    <AppBar sx={{ color: '#FFF', backgroundColor: '#459586' }}>
       <Toolbar>
         <Typography variant="h6" noWrap sx={{ flexGrow: 1 }} component="div">
           OASISmap
