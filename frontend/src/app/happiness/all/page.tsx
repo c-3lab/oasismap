@@ -1,6 +1,7 @@
 'use client'
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { DateTime } from 'luxon'
@@ -166,6 +167,7 @@ const ourHappiness = [
 ]
 
 const HappinessAll: React.FC = () => {
+  const router = useRouter()
   const [period, setPeriod] = useState(PeriodType.Month)
 
   const startDateTimeProps = useDateTime({
@@ -290,13 +292,23 @@ const HappinessAll: React.FC = () => {
           <Grid container item xs={12} md={12} lg={8} columnSpacing={1}>
             <Grid item xs={8} md={8} />
             <Grid item xs={4} md={4}>
-              <Button variant="outlined" color="secondary" fullWidth>
+              <Button
+                variant="outlined"
+                fullWidth
+                sx={{ borderColor: 'primary.light' }}
+              >
                 検索
               </Button>
             </Grid>
           </Grid>
           <Grid item xs={12} md={12} lg={8}>
-            <Button variant="contained" color="primary" size="large" fullWidth>
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
+              fullWidth
+              onClick={() => router.push('/happiness/input?referral=all')}
+            >
               幸福度を入力
             </Button>
           </Grid>
