@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
-import { DateTime } from 'luxon'
 import { ResponsiveContainer } from 'recharts'
 //import Map from '@/components/happiness/map'
 const MapSet = dynamic(() => import('@/components/map/mapset'), { ssr: false })
@@ -14,152 +13,11 @@ import {
   useDateTime,
 } from '@/components/fields/date-time-textbox'
 
-import { LineGraph } from '@/components/happiness/graph'
+import { LineGraph, ourHappinessData } from '@/components/happiness/graph'
 import data from './ourHappiness.json'
 
 const pinData = GetPin(data)
-
-interface happinessObj {
-  timestamp: any
-  happiness1: number
-  happiness2: number
-  happiness3: number
-  happiness4: number
-  happiness5: number
-  happiness6: number
-  averageQ1: number
-  averageQ2: number
-  averageQ3: number
-  averageQ4: number
-  averageQ5: number
-  averageQ6: number
-}
-
-interface dataObj {
-  id: string
-  type: string
-  timestamp: number
-  location: {
-    type: string
-    value: {
-      type: string
-      coordinates: [number, number]
-    }
-  }
-  answers: {
-    happiness1: number
-    happiness2: number
-    happiness3: number
-    happiness4: number
-    happiness5: number
-    happiness6: number
-  }
-}
-
-function mergeWithTime(
-  objects: dataObj[],
-  start: number,
-  end: number,
-  currentTime: number,
-  format: string
-): happinessObj[] {
-  const sortedObjects = objects
-    .sort((a, b) => a.timestamp - b.timestamp)
-    .filter((h) => h.type == 'happiness1')
-    .map((obj) => ({
-      ...obj,
-      roundTimestamp: DateTime.fromISO(obj.timestamp).toFormat(format),
-    }))
-
-  const result: happinessObj[] = []
-
-  for (let timestamp = start; timestamp <= end; timestamp++) {
-    const matchingObjects = sortedObjects.filter(
-      (obj) => Number(obj.roundTimestamp) === timestamp
-    )
-    if (matchingObjects.length > 0) {
-      const Q1 = matchingObjects.reduce(
-        (acc, obj) => acc + obj.answers.happiness1,
-        0
-      )
-      const Q2 = matchingObjects.reduce(
-        (acc, obj) => acc + obj.answers.happiness2,
-        0
-      )
-      const Q3 = matchingObjects.reduce(
-        (acc, obj) => acc + obj.answers.happiness3,
-        0
-      )
-      const Q4 = matchingObjects.reduce(
-        (acc, obj) => acc + obj.answers.happiness4,
-        0
-      )
-      const Q5 = matchingObjects.reduce(
-        (acc, obj) => acc + obj.answers.happiness5,
-        0
-      )
-      const Q6 = matchingObjects.reduce(
-        (acc, obj) => acc + obj.answers.happiness6,
-        0
-      )
-
-      const averageQ1 = (Q1 / matchingObjects.length).toFixed(1)
-      const averageQ2 = (Q2 / matchingObjects.length).toFixed(1)
-      const averageQ3 = (Q3 / matchingObjects.length).toFixed(1)
-      const averageQ4 = (Q4 / matchingObjects.length).toFixed(1)
-      const averageQ5 = (Q5 / matchingObjects.length).toFixed(1)
-      const averageQ6 = (Q6 / matchingObjects.length).toFixed(1)
-
-      result.push({
-        timestamp,
-        happiness1: Q1,
-        happiness2: Q2,
-        happiness3: Q3,
-        happiness4: Q4,
-        happiness5: Q5,
-        happiness6: Q6,
-        averageQ1: parseFloat(averageQ1),
-        averageQ2: parseFloat(averageQ2),
-        averageQ3: parseFloat(averageQ3),
-        averageQ4: parseFloat(averageQ4),
-        averageQ5: parseFloat(averageQ5),
-        averageQ6: parseFloat(averageQ6),
-      })
-    } else {
-      result.push({
-        timestamp,
-        happiness1: 0,
-        happiness2: 0,
-        happiness3: 0,
-        happiness4: 0,
-        happiness5: 0,
-        happiness6: 0,
-        averageQ1: 0,
-        averageQ2: 0,
-        averageQ3: 0,
-        averageQ4: 0,
-        averageQ5: 0,
-        averageQ6: 0,
-      })
-    }
-  }
-  const currentIndex = result.findIndex(
-    (obj) => Number(obj.timestamp) === currentTime
-  )
-  if (currentIndex !== -1) {
-    result.unshift(...result.splice(currentIndex, result.length - currentIndex))
-  }
-
-  return result
-}
-
-const now = DateTime.local()
-//折れ線グラフ用データ
-const ourHappiness = {
-  month: mergeWithTime(data, 1, 12, now.month, 'MM'),
-  day: mergeWithTime(data, 1, 31, now.day, 'dd'),
-  time: mergeWithTime(data, 0, 23, now.hour, 'HH'),
-}
+const ourHappiness = ourHappinessData(data)
 
 const HappinessAll: React.FC = () => {
   const router = useRouter()
