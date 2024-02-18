@@ -35,30 +35,47 @@ interface happinessObj {
   averageQ6: number
 }
 
-function mergeWithTime(
-  objects: {
-    timestamp: number
-    latitude: number
-    longitude: number
-    answers: {
-      happiness1: number
-      happiness2: number
-      happiness3: number
-      happiness4: number
-      happiness5: number
-      happiness6: number
+interface dataObj {
+  id: string
+  type: string
+  timestamp: number
+  location: {
+    type: string
+    value: {
+      type: string
+      coordinates: [number, number]
     }
-  }[],
+  }
+  answers: {
+    happiness1: number
+    happiness2: number
+    happiness3: number
+    happiness4: number
+    happiness5: number
+    happiness6: number
+  }
+}
+
+function mergeWithTime(
+  objects: dataObj[],
   start: number,
   end: number,
-  currentTime: number
+  currentTime: number,
+  format: string
 ): happinessObj[] {
-  const sortedObjects = objects.sort((a, b) => a.timestamp - b.timestamp)
+  const sortedObjects = objects
+    .sort((a, b) => a.timestamp - b.timestamp)
+    .filter((h) => h.type == 'happiness1')
+    .map((obj) => ({
+      ...obj,
+      roundTimestamp: DateTime.fromISO(obj.timestamp).toFormat(format),
+    }))
+
   const result: happinessObj[] = []
 
   for (let timestamp = start; timestamp <= end; timestamp++) {
     const matchingObjects = sortedObjects.filter(
-      (obj) => obj.timestamp === timestamp
+      (obj) => Number(obj.roundTimestamp) === timestamp
     )
     if (matchingObjects.length > 0) {
       const Q1 = matchingObjects.reduce(
@@ -126,7 +143,9 @@ function mergeWithTime(
       })
     }
   }
-  const currentIndex = result.findIndex((obj) => obj.timestamp === currentTime)
+  const currentIndex = result.findIndex(
+    (obj) => Number(obj.timestamp) === currentTime
+  )
   if (currentIndex !== -1) {
     result.unshift(...result.splice(currentIndex, result.length - currentIndex))
   }
@@ -136,35 +155,11 @@ function mergeWithTime(
 
 const now = DateTime.local()
 //折れ線グラフ用データ
-const ourHappiness = [
-  mergeWithTime(
-    data.map((obj) => ({
-      ...obj,
-      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
-    })),
-    1,
-    12,
-    now.month
-  ),
-  mergeWithTime(
-    data.map((obj) => ({
-      ...obj,
-      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
-    })),
-    1,
-    31,
-    now.day
-  ),
-  mergeWithTime(
-    data.map((obj) => ({
-      ...obj,
-      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
-    })),
-    0,
-    23,
-    now.hour
-  ),
-]
+const ourHappiness = {
+  month: mergeWithTime(data, 1, 12, now.month, 'MM'),
+  day: mergeWithTime(data, 1, 31, now.day, 'dd'),
+  time: mergeWithTime(data, 0, 23, now.hour, 'HH'),
+}
 
 const HappinessAll: React.FC = () => {
   const router = useRouter()
