@@ -111,8 +111,8 @@ function mergeWithTime(
 
 const now = DateTime.local()
 //積み上げ棒グラフ用データ
-const MyHappiness = [
-  mergeWithTime(
+const MyHappiness = {
+  month: mergeWithTime(
     data
       .filter((h) => h.type == 'happiness1')
       .map((obj) => ({
@@ -123,7 +123,7 @@ const MyHappiness = [
     12,
     now.month
   ),
-  mergeWithTime(
+  day: mergeWithTime(
     data
       .filter((h) => h.type == 'happiness1')
       .map((obj) => ({
@@ -134,7 +134,7 @@ const MyHappiness = [
     31,
     now.day
   ),
-  mergeWithTime(
+  time: mergeWithTime(
     data
       .filter((h) => h.type == 'happiness1')
       .map((obj) => ({
@@ -145,7 +145,7 @@ const MyHappiness = [
     23,
     now.hour
   ),
-]
+}
 
 const HappinessMe: React.FC = () => {
   const router = useRouter()
