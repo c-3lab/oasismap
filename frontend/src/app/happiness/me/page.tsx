@@ -14,7 +14,7 @@ import {
   useDateTime,
 } from '@/components/fields/date-time-textbox'
 
-import { BPlot } from '@/components/happiness/graph'
+import { BarGraph } from '@/components/happiness/graph'
 import data from './myHappiness.json'
 
 const pinData = GetPin(data)
@@ -199,7 +199,7 @@ const HappinessMe: React.FC = () => {
         >
           グラフ表示エリア
           <ResponsiveContainer width="100%" height={300}>
-            <BPlot
+            <BarGraph
               plotdata={MyHappiness[period]}
               title="時間"
               color={COLORS}
