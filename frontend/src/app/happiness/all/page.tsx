@@ -14,7 +14,7 @@ import {
   useDateTime,
 } from '@/components/fields/date-time-textbox'
 
-import { LPlot } from '@/components/happiness/graph'
+import { LineGraph } from '@/components/happiness/graph'
 import data from './ourHappiness.json'
 
 const pinData = GetPin(data)
@@ -229,7 +229,7 @@ const HappinessAll: React.FC = () => {
         >
           グラフ表示エリア
           <ResponsiveContainer width="100%" height={300}>
-            <LPlot
+            <LineGraph
               plotdata={ourHappiness[period]}
               title="時間"
               color={COLORS}

@@ -1,7 +1,7 @@
 import { XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
 import { BarChart, Bar, LineChart, Legend, Line } from 'recharts'
 
-export const LPlot = (props: any) => {
+export const LineGraph = (props: any) => {
   const { title, plotdata, color, xTickFormatter } = props
 
   return (
@@ -65,7 +65,7 @@ export const LPlot = (props: any) => {
   )
 }
 
-export const BPlot = (props: any) => {
+export const BarGraph = (props: any) => {
   const { title, plotdata, color, xTickFormatter } = props
 
   return (
