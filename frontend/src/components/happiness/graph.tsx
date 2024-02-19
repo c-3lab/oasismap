@@ -74,9 +74,7 @@ function filterByTimestamp(objects: dataObj[]): dataSet {
   const oneyear = now.minus({ year: 1 })
 
   //重複する幸福度を除去
-  const filteredObj = objects
-    .filter((h) => h.type == 'happiness1')
-    .sort((a, b) => a.timestamp - b.timestamp)
+  const filteredObj = objects.filter((h) => h.type == 'happiness1')
 
   //古い幸福度を除去
   const result = {
@@ -88,7 +86,7 @@ function filterByTimestamp(objects: dataObj[]): dataSet {
       )
       .map((obj) => ({
         ...obj,
-        timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
+        timestamp: DateTime.fromISO(obj.timestamp).toFormat('dd'),
       })),
     month: filteredObj
       .filter(
@@ -98,7 +96,7 @@ function filterByTimestamp(objects: dataObj[]): dataSet {
       )
       .map((obj) => ({
         ...obj,
-        timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
+        timestamp: DateTime.fromISO(obj.timestamp).toFormat('MM'),
       })),
     time: filteredObj
       .filter(
@@ -108,7 +106,7 @@ function filterByTimestamp(objects: dataObj[]): dataSet {
       )
       .map((obj) => ({
         ...obj,
-        timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
+        timestamp: DateTime.fromISO(obj.timestamp).toFormat('HH'),
       })),
   }
   return result
@@ -131,7 +129,7 @@ function aveByTimestamp(objects: dataObj[]): happinessObj[] {
     })
 
     result.push({
-      timestamp: matchingObjects[0].timestamp,
+      timestamp: Number(matchingObjects[0].timestamp),
       happiness1: Number((h[0] / matchingObjects.length).toFixed(1)),
       happiness2: Number((h[1] / matchingObjects.length).toFixed(1)),
       happiness3: Number((h[2] / matchingObjects.length).toFixed(1)),
@@ -162,7 +160,7 @@ function sumByTimestamp(objects: dataObj[]): happinessObj[] {
     })
 
     result.push({
-      timestamp: matchingObjects[0].timestamp,
+      timestamp: Number(matchingObjects[0].timestamp),
       happiness1: h[0],
       happiness2: h[1],
       happiness3: h[2],
