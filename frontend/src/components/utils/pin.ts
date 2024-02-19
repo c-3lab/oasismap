@@ -1,10 +1,10 @@
 export const COLORS = [
-  '#0088FE',
-  '#00C49F',
-  '#FFBB28',
-  '#FF8042',
-  'red',
-  'pink',
+  '#2A81CB',
+  '#2AAD27',
+  '#9C2BCB',
+  '#FFD326',
+  '#CB8427',
+  '#CB2B3E',
 ]
 
 export function GetPin(arr: any[]): any[] {
