@@ -7,7 +7,7 @@ export default function Home() {
 
   useEffect(() => {
     // TODO: ログインユーザーの種類によって遷移先を変更
-    router.push('/happiness/me')
+    router.push('/login')
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

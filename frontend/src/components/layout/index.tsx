@@ -17,10 +17,11 @@ import { messageContext } from '@/contexts/message-context'
 import { useNoticeMessage } from '@/hooks/notice-message'
 
 interface LayoutProps {
+  simple?: boolean
   children: React.ReactNode
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout: React.FC<LayoutProps> = ({ simple = false, children }) => {
   const noticeMessageContext = useNoticeMessage()
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
@@ -32,43 +33,54 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   return (
     <ThemeProvider theme={theme}>
-      <messageContext.Provider value={noticeMessageContext}>
+      {simple ? (
         <Box sx={{ display: 'flex' }}>
           <CssBaseline />
-          <Header
-            handleDrawerOpen={() => {
-              setIsOpen(true)
-            }}
-          />
+          <Header simple={true} />
           <Box sx={{ width: 1 }}>
             <Toolbar />
             {children}
           </Box>
-          <GeneralSidebar
-            isOpen={isOpen}
-            handleDrawerClose={() => {
-              setIsOpen(false)
-            }}
-          />
         </Box>
-        {noticeMessageContext.message && (
-          <Snackbar
-            open={true}
-            autoHideDuration={6000}
-            onClose={noticeMessageContext.clearMessage}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          >
-            <Alert
+      ) : (
+        <messageContext.Provider value={noticeMessageContext}>
+          <Box sx={{ display: 'flex' }}>
+            <CssBaseline />
+            <Header
+              handleDrawerOpen={() => {
+                setIsOpen(true)
+              }}
+            />
+            <Box sx={{ width: 1 }}>
+              <Toolbar />
+              {children}
+            </Box>
+            <GeneralSidebar
+              isOpen={isOpen}
+              handleDrawerClose={() => {
+                setIsOpen(false)
+              }}
+            />
+          </Box>
+          {noticeMessageContext.message && (
+            <Snackbar
+              open={true}
+              autoHideDuration={6000}
               onClose={noticeMessageContext.clearMessage}
-              severity="success"
-              variant="filled"
-              sx={{ width: '100%' }}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
             >
-              {noticeMessageContext.message}
-            </Alert>
-          </Snackbar>
-        )}
-      </messageContext.Provider>
+              <Alert
+                onClose={noticeMessageContext.clearMessage}
+                severity="success"
+                variant="filled"
+                sx={{ width: '100%' }}
+              >
+                {noticeMessageContext.message}
+              </Alert>
+            </Snackbar>
+          )}
+        </messageContext.Provider>
+      )}
     </ThemeProvider>
   )
 }
