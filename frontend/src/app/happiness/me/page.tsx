@@ -45,6 +45,25 @@ const HappinessMe: React.FC = () => {
     return null
   }
 
+  const handleSearch = async () => {
+    const backendUrl = 'http://localhost:8000/api/happiness/me'
+
+    try {
+      const response = await fetch(`${backendUrl}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          //'Authorization': `Bearer ${yourAccessToken}`,
+        },
+      })
+
+      const data = await response.json()
+      console.log('Data from backend:', data)
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    }
+  }
+
   return (
     <Grid container>
       <Grid
@@ -149,6 +168,7 @@ const HappinessMe: React.FC = () => {
                 variant="outlined"
                 fullWidth
                 sx={{ borderColor: 'primary.light' }}
+                onClick={handleSearch}
               >
                 検索
               </Button>
