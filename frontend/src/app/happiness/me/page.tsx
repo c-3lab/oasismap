@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
-import { DateTime } from 'luxon'
 import { ResponsiveContainer } from 'recharts'
 //import Map from '@/components/happiness/map'
 const MapSet = dynamic(() => import('@/components/map/mapset'), { ssr: false })
@@ -14,132 +13,11 @@ import {
   useDateTime,
 } from '@/components/fields/date-time-textbox'
 
-import { BPlot } from '@/components/happiness/graph'
+import { BarGraph, myHappinessData } from '@/components/happiness/graph'
 import data from './myHappiness.json'
 
 const pinData = GetPin(data)
-
-interface happinessObj {
-  timestamp: any
-  happiness1: number
-  happiness2: number
-  happiness3: number
-  happiness4: number
-  happiness5: number
-  happiness6: number
-}
-
-function mergeWithTime(
-  objects: {
-    timestamp: number
-    latitude: number
-    longitude: number
-    answers: {
-      happiness1: number
-      happiness2: number
-      happiness3: number
-      happiness4: number
-      happiness5: number
-      happiness6: number
-    }
-  }[],
-  start: number,
-  end: number,
-  currentTime: number
-): happinessObj[] {
-  const sortedObjects = objects.sort((a, b) => a.timestamp - b.timestamp)
-  const result: happinessObj[] = []
-
-  for (let timestamp = start; timestamp <= end; timestamp++) {
-    const matchingObjects = sortedObjects.filter(
-      (obj) => obj.timestamp === timestamp
-    )
-    if (matchingObjects.length > 0) {
-      const Q1 = matchingObjects.reduce(
-        (acc, obj) => acc + obj.answers.happiness1,
-        0
-      )
-      const Q2 = matchingObjects.reduce(
-        (acc, obj) => acc + obj.answers.happiness2,
-        0
-      )
-      const Q3 = matchingObjects.reduce(
-        (acc, obj) => acc + obj.answers.happiness3,
-        0
-      )
-      const Q4 = matchingObjects.reduce(
-        (acc, obj) => acc + obj.answers.happiness4,
-        0
-      )
-      const Q5 = matchingObjects.reduce(
-        (acc, obj) => acc + obj.answers.happiness5,
-        0
-      )
-      const Q6 = matchingObjects.reduce(
-        (acc, obj) => acc + obj.answers.happiness6,
-        0
-      )
-
-      result.push({
-        timestamp,
-        happiness1: Q1,
-        happiness2: Q2,
-        happiness3: Q3,
-        happiness4: Q4,
-        happiness5: Q5,
-        happiness6: Q6,
-      })
-    } else {
-      result.push({
-        timestamp,
-        happiness1: 0,
-        happiness2: 0,
-        happiness3: 0,
-        happiness4: 0,
-        happiness5: 0,
-        happiness6: 0,
-      })
-    }
-  }
-  const currentIndex = result.findIndex((obj) => obj.timestamp === currentTime)
-  if (currentIndex !== -1) {
-    result.unshift(...result.splice(currentIndex, result.length - currentIndex))
-  }
-
-  return result
-}
-
-const now = DateTime.local()
-//積み上げ棒グラフ用データ
-const MyHappiness = [
-  mergeWithTime(
-    data.map((obj) => ({
-      ...obj,
-      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('MM')),
-    })),
-    1,
-    12,
-    now.month
-  ),
-  mergeWithTime(
-    data.map((obj) => ({
-      ...obj,
-      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('dd')),
-    })),
-    1,
-    31,
-    now.day
-  ),
-  mergeWithTime(
-    data.map((obj) => ({
-      ...obj,
-      timestamp: Number(DateTime.fromISO(obj.timestamp).toFormat('HH')),
-    })),
-    0,
-    23,
-    now.hour
-  ),
-]
+const MyHappiness = myHappinessData(data)
 
 const HappinessMe: React.FC = () => {
   const router = useRouter()
@@ -204,7 +82,7 @@ const HappinessMe: React.FC = () => {
         >
           グラフ表示エリア
           <ResponsiveContainer width="100%" height={300}>
-            <BPlot
+            <BarGraph
               plotdata={MyHappiness[period]}
               title="時間"
               color={COLORS}
