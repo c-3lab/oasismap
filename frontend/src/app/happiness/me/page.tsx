@@ -50,7 +50,6 @@ const HappinessMe: React.FC = () => {
       })
 
       const data = await response.json()
-      console.log('Data from backend:', data)
       const pinDataResult = GetPin(data)
       const myHappinessResult = myHappinessData(data)
 
@@ -96,7 +95,6 @@ const HappinessMe: React.FC = () => {
       })
 
       const data = await response.json()
-      console.log('Data from backend:', data)
       const pinDataResult = GetPin(data)
       const myHappinessResult = myHappinessData(data)
 
