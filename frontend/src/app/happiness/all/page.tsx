@@ -14,7 +14,6 @@ import {
 } from '@/components/fields/date-time-textbox'
 
 import { LineGraph, ourHappinessData } from '@/components/happiness/graph'
-//import { DateTime } from 'luxon';
 
 const HappinessAll: React.FC = () => {
   const router = useRouter()
@@ -29,23 +28,11 @@ const HappinessAll: React.FC = () => {
   const Start = async () => {
     const backendUrl = 'http://localhost:8000/api/happiness/all'
 
-    //const oneYearAgo = DateTime.local().minus({ year: 1 });
-    //const formattedStartDate = oneYearAgo.toFormat('yyyy-MM-ddTHH:mm:ssZZZ');
-    //const formattedEndDate = DateTime.local().toFormat('yyyy-MM-ddTHH:mm:ssZZZ');
-    //console.log('Formatted Start Date:', formattedStartDate);
-    //console.log('Formatted End Date:', formattedEndDate);
-
-    //const params = new URLSearchParams({
-    //  start: formattedStartDate,
-    //  end: formattedEndDate,
-    //});
-
     try {
       const response = await fetch(`${backendUrl}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          // 'Authorization': `Bearer ${yourAccessToken}`,
         },
       })
 
@@ -90,7 +77,6 @@ const HappinessAll: React.FC = () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          //'Authorization': `Bearer ${yourAccessToken}`,
         },
       })
 
