@@ -1,6 +1,6 @@
 'use client'
 import dynamic from 'next/dynamic'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
@@ -14,14 +14,38 @@ import {
 } from '@/components/fields/date-time-textbox'
 
 import { LineGraph, ourHappinessData } from '@/components/happiness/graph'
-import data from './ourHappiness.json'
-
-const pinData = GetPin(data)
-const ourHappiness = ourHappinessData(data)
 
 const HappinessAll: React.FC = () => {
   const router = useRouter()
   const [period, setPeriod] = useState(PeriodType.Month)
+  const [pinData, setPinData] = useState<any>([])
+  const [OurHappiness, setOurHappiness] = useState<any>([])
+
+  useEffect(() => {
+    Start()
+  }, [])
+
+  const Start = async () => {
+    const backendUrl = 'http://localhost:8000/api/happiness/all'
+
+    try {
+      const response = await fetch(`${backendUrl}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.json()
+      const pinDataResult = GetPin(data)
+      const OurHappinessResult = ourHappinessData(data)
+
+      setPinData(pinDataResult)
+      setOurHappiness(OurHappinessResult)
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    }
+  }
 
   const startDateTimeProps = useDateTime({
     date: '2024-01-26',
@@ -43,6 +67,28 @@ const HappinessAll: React.FC = () => {
       )
     }
     return null
+  }
+
+  const handleSearch = async () => {
+    const backendUrl = 'http://localhost:8000/api/happiness/all'
+
+    try {
+      const response = await fetch(`${backendUrl}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.json()
+      const pinDataResult = GetPin(data)
+      const ourHappinessResult = ourHappinessData(data)
+
+      setPinData(pinDataResult)
+      setOurHappiness(ourHappinessResult)
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    }
   }
 
   return (
@@ -83,7 +129,7 @@ const HappinessAll: React.FC = () => {
           グラフ表示エリア
           <ResponsiveContainer width="100%" height={300}>
             <LineGraph
-              plotdata={ourHappiness[period]}
+              plotdata={OurHappiness[period]}
               title="時間"
               color={COLORS}
               xTickFormatter={renderCustomDayTick}
@@ -149,6 +195,7 @@ const HappinessAll: React.FC = () => {
                 variant="outlined"
                 fullWidth
                 sx={{ borderColor: 'primary.light' }}
+                onClick={handleSearch}
               >
                 検索
               </Button>
