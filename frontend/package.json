@@ -30,6 +30,7 @@
     "starseeker-frontend": "file:externals/StarSeeker/StarSeeker/frontend"
   },
   "devDependencies": {
+    "@types/luxon": "^3.4.2",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
