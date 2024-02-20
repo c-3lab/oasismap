@@ -1,5 +1,4 @@
 import { useRouter } from 'next/navigation'
-// import { useRouter } from 'next/router'
 import Box from '@mui/material/Box'
 import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
@@ -18,11 +17,6 @@ interface GeneralSidebarProps {
 const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
   const router = useRouter()
 
-  // ページ遷移
-  const onPageChange = (path: string) => {
-    router.push(path)
-  }
-
   return (
     <Drawer
       anchor="right"
@@ -39,17 +33,17 @@ const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
         <Divider />
         <List>
           <ListItem key="happiness" disablePadding>
-            <ListItemButton onClick={() => onPageChange('/happiness/me')}>
+            <ListItemButton onClick={() => router.push('/happiness/me')}>
               <ListItemText primary="利用者の幸福度" />
             </ListItemButton>
           </ListItem>
           <ListItem key="happiness-all" disablePadding>
-            <ListItemButton onClick={() => onPageChange('/happiness/all')}>
+            <ListItemButton onClick={() => router.push('/happiness/all')}>
               <ListItemText primary="全体の幸福度" />
             </ListItemButton>
           </ListItem>
           <ListItem key="logout" disablePadding>
-            <ListItemButton>
+            <ListItemButton onClick={() => router.push(`/login`)}>
               <ListItemText primary="ログアウト" />
             </ListItemButton>
           </ListItem>

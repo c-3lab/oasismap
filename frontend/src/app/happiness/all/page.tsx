@@ -51,10 +51,10 @@ const HappinessAll: React.FC = () => {
 
       const data = await response.json()
       const pinDataResult = GetPin(data)
-      const ourHappinessResult = ourHappinessData(data)
+      const OurHappinessResult = ourHappinessData(data)
 
       setPinData(pinDataResult)
-      setOurHappiness(ourHappinessResult)
+      setOurHappiness(OurHappinessResult)
     } catch (error) {
       console.error('Error fetching data:', error)
     }

@@ -5,27 +5,35 @@ import MenuIcon from '@mui/icons-material/Menu'
 import AppBar from '@mui/material/AppBar'
 
 interface HeaderProps {
-  handleDrawerOpen: () => void
+  simple?: boolean
+  handleDrawerOpen?: () => void
 }
 
-const Header: React.FC<HeaderProps> = (props) => {
+const Header: React.FC<HeaderProps> = ({
+  simple = false,
+  handleDrawerOpen,
+}) => {
   return (
     <AppBar sx={{ color: '#FFF', backgroundColor: '#459586' }}>
       <Toolbar>
         <Typography variant="h6" noWrap sx={{ flexGrow: 1 }} component="div">
           OASISmap
         </Typography>
-        <Typography noWrap component="div">
-          山田太郎 さん
-        </Typography>
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="end"
-          onClick={props.handleDrawerOpen}
-        >
-          <MenuIcon />
-        </IconButton>
+        {!simple && (
+          <>
+            <Typography noWrap component="div">
+              山田太郎 さん
+            </Typography>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="end"
+              onClick={handleDrawerOpen}
+            >
+              <MenuIcon />
+            </IconButton>
+          </>
+        )}
       </Toolbar>
     </AppBar>
   )
