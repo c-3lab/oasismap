@@ -17,7 +17,7 @@ services:
       - "4000:4000"
     command: >
       sh -c "
-      npm install &&
+      npm ci &&
       npm run start"
     environment:
       - "API_PORT=4000"
@@ -29,9 +29,15 @@ services:
       - "POSTGRES_DATABASE=postgres"
       - "TYPEORM_SYNCHRONIZE=false"
     volumes:
-      - ./StarSeeker/StarSeeker/backend:/app/backend
+      - ./backend:/app/backend
     networks:
       - backend-network
+    healthcheck:
+      test: "curl -f http://localhost:4000"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   frontend:
     image: node:20.10.0
@@ -40,6 +46,9 @@ services:
     working_dir: /app/frontend
     ports:
       - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
     command: >
       sh -c "
       cd /app/frontend/externals/StarSeeker/StarSeeker/frontend &&
@@ -90,8 +99,6 @@ services:
       - "PGDATABASE=postgres"
     volumes:
       - ./site/postgres/data:/var/lib/postgresql/data
-      - ./StarSeeker/StarSeeker/postgres/initdb:/docker-entrypoint-initdb.d
-      - ./operator/env:/work
     networks:
       - backend-network
     healthcheck:

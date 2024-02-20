@@ -1,6 +1,21 @@
 version: "3.8"
 
 services:
+  backend:
+    image: node:20.10.0
+    hostname: backend
+    container_name: backend
+    working_dir: /app/backend
+    ports:
+      - "4000:4000"
+    command: sleep infinity
+    environment:
+      - "API_PORT=4000"
+    volumes:
+      - ./backend:/app/backend
+    networks:
+      - backend-network
+
   frontend:
     image: node:20.10.0
     hostname: frontend
@@ -33,5 +48,7 @@ services:
       - frontend-network
 
 networks:
+  backend-network:
+    driver: bridge
   frontend-network:
     driver: bridge
