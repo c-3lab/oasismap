@@ -10,7 +10,15 @@
         },
         {
             "key": "RealmName",
-            "value": "OASIS-Map"
+            "value": "oasismap"
+        },
+        {
+            "key": "RealmDisplayName",
+            "value": "OASISmap"
+        },
+        {
+            "key": "RealmDisplayNameHtml",
+            "value": "OASISmap"
         },
         {
             "key": "RealmLoginTheme",
@@ -47,6 +55,10 @@
         {
             "key": "PostBrokerLoginFlowAlias",
             "value": ""
+        },
+        {
+            "key": "ClientBaseURL",
+            "value": "http://localhost:3000"
         }
     ]
 }

@@ -14,14 +14,14 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
 ## ディレクリ構成
 ```
 .
-└── newman
+└── keycloak
      ├── postman-collection.json  (Postman コレクション情報 version 2.1)
-     ├── Readme.md (このファイル)
+     ├── README.md (このファイル)
      └── variables.json  (環境変数情報)
 ```
 
 ## 事前準備
-1. Docker サービスが稼働しており、 Keycloak へ接続できる環境にディレクトリ **newman** をコピーしてください。
+1. Docker サービスが稼働しており、 Keycloak へ接続できる環境にディレクトリ **keycloak** をコピーしてください。
 1. 設定を行いたい Keycloak と設定を行う端末が同じであれば、その Keycloak コンテナが接続しているネットワーク名を控えてください。  
    ネットワーク名は Keycloak のコンテナを起動した docker-compose.yml を配置しているディレクトリ名 + _backend-network になることがあります。  
    例: oasismap_backend-network
@@ -30,6 +30,8 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
    - KeycloakRootURL: Keycloak のルート URL (**末尾に / をつけないでください。**)
    - KeycloakTokenEndpoint: Keycloak の master レルムに対するトークンエンドポイント URL
    - RealmName: 追加したいレルム名
+   - RealmDisplayName: ページタイトルの表示名 (&lt;title&gt;&lt;/title&gt;内の値に影響する)
+   - RealmDisplayNameHtml: Keycloak 画面での表示名 (HTMLタグの使用可能)
    - RealmLoginTheme: 追加したいレルムのログインテーマ名
    - RealmMunicipalUserGroupName: 追加したいレルムの自治体向けグループ名
    - RealmEventUserGroupName: 追加したいレルムのイベント参加者向けグループ名
@@ -39,6 +41,7 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
    - GoogleClientID: アイデンティティプロバイダー Google と接続する場合の Google Cloud Platform から発行されるクライアント ID
    - GoogleClientSecret: アイデンティティプロバイダー Google と接続する場合の Google Cloud Platform から発行されるクライアントシークレット
    - PostBrokerLoginFlowAlias: アイデンティティプロバイダー Google を通したログイン後に実行する認証フロー名
+   - ClientRootURL: Webアプリケーション (クライアント) のルートURL (例: http://localhost:3000 または https://event.example.com など)
 
 ## 実行手順
 1. ディレクトリ newman を配置した端末にて、以下のように docker コマンドを実行します。  
@@ -47,7 +50,7 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
    KEYCLOAK_ADMIN={Keycloak の master レルムの管理者ユーザ名}
    KEYCLOAK_ADMIN_PASSWORD={Keycloak の master レルムの管理者ユーザのパスワード}
 
-   docker run --network {Keycloak コンテナが存在するネットワーク名} --volume {ディレクトリ newman のパス}:/etc/newman/keycloak \
+   docker run --network {Keycloak コンテナが存在するネットワーク名} --volume {ディレクトリ keycloak のパス}:/etc/newman/keycloak \
      postman/newman:latest run --bail --environment /etc/newman/keycloak/variables.json \
      --env-var "KeycloakAdminUser=$KEYCLOAK_ADMIN" \
      --env-var "KeycloakAdminPassword=$KEYCLOAK_ADMIN_PASSWORD" \
@@ -58,7 +61,7 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
    ```
    KEYCLOAK_ADMIN=admin
    KEYCLOAK_ADMIN_PASSWORD=********
-   example@ubuntu:~$ docker run --network oasismap_backend-network --volume /home/example/oasismap/Backend/keycloak-initial-setup:/etc/newman/keycloak \
+   example@ubuntu:~$ docker run --network oasismap_backend-network --volume /home/example/oasismap/keycloak:/etc/newman/keycloak \
    > postman/newman:latest run --bail --environment /etc/newman/keycloak/variables.json \
      --env-var "KeycloakAdminUser=$KEYCLOAK_ADMIN" \
      --env-var "KeycloakAdminPassword=$KEYCLOAK_ADMIN_PASSWORD" \
@@ -72,7 +75,7 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
 
      null
 
-    DELETE http://keycloak:8080/admin/realms/OASIS-Map [204 No Content, 187B, 958ms]
+    DELETE http://keycloak:8080/admin/realms/oasismap [204 No Content, 187B, 958ms]
     ?  HTTP ステータスコードの確認 204 No Content or 404 Not Found
 
       ・
@@ -83,31 +86,31 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
       ・
       ・
 
-   → Google アイデンティティプロバイダーを追加
-    POST http://keycloak:8080/realms/master/protocol/openid-connect/token [200 OK, 2.5kB, 50ms]
+   → ユーザープロファイル機能の追加
+    POST http://keycloak:8080/realms/master/protocol/openid-connect/token [200 OK, 2.5kB, 39ms]
 
      null
 
-    POST http://keycloak:8080/admin/realms/OASIS-Map/identity-provider/instances [201 Created, 322B, 28ms]
-    ?  HTTP ステータスコードの確認 201 Created
+    PUT http://keycloak:8080/admin/realms/oasismap/users/profile [200 OK, 1.91kB, 41ms]
+    ?  HTTP ステータスコードの確認 200 OK
 
     ┌─────────────────────────┬──────────────────────┬───────────────────┐
     │                         │             executed │            failed │
     ├─────────────────────────┼──────────────────────┼───────────────────┤
     │              iterations │                   1  │                0  │
     ├─────────────────────────┼──────────────────────┼───────────────────┤
-    │                requests │                  28  │                0  │
+    │                requests │                  44  │                0  │
     ├─────────────────────────┼──────────────────────┼───────────────────┤
-    │            test-scripts │                  22  │                0  │
+    │            test-scripts │                  34  │                0  │
     ├─────────────────────────┼──────────────────────┼───────────────────┤
-    │      prerequest-scripts │                  22  │                0  │
+    │      prerequest-scripts │                  32  │                0  │
     ├─────────────────────────┼──────────────────────┼───────────────────┤
-    │              assertions │                  12  │                0  │
+    │              assertions │                  19  │                0  │
     ├─────────────────────────┴──────────────────────┴───────────────────┤
-    │ total run duration: 4.6s                                           │
+    │ total run duration: 5.4s                                           │
     ├────────────────────────────────────────────────────────────────────┤
-    │ total data received: 70.14kB (approx)                              │
+    │ total data received: 105.57kB (approx)                             │
     ├────────────────────────────────────────────────────────────────────┤
-    │ average response time: 140ms [min: 15ms, max: 1659ms, s.d.: 338ms] │
+    │ average response time: 97ms [min: 6ms, max: 1904ms, s.d.: 277ms]   │
     └────────────────────────────────────────────────────────────────────┘
     ```

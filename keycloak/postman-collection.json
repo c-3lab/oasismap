@@ -241,10 +241,11 @@
 							"    'Authorization': \"Bearer \" + pm.variables.get(\"KeycloakAdminAccessToken\"),\r",
 							"    },\r",
 							"}, function (error, response) {\r",
-							"    console.error(error);\r",
 							"    if (!error) {\r",
 							"        // 環境変数に依存する値\r",
 							"        const realm = JSON.parse(JSON.stringify(pm.variables.get(\"RealmName\") ?? response.json().realm));\r",
+							"        const displayName = JSON.parse(JSON.stringify(pm.variables.get(\"RealmDisplayName\") ?? (response.json().displayName ?? \"\")));\r",
+							"        const displayNameHtml = JSON.parse(JSON.stringify(pm.variables.get(\"RealmDisplayNameHtml\") ?? (response.json().displayNameHtml ?? \"\")));\r",
 							"        const sslRequired = JSON.parse(JSON.stringify(pm.variables.get(\"RealmSSLRequired\") ?? response.json().sslRequired));\r",
 							"        const loginTheme = JSON.parse(JSON.stringify(pm.variables.get(\"RealmLoginTheme\") ?? (response.json().loginTheme ?? \"keycloak\")));\r",
 							"        const ssoSessionIdleTimeout = JSON.parse(pm.variables.get(\"RealmSSOSessionIdleTimeout\") ?? response.json().ssoSessionIdleTimeout);\r",
@@ -253,6 +254,8 @@
 							"        pm.collectionVariables.set(\"TEMP_REALM_REQUEST_BODY\", `{\r",
 							"\"id\": ` + JSON.stringify(response.json().id) + `,\r",
 							"\"realm\": ` + JSON.stringify(realm) + `,\r",
+							"\"displayName\": ` + JSON.stringify(displayName) + `,\r",
+							"\"displayNameHtml\": ` + JSON.stringify(displayNameHtml) + `,\r",
 							"\"notBefore\": ` + JSON.stringify(response.json().notBefore) + `,\r",
 							"\"defaultSignatureAlgorithm\": ` + JSON.stringify(response.json().defaultSignatureAlgorithm) + `,\r",
 							"\"revokeRefreshToken\": ` + JSON.stringify(response.json().revokeRefreshToken) + `,\r",
@@ -369,13 +372,16 @@
 							"    \"oauth2DevicePollingInterval\": ` + JSON.stringify(response.json().attributes.oauth2DevicePollingInterval) + `,\r",
 							"    \"parRequestUriLifespan\": ` + JSON.stringify(response.json().attributes.parRequestUriLifespan) + `,\r",
 							"    \"cibaInterval\": ` + JSON.stringify(response.json().attributes.cibaInterval) + `,\r",
-							"    \"realmReusableOtpCode\": ` + JSON.stringify(response.json().attributes.realmReusableOtpCode) + `\r",
+							"    \"realmReusableOtpCode\": ` + JSON.stringify(response.json().attributes.realmReusableOtpCode) + `,\r",
+							"    \"userProfileEnabled\": true\r",
 							"},\r",
 							"\"userManagedAccessAllowed\": ` + JSON.stringify(response.json().userManagedAccessAllowed) + `,\r",
 							"\"clientProfiles\": ` + JSON.stringify(response.json().clientProfiles) + `,\r",
 							"\"clientPolicies\": ` + JSON.stringify(response.json().clientPolicies) + `,\r",
 							"\"loginTheme\": ` + JSON.stringify(loginTheme) + `\r",
 							"}`);\r",
+							"    } else {\r",
+							"        console.error(error);\r",
 							"    }\r",
 							"});"
 						],
@@ -435,13 +441,14 @@
 							"    'Authorization': \"Bearer \" + pm.variables.get(\"KeycloakAdminAccessToken\"),\r",
 							"    },\r",
 							"}, function (error, response) {\r",
-							"    console.error(error);\r",
 							"    if (!error) {\r",
 							"        for (const clientScope of response.json()) {\r",
 							"            if (clientScope.name == \"email\") {\r",
 							"                pm.collectionVariables.set(\"ScopeEmailId\", clientScope.id);\r",
 							"            }\r",
 							"        }\r",
+							"    } else {\r",
+							"        console.error(error);\r",
 							"    }\r",
 							"});"
 						],
@@ -495,13 +502,14 @@
 							"    'Authorization': \"Bearer \" + pm.variables.get(\"KeycloakAdminAccessToken\"),\r",
 							"    },\r",
 							"}, function (error, response) {\r",
-							"    console.error(error);\r",
 							"    if (!error) {\r",
 							"        for (const clientScope of response.json()) {\r",
 							"            if (clientScope.name == \"email\") {\r",
 							"                pm.collectionVariables.set(\"ScopeEmailId\", clientScope.id);\r",
 							"            }\r",
 							"        }\r",
+							"    } else {\r",
+							"        console.error(error);\r",
 							"    }\r",
 							"});"
 						],
@@ -612,6 +620,8 @@
 							"                pm.collectionVariables.set(\"ScopeAudienceId\", clientScope.id);\r",
 							"            }\r",
 							"        }\r",
+							"    } else {\r",
+							"        console.error(error);\r",
 							"    }\r",
 							"});"
 						],
@@ -673,6 +683,8 @@
 							"                pm.collectionVariables.set(\"ScopeProfileId\", clientScope.id);\r",
 							"            }\r",
 							"        }\r",
+							"    } else {\r",
+							"        console.error(error);\r",
 							"    }\r",
 							"});"
 						],
@@ -740,11 +752,11 @@
 							"        if (!error) {\r",
 							"            let body = response.json();\r",
 							"            body[0].requirement = \"DISABLED\";\r",
-							"            console.log(body);\r",
-							"            pm.collectionVariables.set(\"TEMP_REQUEST_BODY\",JSON.stringify(body[0]));\r",
+							"            pm.collectionVariables.set(\"TEMP_REQUEST_BODY\", JSON.stringify(body[0]));\r",
 							"            return;\r",
+							"        } else {\r",
+							"            console.error(error);\r",
 							"        }\r",
-							"        console.error(error);\r",
 							"    });\r",
 							"}));"
 						],
@@ -892,6 +904,337 @@
 						"{{RealmName}}",
 						"identity-provider",
 						"instances"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "イベント参加者向け認証フローの追加",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.unset(\"TEMP_REQUEST_BODY\");\r",
+							"\r",
+							"pm.test(\"HTTP ステータスコードの確認 201 Created\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"認証フロー general user browser の存在を確認\", function () {\r",
+							"    new Promise(() => {\r",
+							"        pm.sendRequest({\r",
+							"            url:  pm.variables.get(\"KeycloakRootURL\") + \"/admin/realms/\" + pm.variables.get(\"RealmName\") + \"/authentication/flows/general user browser/executions\", \r",
+							"            method: 'GET',\r",
+							"            header: {\r",
+							"            'Authorization': \"Bearer \" + pm.variables.get(\"KeycloakAdminAccessToken\"),\r",
+							"            },\r",
+							"        }, function (error, response) {\r",
+							"            if (!error) {\r",
+							"                pm.expect(response).to.have.status(200);\r",
+							"                return;\r",
+							"            } else {\r",
+							"                console.error(error);\r",
+							"            }            \r",
+							"        });\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"newName\" : \"general user browser\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/authentication/flows/browser/copy",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}",
+						"authentication",
+						"flows",
+						"browser",
+						"copy"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "イベント参加者向け認証フローのconfig設定",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.set(\"TEMP_REQUEST_BODY\", new Promise(() => {\r",
+							"    pm.sendRequest({\r",
+							"        url:  pm.variables.get(\"KeycloakRootURL\") + \"/admin/realms/\" + pm.variables.get(\"RealmName\") + \"/authentication/flows/general user browser/executions\", \r",
+							"        method: 'GET',\r",
+							"        header: {\r",
+							"        'Authorization': \"Bearer \" + pm.variables.get(\"KeycloakAdminAccessToken\"),\r",
+							"        },\r",
+							"    }, function (error, response) {\r",
+							"        if (!error) {\r",
+							"            let body = response.json().find(execution => {\r",
+							"                return execution.providerId === 'identity-provider-redirector';\r",
+							"            });\r",
+							"            pm.collectionVariables.set(\"executionId\", body.id);\r",
+							"            return;\r",
+							"        } else {\r",
+							"            console.error(error);\r",
+							"        }\r",
+							"    });\r",
+							"}));"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.unset(\"executionId\");\r",
+							"pm.collectionVariables.unset(\"TEMP_REQUEST_BODY\");\r",
+							"\r",
+							"pm.test(\"HTTP ステータスコードの確認 201 Created\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"alias\": \"general user browser google\",\r\n    \"config\": {\r\n        \"defaultProvider\": \"google\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/authentication/executions/{{executionId}}/config",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}",
+						"authentication",
+						"executions",
+						"{{executionId}}",
+						"config"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "イベント参加者向けクライアントの追加",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.set(\"TEMP_DUMMY\", new Promise(() => {\r",
+							"    pm.sendRequest({\r",
+							"        url:  pm.variables.get(\"KeycloakRootURL\") + \"/admin/realms/\" + pm.variables.get(\"RealmName\") + \"/authentication/flows\", \r",
+							"        method: 'GET',\r",
+							"        header: {\r",
+							"        'Authorization': \"Bearer \" + pm.variables.get(\"KeycloakAdminAccessToken\"),\r",
+							"        },\r",
+							"    }, function (error, response) {\r",
+							"        if (!error) {\r",
+							"            let flow = response.json().find(flow => {\r",
+							"                return flow.alias === 'general user browser';\r",
+							"            });\r",
+							"            pm.collectionVariables.set(\"TEMP_AUTH_FLOW_ID\", flow.id);\r",
+							"            return;\r",
+							"        } else {\r",
+							"            console.error(error);\r",
+							"        }\r",
+							"    });\r",
+							"}));\r",
+							"\r",
+							"let clientBaseURL = pm.variables.get(\"ClientBaseURL\") ?? \"\";\r",
+							"if (clientBaseURL == \"\") {\r",
+							"    pm.collectionVariables.set(\"CLIENT_BASE_URL\",\"\");\r",
+							"    pm.collectionVariables.set(\"WEB_ORIGIN\",\"*\");\r",
+							"} else {\r",
+							"    pm.collectionVariables.set(\"CLIENT_BASE_URL\",clientBaseURL);\r",
+							"    pm.collectionVariables.set(\"WEB_ORIGIN\",clientBaseURL);\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.unset(\"TEMP_AUTH_FLOW_ID\");\r",
+							"pm.collectionVariables.unset(\"CLIENT_BASE_URL\");\r",
+							"pm.collectionVariables.unset(\"WEB_ORIGIN\");\r",
+							"pm.collectionVariables.unset(\"TEMP_DUMMY\");\r",
+							"\r",
+							"pm.test(\"HTTP ステータスコードの確認 201 Created\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"clientId\": \"general-user-client\",\r\n    \"enabled\": true,\r\n    \"redirectUris\": [\r\n        \"{{CLIENT_BASE_URL}}/api/auth/callback/general-user-keycloak-client\"\r\n    ],\r\n    \"webOrigins\": [\r\n        \"{{WEB_ORIGIN}}\"\r\n    ],\r\n    \"publicClient\": false,\r\n    \"standardFlowEnabled\": true,\r\n    \"directAccessGrantsEnabled\": true,\r\n    \"frontchannelLogout\": true,\r\n    \"authenticationFlowBindingOverrides\": {\r\n        \"browser\": \"{{TEMP_AUTH_FLOW_ID}}\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/clients",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}",
+						"clients"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "自治体向けクライアントの追加",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let clientBaseURL = pm.variables.get(\"ClientBaseURL\") ?? \"\";\r",
+							"if (clientBaseURL == \"\") {\r",
+							"    pm.collectionVariables.set(\"CLIENT_BASE_URL\",\"\");\r",
+							"    pm.collectionVariables.set(\"WEB_ORIGIN\",\"*\");\r",
+							"} else {\r",
+							"    pm.collectionVariables.set(\"CLIENT_BASE_URL\",clientBaseURL);\r",
+							"    pm.collectionVariables.set(\"WEB_ORIGIN\",clientBaseURL);\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.unset(\"CLIENT_BASE_URL\");\r",
+							"pm.collectionVariables.unset(\"WEB_ORIGIN\");\r",
+							"\r",
+							"pm.test(\"HTTP ステータスコードの確認 201 Created\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"clientId\": \"admin-client\",\r\n    \"enabled\": true,\r\n    \"redirectUris\": [\r\n        \"{{CLIENT_BASE_URL}}/api/auth/callback/admin-keycloak-client\"\r\n    ],\r\n    \"webOrigins\": [\r\n        \"{{WEB_ORIGIN}}\"\r\n    ],\r\n    \"publicClient\": false,\r\n    \"standardFlowEnabled\": true,\r\n    \"directAccessGrantsEnabled\": true,\r\n    \"frontchannelLogout\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/clients",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}",
+						"clients"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ユーザープロファイル機能の追加",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP ステータスコードの確認 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"attributes\": [\r\n        {\r\n            \"name\": \"username\",\r\n            \"displayName\": \"${username}\",\r\n            \"validations\": {\r\n                \"length\": {\r\n                    \"min\": 3,\r\n                    \"max\": 255\r\n                },\r\n                \"username-prohibited-characters\": {},\r\n                \"up-username-not-idn-homograph\": {}\r\n            },\r\n            \"annotations\": {},\r\n            \"permissions\": {\r\n                \"view\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ],\r\n                \"edit\": [\r\n                    \"admin\"\r\n                ]\r\n            }\r\n        },\r\n        {\r\n            \"name\": \"email\",\r\n            \"displayName\": \"${email}\",\r\n            \"validations\": {\r\n                \"email\": {},\r\n                \"length\": {\r\n                    \"max\": 255\r\n                }\r\n            },\r\n            \"annotations\": {},\r\n            \"required\": {\r\n                \"roles\": [\r\n                    \"user\"\r\n                ]\r\n            },\r\n            \"permissions\": {\r\n                \"view\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ],\r\n                \"edit\": [\r\n                    \"admin\"\r\n                ]\r\n            }\r\n        },\r\n        {\r\n            \"name\": \"firstName\",\r\n            \"displayName\": \"${firstName}\",\r\n            \"validations\": {\r\n                \"length\": {\r\n                    \"max\": 255\r\n                },\r\n                \"person-name-prohibited-characters\": {}\r\n            },\r\n            \"annotations\": {},\r\n            \"required\": {\r\n                \"roles\": [\r\n                    \"user\"\r\n                ]\r\n            },\r\n            \"permissions\": {\r\n                \"view\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ],\r\n                \"edit\": [\r\n                    \"admin\"\r\n                ]\r\n            }\r\n        },\r\n        {\r\n            \"name\": \"lastName\",\r\n            \"displayName\": \"${lastName}\",\r\n            \"validations\": {\r\n                \"length\": {\r\n                    \"max\": 255\r\n                },\r\n                \"person-name-prohibited-characters\": {}\r\n            },\r\n            \"annotations\": {},\r\n            \"required\": {\r\n                \"roles\": [\r\n                    \"user\"\r\n                ]\r\n            },\r\n            \"permissions\": {\r\n                \"view\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ],\r\n                \"edit\": [\r\n                    \"admin\"\r\n                ]\r\n            }\r\n        },\r\n        {\r\n            \"name\": \"nickname\",\r\n            \"displayName\": \"${profile.attribute.nickname}\",\r\n            \"validations\": {\r\n                \"pattern\": {\r\n                    \"pattern\": \"[a-zA-Z0-9-_]+\",\r\n                    \"error-message\": \"profile.error.nickname\"\r\n                }\r\n            },\r\n            \"annotations\": {},\r\n            \"required\": {\r\n                \"roles\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ]\r\n            },\r\n            \"permissions\": {\r\n                \"view\": [],\r\n                \"edit\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ]\r\n            }\r\n        },\r\n        {\r\n            \"name\": \"prefecture\",\r\n            \"displayName\": \"${profile.attribute.prefecture}\",\r\n            \"validations\": {\r\n                \"options\": {\r\n                    \"options\": [\r\n                        \"北海道\",\r\n                        \"青森県\"\r\n                    ]\r\n                }\r\n            },\r\n            \"annotations\": {\r\n                \"inputType\": \"select\"\r\n            },\r\n            \"required\": {\r\n                \"roles\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ]\r\n            },\r\n            \"permissions\": {\r\n                \"view\": [],\r\n                \"edit\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ]\r\n            }\r\n        },\r\n        {\r\n            \"name\": \"city\",\r\n            \"displayName\": \"${profile.attribute.city}\",\r\n            \"validations\": {},\r\n            \"annotations\": {\r\n                \"inputType\": \"select\"\r\n            },\r\n            \"required\": {\r\n                \"roles\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ]\r\n            },\r\n            \"permissions\": {\r\n                \"view\": [],\r\n                \"edit\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ]\r\n            }\r\n        }\r\n    ],\r\n    \"groups\": []\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/users/profile",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}",
+						"users",
+						"profile"
 					]
 				}
 			},
