@@ -47,6 +47,59 @@ services:
     networks:
       - frontend-network
 
+  postgres:
+    image: postgres:16.1
+    hostname: postgres
+    expose:
+      - "5432"
+    container_name: postgres
+    environment:
+      - "POSTGRES_USER=${POSTGREUSER}"
+      - "POSTGRES_PASSWORD=${POSTGREPASSWORD}"
+      - "POSTGRES_DB=postgres"
+      - "PGPASSWORD=${POSTGREPASSWORD}"
+      - "PGUSER=${POSTGREUSER}"
+      - "PGDATABASE=postgres"
+    volumes:
+      - ./site/postgres/data:/var/lib/postgresql/data
+    networks:
+      - backend-network
+    healthcheck:
+      test: "psql -U ${POSTGREUSER}"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.4
+    hostname: keycloak
+    container_name: keycloak
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - "KEYCLOAK_ADMIN=${POSTGREUSER}" 
+      - "KEYCLOAK_ADMIN_PASSWORD=${POSTGREPASSWORD}"
+      - "KC_DB=postgres"
+      - "KC_DB_URL=jdbc:postgresql://postgres:5432/postgres"
+      - "KC_DB_USERNAME=${POSTGREUSER}"
+      - "KC_DB_PASSWORD=${POSTGREPASSWORD}"
+      - "KC_HOSTNAME_URL=${KC_HOSTNAME_URL}"
+      - "KC_HOSTNAME_ADMIN_URL=${KC_HOSTNAME_ADMIN_URL}"
+      - "TZ=Asia/Tokyo"
+    command: start-dev --features=declarative-user-profile
+    networks:
+      - backend-network
+    healthcheck:
+      test: "echo > /dev/tcp/localhost/8080"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
 networks:
   backend-network:
     driver: bridge
