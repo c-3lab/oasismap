@@ -79,8 +79,6 @@ import {
 } from '../utils/marker'
 
 const getIconByType = (type: string, answer: number) => {
-  console.log(type, answer)
-
   switch (type) {
     case 'happiness1':
       return getIconForHappiness1(answer)
@@ -95,7 +93,6 @@ const getIconByType = (type: string, answer: number) => {
     case 'happiness6':
       return getIconForHappiness6(answer)
     default:
-      console.log('Default Case', type, answer)
       return redIcon
   }
 }
