@@ -14,6 +14,7 @@ export function GetPin(arr: any[]): any[] {
       type: data.type,
       latitude: data.location.value.coordinates[0],
       longitude: data.location.value.coordinates[1],
+      answer: data.answers[data.type],
       title: `ピン${index + 1}`,
     }))
 }
