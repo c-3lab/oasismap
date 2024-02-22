@@ -95,6 +95,8 @@ services:
       - "KC_HOSTNAME_ADMIN_URL=${KC_HOSTNAME_ADMIN_URL}"
       - "TZ=Asia/Tokyo"
     command: start-dev --features=declarative-user-profile
+    volumes:
+      - ./keycloak/data:/opt/keycloak/data
     networks:
       - backend-network
     healthcheck:
