@@ -29,6 +29,9 @@ services:
       - "NEXT_PUBLIC_MAP_DEFAULT_LONGITUDE=${MAP_DEFAULT_LONGITUDE}"
       - "NEXT_PUBLIC_MAP_DEFAULT_ZOOM=${MAP_DEFAULT_ZOOM}"
       - "NEXT_PUBLIC_DATASET_LIST_BY=${DATASET_LIST_BY}"
+      - "GENERAL_USER_KEYCLOAK_CLIENT_ID=${GENERAL_USER_KEYCLOAK_CLIENT_ID}"
+      - "GENERAL_USER_KEYCLOAK_CLIENT_SECRET=${GENERAL_USER_KEYCLOAK_CLIENT_SECRET}"
+      - "GENERAL_USER_KEYCLOAK_CLIENT_ISSUER=${GENERAL_USER_KEYCLOAK_CLIENT_ISSUER}"
     volumes:
       - ./frontend/:/app/frontend/
     networks:
@@ -46,6 +49,30 @@ services:
     command: uvicorn main:app --reload --host 0.0.0.0 --port 8000
     networks:
       - frontend-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.4
+    hostname: keycloak
+    container_name: keycloak
+    ports:
+      - "8080:8080"
+    environment:
+      - "KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}" 
+      - "KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}"
+      - "KC_HOSTNAME_URL=${KC_HOSTNAME_URL}"
+      - "KC_HOSTNAME_ADMIN_URL=${KC_HOSTNAME_ADMIN_URL}"
+      - "TZ=Asia/Tokyo"
+    command: start-dev
+    volumes:
+      - ./keycloak/data:/opt/keycloak/data
+    networks:
+      - backend-network
+    healthcheck:
+      test: "echo > /dev/tcp/localhost/8080"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
 networks:
   backend-network:
