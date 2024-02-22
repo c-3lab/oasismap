@@ -1196,49 +1196,6 @@
 				}
 			},
 			"response": []
-		},
-		{
-			"name": "ユーザープロファイル機能の追加",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"HTTP ステータスコードの確認 200 OK\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"attributes\": [\r\n        {\r\n            \"name\": \"username\",\r\n            \"displayName\": \"${username}\",\r\n            \"validations\": {\r\n                \"length\": {\r\n                    \"min\": 3,\r\n                    \"max\": 255\r\n                },\r\n                \"username-prohibited-characters\": {},\r\n                \"up-username-not-idn-homograph\": {}\r\n            },\r\n            \"annotations\": {},\r\n            \"permissions\": {\r\n                \"view\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ],\r\n                \"edit\": [\r\n                    \"admin\"\r\n                ]\r\n            }\r\n        },\r\n        {\r\n            \"name\": \"email\",\r\n            \"displayName\": \"${email}\",\r\n            \"validations\": {\r\n                \"email\": {},\r\n                \"length\": {\r\n                    \"max\": 255\r\n                }\r\n            },\r\n            \"annotations\": {},\r\n            \"required\": {\r\n                \"roles\": [\r\n                    \"user\"\r\n                ]\r\n            },\r\n            \"permissions\": {\r\n                \"view\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ],\r\n                \"edit\": [\r\n                    \"admin\"\r\n                ]\r\n            }\r\n        },\r\n        {\r\n            \"name\": \"firstName\",\r\n            \"displayName\": \"${firstName}\",\r\n            \"validations\": {\r\n                \"length\": {\r\n                    \"max\": 255\r\n                },\r\n                \"person-name-prohibited-characters\": {}\r\n            },\r\n            \"annotations\": {},\r\n            \"required\": {\r\n                \"roles\": [\r\n                    \"user\"\r\n                ]\r\n            },\r\n            \"permissions\": {\r\n                \"view\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ],\r\n                \"edit\": [\r\n                    \"admin\"\r\n                ]\r\n            }\r\n        },\r\n        {\r\n            \"name\": \"lastName\",\r\n            \"displayName\": \"${lastName}\",\r\n            \"validations\": {\r\n                \"length\": {\r\n                    \"max\": 255\r\n                },\r\n                \"person-name-prohibited-characters\": {}\r\n            },\r\n            \"annotations\": {},\r\n            \"required\": {\r\n                \"roles\": [\r\n                    \"user\"\r\n                ]\r\n            },\r\n            \"permissions\": {\r\n                \"view\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ],\r\n                \"edit\": [\r\n                    \"admin\"\r\n                ]\r\n            }\r\n        },\r\n        {\r\n            \"name\": \"nickname\",\r\n            \"displayName\": \"${profile.attribute.nickname}\",\r\n            \"validations\": {\r\n                \"pattern\": {\r\n                    \"pattern\": \"[a-zA-Z0-9-_]+\",\r\n                    \"error-message\": \"profile.error.nickname\"\r\n                }\r\n            },\r\n            \"annotations\": {},\r\n            \"required\": {\r\n                \"roles\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ]\r\n            },\r\n            \"permissions\": {\r\n                \"view\": [],\r\n                \"edit\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ]\r\n            }\r\n        },\r\n        {\r\n            \"name\": \"prefecture\",\r\n            \"displayName\": \"${profile.attribute.prefecture}\",\r\n            \"validations\": {\r\n                \"options\": {\r\n                    \"options\": [\r\n                        \"北海道\",\r\n                        \"青森県\"\r\n                    ]\r\n                }\r\n            },\r\n            \"annotations\": {\r\n                \"inputType\": \"select\"\r\n            },\r\n            \"required\": {\r\n                \"roles\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ]\r\n            },\r\n            \"permissions\": {\r\n                \"view\": [],\r\n                \"edit\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ]\r\n            }\r\n        },\r\n        {\r\n            \"name\": \"city\",\r\n            \"displayName\": \"${profile.attribute.city}\",\r\n            \"validations\": {},\r\n            \"annotations\": {\r\n                \"inputType\": \"select\"\r\n            },\r\n            \"required\": {\r\n                \"roles\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ]\r\n            },\r\n            \"permissions\": {\r\n                \"view\": [],\r\n                \"edit\": [\r\n                    \"admin\",\r\n                    \"user\"\r\n                ]\r\n            }\r\n        }\r\n    ],\r\n    \"groups\": []\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/users/profile",
-					"host": [
-						"{{KeycloakRootURL}}"
-					],
-					"path": [
-						"admin",
-						"realms",
-						"{{RealmName}}",
-						"users",
-						"profile"
-					]
-				}
-			},
-			"response": []
 		}
 	],
 	"auth": {

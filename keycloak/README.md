@@ -44,7 +44,7 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
    - ClientRootURL: Webアプリケーション (クライアント) のルートURL (例: http://localhost:3000 または https://event.example.com など)
 
 ## 実行手順
-1. ディレクトリ newman を配置した端末にて、以下のように docker コマンドを実行します。  
+1. ディレクトリ keycloak を配置した端末にて、以下のように docker コマンドを実行します。  
 
    ```
    KEYCLOAK_ADMIN={Keycloak の master レルムの管理者ユーザ名}
@@ -86,30 +86,30 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
       ・
       ・
 
-   → ユーザープロファイル機能の追加
-    POST http://keycloak:8080/realms/master/protocol/openid-connect/token [200 OK, 2.5kB, 39ms]
+   → 自治体向けクライアントの追加
+    POST http://keycloak:8080/realms/master/protocol/openid-connect/token [200 OK, 2.44kB, 45ms]
 
      null
 
-    PUT http://keycloak:8080/admin/realms/oasismap/users/profile [200 OK, 1.91kB, 41ms]
-    ?  HTTP ステータスコードの確認 200 OK
+    POST http://keycloak:8080/admin/realms/oasismap/clients [201 Created, 331B, 13ms]
+    ?  HTTP ステータスコードの確認 201 Created
 
     ┌─────────────────────────┬──────────────────────┬───────────────────┐
     │                         │             executed │            failed │
     ├─────────────────────────┼──────────────────────┼───────────────────┤
     │              iterations │                   1  │                0  │
     ├─────────────────────────┼──────────────────────┼───────────────────┤
-    │                requests │                  44  │                0  │
+    │                requests │                  42  │                0  │
     ├─────────────────────────┼──────────────────────┼───────────────────┤
-    │            test-scripts │                  34  │                0  │
+    │            test-scripts │                  32  │                0  │
     ├─────────────────────────┼──────────────────────┼───────────────────┤
-    │      prerequest-scripts │                  32  │                0  │
+    │      prerequest-scripts │                  31  │                0  │
     ├─────────────────────────┼──────────────────────┼───────────────────┤
-    │              assertions │                  19  │                0  │
+    │              assertions │                  18  │                0  │
     ├─────────────────────────┴──────────────────────┴───────────────────┤
-    │ total run duration: 5.4s                                           │
+    │ total run duration: 6.6s                                           │
     ├────────────────────────────────────────────────────────────────────┤
-    │ total data received: 105.57kB (approx)                             │
+    │ total data received: 102.39kB (approx)                             │
     ├────────────────────────────────────────────────────────────────────┤
     │ average response time: 97ms [min: 6ms, max: 1904ms, s.d.: 277ms]   │
     └────────────────────────────────────────────────────────────────────┘
