@@ -3,10 +3,22 @@ import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import MenuIcon from '@mui/icons-material/Menu'
 import AppBar from '@mui/material/AppBar'
+import { SessionProvider, useSession } from 'next-auth/react' // 追加
 
 interface HeaderProps {
   simple?: boolean
   handleDrawerOpen?: () => void
+}
+
+function Session() {
+  const { data: session } = useSession()
+  if (session) {
+    return <>{session.user!.nickname} さん</>
+  }
+  return (
+    // TODO 認証保護
+    <>ログインしていません</>
+  )
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -22,7 +34,9 @@ const Header: React.FC<HeaderProps> = ({
         {!simple && (
           <>
             <Typography noWrap component="div">
-              山田太郎 さん
+              <SessionProvider>
+                <Session />
+              </SessionProvider>
             </Typography>
             <IconButton
               color="inherit"
