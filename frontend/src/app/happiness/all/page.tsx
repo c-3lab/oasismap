@@ -14,6 +14,8 @@ import {
 } from '@/components/fields/date-time-textbox'
 
 import { LineGraph, ourHappinessData } from '@/components/happiness/graph'
+import fetchData from '@/components/happiness/fetch'
+const backendurl = 'http://localhost:8000/api/happiness/all'
 
 const HappinessAll: React.FC = () => {
   const router = useRouter()
@@ -21,31 +23,19 @@ const HappinessAll: React.FC = () => {
   const [pinData, setPinData] = useState<any>([])
   const [OurHappiness, setOurHappiness] = useState<any>([])
 
-  useEffect(() => {
-    Start()
-  }, [])
-
-  const Start = async () => {
-    const backendUrl = 'http://localhost:8000/api/happiness/all'
-
+  const getData = async () => {
     try {
-      const response = await fetch(`${backendUrl}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-
-      const data = await response.json()
-      const pinDataResult = GetPin(data)
-      const OurHappinessResult = ourHappinessData(data)
-
-      setPinData(pinDataResult)
-      setOurHappiness(OurHappinessResult)
+      const data = await fetchData(backendurl)
+      setPinData(GetPin(data['map_data']))
+      setOurHappiness(ourHappinessData(data['graph_data']))
     } catch (error) {
       console.error('Error fetching data:', error)
     }
   }
+
+  useEffect(() => {
+    getData()
+  }, [])
 
   const startDateTimeProps = useDateTime({
     date: '2024-01-26',
@@ -67,28 +57,6 @@ const HappinessAll: React.FC = () => {
       )
     }
     return null
-  }
-
-  const handleSearch = async () => {
-    const backendUrl = 'http://localhost:8000/api/happiness/all'
-
-    try {
-      const response = await fetch(`${backendUrl}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
-
-      const data = await response.json()
-      const pinDataResult = GetPin(data)
-      const ourHappinessResult = ourHappinessData(data)
-
-      setPinData(pinDataResult)
-      setOurHappiness(ourHappinessResult)
-    } catch (error) {
-      console.error('Error fetching data:', error)
-    }
   }
 
   return (
@@ -195,7 +163,7 @@ const HappinessAll: React.FC = () => {
                 variant="outlined"
                 fullWidth
                 sx={{ borderColor: 'primary.light' }}
-                onClick={handleSearch}
+                onClick={getData}
               >
                 検索
               </Button>

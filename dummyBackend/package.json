@@ -1,0 +1,16 @@
+{
+  "name": "oasismap-dummybackend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "lint-staged": ""
+  },
+  "lint-staged": {
+  },
+  "author": "c-3lab",
+  "license": "AGPL",
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}
