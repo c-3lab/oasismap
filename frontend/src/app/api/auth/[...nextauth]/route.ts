@@ -11,6 +11,12 @@ const handler = NextAuth({
       clientSecret: process.env.GENERAL_USER_KEYCLOAK_CLIENT_SECRET!,
       issuer: process.env.KEYCLOAK_CLIENT_ISSUER,
     }),
+    KeycloakProvider({
+      id: 'admin-keycloak-client',
+      clientId: process.env.ADMIN_KEYCLOAK_CLIENT_ID!,
+      clientSecret: process.env.ADMIN_KEYCLOAK_CLIENT_SECRET!,
+      issuer: process.env.KEYCLOAK_CLIENT_ISSUER,
+    }),
   ],
   callbacks: {
     async jwt({ token, account }) {
