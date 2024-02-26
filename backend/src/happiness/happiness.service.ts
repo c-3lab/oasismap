@@ -1,0 +1,78 @@
+import axios from 'axios';
+import { HappinessEntities } from './interface/happiness-entities';
+import { HappinessMeResponse } from './interface/happiness-me.response';
+import { v4 as uuidv4 } from 'uuid';
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class HappinessService {
+  static keys = [
+    'happiness1',
+    'happiness2',
+    'happiness3',
+    'happiness4',
+    'happiness5',
+    'happiness6',
+  ];
+
+  async findHapinessMe(
+    authorization: string,
+    start: string,
+    end: string,
+  ): Promise<HappinessMeResponse[]> {
+    const query = `nickname==${this.getNicknameFromToken(
+      authorization,
+    )};timestamp>=${start};timestamp<=${end}`;
+    const happinessEntities = await this.getHappinessEntities(query);
+
+    return this.toHappinessMeResponse(happinessEntities);
+  }
+
+  // TODO: authorizationからニックネームを取得する
+  private getNicknameFromToken(authorization: string): string {
+    console.log(authorization);
+    return 'nickname';
+  }
+
+  private async getHappinessEntities(
+    query: string,
+  ): Promise<HappinessEntities[]> {
+    const response = await axios.get(`${process.env.ORION_URI}/v2/entities`, {
+      headers: {
+        'Fiware-Service': `${process.env.ORION_FIWARE_SERVICE}`,
+        'Fiware-ServicePath': `${process.env.ORION_FIWARE_SERVICE_PATH}`,
+      },
+      params: {
+        q: query,
+      },
+    });
+    return response.data;
+  }
+
+  private toHappinessMeResponse(
+    entities: HappinessEntities[],
+  ): HappinessMeResponse[] {
+    return entities.flatMap((entity) => {
+      return HappinessService.keys.map((key) => ({
+        id: uuidv4(),
+        type: key,
+        location: {
+          type: entity.location.type,
+          value: entity.location.value,
+        },
+        timestamp: {
+          type: entity.timestamp.type,
+          value: entity.timestamp.value,
+        },
+        answers: {
+          happiness1: entity.happiness1.value,
+          happiness2: entity.happiness2.value,
+          happiness3: entity.happiness3.value,
+          happiness4: entity.happiness4.value,
+          happiness5: entity.happiness5.value,
+          happiness6: entity.happiness6.value,
+        },
+      }));
+    });
+  }
+}
