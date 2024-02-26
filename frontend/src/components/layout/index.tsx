@@ -15,6 +15,7 @@ import Header from '@/components/header'
 import GeneralSidebar from '@/components/sidebar/general-sidebar'
 import { messageContext } from '@/contexts/message-context'
 import { useNoticeMessage } from '@/hooks/notice-message'
+import { SessionProvider } from 'next-auth/react'
 
 interface LayoutProps {
   simple?: boolean
@@ -44,24 +45,26 @@ const Layout: React.FC<LayoutProps> = ({ simple = false, children }) => {
         </Box>
       ) : (
         <messageContext.Provider value={noticeMessageContext}>
-          <Box sx={{ display: 'flex' }}>
-            <CssBaseline />
-            <Header
-              handleDrawerOpen={() => {
-                setIsOpen(true)
-              }}
-            />
-            <Box sx={{ width: 1 }}>
-              <Toolbar />
-              {children}
+          <SessionProvider>
+            <Box sx={{ display: 'flex' }}>
+              <CssBaseline />
+              <Header
+                handleDrawerOpen={() => {
+                  setIsOpen(true)
+                }}
+              />
+              <Box sx={{ width: 1 }}>
+                <Toolbar />
+                {children}
+              </Box>
+              <GeneralSidebar
+                isOpen={isOpen}
+                handleDrawerClose={() => {
+                  setIsOpen(false)
+                }}
+              />
             </Box>
-            <GeneralSidebar
-              isOpen={isOpen}
-              handleDrawerClose={() => {
-                setIsOpen(false)
-              }}
-            />
-          </Box>
+          </SessionProvider>
           {noticeMessageContext.message && (
             <Snackbar
               open={true}

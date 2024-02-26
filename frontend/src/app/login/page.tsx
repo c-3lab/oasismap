@@ -1,11 +1,9 @@
 'use client'
 import React from 'react'
-import { useRouter } from 'next/navigation'
 import { Button, Typography, Grid } from '@mui/material'
+import { signIn } from 'next-auth/react'
 
 const Login: React.FC = () => {
-  const router = useRouter()
-
   return (
     <Grid container justifyContent="center" alignItems="center" sx={{ px: 2 }}>
       <Grid item xs={12} md={8}>
@@ -20,7 +18,11 @@ const Login: React.FC = () => {
             variant="outlined"
             fullWidth
             sx={{ my: 2, textTransform: 'none' }}
-            onClick={() => router.push(`/happiness/me`)}
+            onClick={() =>
+              signIn('general-user-keycloak-client', {
+                callbackUrl: '/happiness/me',
+              })
+            }
           >
             Google
           </Button>
