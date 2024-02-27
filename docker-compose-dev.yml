@@ -35,6 +35,7 @@ services:
       - "ADMIN_KEYCLOAK_CLIENT_ID=${ADMIN_KEYCLOAK_CLIENT_ID}"
       - "ADMIN_KEYCLOAK_CLIENT_SECRET=${ADMIN_KEYCLOAK_CLIENT_SECRET}"
       - "KEYCLOAK_CLIENT_ISSUER=${KEYCLOAK_CLIENT_ISSUER}"
+      - "KC_HOSTNAME_URL=${KC_HOSTNAME_URL}"
     volumes:
       - ./frontend/:/app/frontend/
     networks:

@@ -1,5 +1,6 @@
 import { DefaultSession } from 'next-auth'
-import { KeycloakProfile } from 'keycloak-js'
+import { JwtPayload } from "jsonwebtoken";
+// import { KeycloakProfile } from 'keycloak-js'
 
 declare module 'next-auth' {
   interface Session {
@@ -9,8 +10,14 @@ declare module 'next-auth' {
   }
 }
 
-declare module 'next-auth/providers/keycloak' {
-  export interface KeycloakProfileToken extends KeycloakProfile {
-    realm_access: { roles: [string] }
+declare module 'jsonwebtoken' {
+  export interface CustomizeJwtPayload extends JwtPayload {
+    nickname: string
   }
 }
+
+// declare module 'next-auth/providers/keycloak' {
+//   export interface KeycloakProfileToken extends KeycloakProfile {
+//     realm_access: { roles: [string] }
+//   }
+// }
