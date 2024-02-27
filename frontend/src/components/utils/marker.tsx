@@ -15,7 +15,6 @@ const createColoredIcon = (color: string): L.DivIcon => {
     transform: rotate(45deg);
     border: 1px solid #FFFFFF`
 
-  // labelAnchorを除外してDivIconOptionsとして使う
   const divIconOptions: Omit<DivIconOptions, 'labelAnchor'> = {
     className: 'my-custom-pin',
     iconAnchor: [0, 24],
