@@ -22,7 +22,6 @@ import {
   red3Icon,
   red2Icon,
   red1Icon,
-  red0Icon,
   blueIcon,
   blue9Icon,
   blue8Icon,
@@ -33,7 +32,6 @@ import {
   blue3Icon,
   blue2Icon,
   blue1Icon,
-  blue0Icon,
   greenIcon,
   green9Icon,
   green8Icon,
@@ -44,7 +42,6 @@ import {
   green3Icon,
   green2Icon,
   green1Icon,
-  green0Icon,
   yellowIcon,
   yellow9Icon,
   yellow8Icon,
@@ -55,7 +52,6 @@ import {
   yellow3Icon,
   yellow2Icon,
   yellow1Icon,
-  yellow0Icon,
   orangeIcon,
   orange9Icon,
   orange8Icon,
@@ -66,7 +62,6 @@ import {
   orange3Icon,
   orange2Icon,
   orange1Icon,
-  orange0Icon,
   violetIcon,
   violet9Icon,
   violet8Icon,
@@ -77,7 +72,6 @@ import {
   violet3Icon,
   violet2Icon,
   violet1Icon,
-  violet0Icon,
 } from '../utils/marker'
 
 const getIconByType = (type: string, answer: number) => {
@@ -121,8 +115,6 @@ const getIconForHappiness1 = (answer: number) => {
       return blue2Icon
     case 0.1:
       return blue1Icon
-    case 0:
-      return blue0Icon
     default:
       return blueIcon
   }
@@ -150,8 +142,6 @@ const getIconForHappiness2 = (answer: number) => {
       return green2Icon
     case 0.1:
       return green1Icon
-    case 0:
-      return green0Icon
     default:
       return greenIcon
   }
@@ -179,8 +169,6 @@ const getIconForHappiness3 = (answer: number) => {
       return violet2Icon
     case 0.1:
       return violet1Icon
-    case 0:
-      return violet0Icon
     default:
       return violetIcon
   }
@@ -208,8 +196,6 @@ const getIconForHappiness4 = (answer: number) => {
       return yellow2Icon
     case 0.1:
       return yellow1Icon
-    case 0:
-      return yellow0Icon
     default:
       return yellowIcon
   }
@@ -237,8 +223,6 @@ const getIconForHappiness5 = (answer: number) => {
       return orange2Icon
     case 0.1:
       return orange1Icon
-    case 0:
-      return orange0Icon
     default:
       return orangeIcon
   }
@@ -266,8 +250,6 @@ const getIconForHappiness6 = (answer: number) => {
       return red2Icon
     case 0.1:
       return red1Icon
-    case 0:
-      return red0Icon
     default:
       return redIcon
   }
