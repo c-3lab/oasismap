@@ -99,6 +99,7 @@ services:
     command: start-dev --features=declarative-user-profile
     volumes:
       - ./keycloak/data:/opt/keycloak/data
+      - ./keycloak/themes:/opt/keycloak/themes
     networks:
       - backend-network
     healthcheck:
