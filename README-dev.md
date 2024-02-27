@@ -78,6 +78,13 @@ cd ../../../../
 npm install
 ```
 
+### backend 初期設定
+以下コマンドを順に実行して環境に各種パッケージをインストールする。
+```
+cd ../backend
+npm install
+```
+
 ### 開発用コンテナを起動
 以下コマンドを順に実行する。
 
@@ -95,12 +102,7 @@ docker compose -f docker-compose-dev.yml ps
 ```
 NAME       ...(省略) STATUS          ...(省略) PORTS                                       
 backend              Up 1 minutes             0.0.0.0:4000->4000/tcp, :::4000->4000/tcp
-cygnus               Up 1 minutes             5050/tcp, 5080/tcp
 frontend             Up 1 minutes             0.0.0.0:3000->3000/tcp, :::3000->3000/tcp
-keycloak             Up 1 minutes             0.0.0.0:8080->8080/tcp, :::8080->8080/tcp, 8443/tcp
-mongo                Up 1 minutes             27017/tcp
-orion                Up 1 minutes             1026/tcp
-postgres             Up 1 minutes             5432/tcp
 ```
 
 ### 接続確認
@@ -119,4 +121,25 @@ npm run dev
 3. 以下にブラウザから接続して表示されればok
 ```
 http://localhost:3000
+```
+
+#### バックエンド
+1. コンテナに入る
+```
+docker compose -f docker-compose-dev.yml exec backend bash
+```
+
+2. サーバー起動
+```
+npm run start:dev
+```
+
+3. 以下の curl コマンドでGETリクエストを送信する
+```
+curl http://localhost:4000
+```
+
+4. 以下が返却されればok
+```
+Hello World!
 ```
