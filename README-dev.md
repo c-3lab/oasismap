@@ -108,19 +108,6 @@ KC_HOSTNAME_URL=https://xxxx-xxx-xxx-x-xx.ngrok-free.app
 KC_HOSTNAME_ADMIN_URL=https://xxxx-xxx-xxx-x-xx.ngrok-free.app
 ```
 
-6. 開発用コンテナを起動（手順は下部参照）
-
-7. [レルム初期セットアップ](keycloak/README.md) 手順を実施
-
-8. 以下にブラウザから接続して「Welcome to Keycloak」ページを確認
-```
-http://localhost:8080
-```
-
-9. 「Administration Console」をクリック
-
-10. 環境変数 `POSTGREUSER` `POSTGREPASSWORD` に指定した認証情報でログイン
-
 ### frontend 初期設定
 以下コマンドを順に実行して環境に各種パッケージをインストールする。
 ```
@@ -159,7 +146,20 @@ keycloak             Up 1 minutes             0.0.0.0:8080->8080/tcp, :::8080->8
 postgres             Up 1 minutes             5432/tcp
 ```
 
+### Keycloak 自動設定
+[レルム初期セットアップ](keycloak/README.md) 手順を実施
+
 ### 接続確認
+
+#### Keycloak
+1. 以下にブラウザから接続して「Welcome to Keycloak」ページを確認
+```
+http://localhost:8080
+```
+
+2. 「Administration Console」をクリック
+
+3. 環境変数 `KEYCLOAK_ADMIN` `KEYCLOAK_ADMIN_PASSWORD` に指定した認証情報でログイン
 
 #### フロントエンド
 1. コンテナに入る
