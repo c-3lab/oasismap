@@ -296,7 +296,7 @@ const ClosePopup = () => {
   return null
 }
 
-const questionTitle = {
+const questionTitles = {
   happiness1: 'ワクワクする場所',
   happiness2: '発見の学びの場所',
   happiness3: 'ホッとする場所',
@@ -304,6 +304,8 @@ const questionTitle = {
   happiness5: '自慢の場所',
   happiness6: '思い出の場所',
 }
+
+export { questionTitles }
 
 const MapSet: React.FC<Props> = ({ pinData }) => {
   const h1 = pinData.filter((pin) => pin.type === 'happiness1')
@@ -326,7 +328,7 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <LayersControl position="topright">
-        <LayersControl.Overlay checked name={questionTitle['happiness1']}>
+        <LayersControl.Overlay checked name={questionTitles['happiness1']}>
           <LayerGroup>
             {h1.map((pin, index) => (
               <Marker
@@ -373,7 +375,7 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
           </LayerGroup>
         </LayersControl.Overlay>
 
-        <LayersControl.Overlay checked name={questionTitle['happiness2']}>
+        <LayersControl.Overlay checked name={questionTitles['happiness2']}>
           <LayerGroup>
             {h2.map((pin, index) => (
               <Marker
@@ -420,7 +422,7 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
           </LayerGroup>
         </LayersControl.Overlay>
 
-        <LayersControl.Overlay checked name={questionTitle['happiness3']}>
+        <LayersControl.Overlay checked name={questionTitles['happiness3']}>
           <LayerGroup>
             {h3.map((pin, index) => (
               <Marker
@@ -467,7 +469,7 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
           </LayerGroup>
         </LayersControl.Overlay>
 
-        <LayersControl.Overlay checked name={questionTitle['happiness4']}>
+        <LayersControl.Overlay checked name={questionTitles['happiness4']}>
           <LayerGroup>
             {h4.map((pin, index) => (
               <Marker
@@ -514,7 +516,7 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
           </LayerGroup>
         </LayersControl.Overlay>
 
-        <LayersControl.Overlay checked name={questionTitle['happiness5']}>
+        <LayersControl.Overlay checked name={questionTitles['happiness5']}>
           <LayerGroup>
             {h5.map((pin, index) => (
               <Marker
@@ -561,7 +563,7 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
           </LayerGroup>
         </LayersControl.Overlay>
 
-        <LayersControl.Overlay checked name={questionTitle['happiness6']}>
+        <LayersControl.Overlay checked name={questionTitles['happiness6']}>
           <LayerGroup>
             {h6.map((pin, index) => (
               <Marker

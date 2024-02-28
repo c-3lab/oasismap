@@ -7,6 +7,7 @@ import {
 } from 'recharts'
 import { BarChart, Bar, LineChart, Legend, Line } from 'recharts'
 import { DateTime } from 'luxon'
+import { questionTitles } from '../map/mapset'
 
 interface happinessObj {
   timestamp: string
@@ -276,42 +277,42 @@ export const LineGraph = (props: any) => {
             dataKey="happiness1"
             stroke={color[0]}
             dot={true}
-            name="ワクワクする場所"
+            name={questionTitles.happiness1}
           />
           <Line
             type="monotone"
             dataKey="happiness2"
             stroke={color[1]}
             dot={true}
-            name="発見の学びの場所"
+            name={questionTitles.happiness2}
           />
           <Line
             type="monotone"
             dataKey="happiness3"
             stroke={color[2]}
             dot={true}
-            name="ホッとする場所"
+            name={questionTitles.happiness3}
           />
           <Line
             type="monotone"
             dataKey="happiness4"
             stroke={color[3]}
             dot={true}
-            name="自分を取り戻せる場所"
+            name={questionTitles.happiness4}
           />
           <Line
             type="monotone"
             dataKey="happiness5"
             stroke={color[4]}
             dot={true}
-            name="自慢の場所"
+            name={questionTitles.happiness5}
           />
           <Line
             type="monotone"
             dataKey="happiness6"
             stroke={color[5]}
             dot={true}
-            name="思い出の場所"
+            name={questionTitles.happiness6}
           />
         </LineChart>
       </ResponsiveContainer>
@@ -330,8 +331,9 @@ export const BarGraph = (props: any) => {
           height={250}
           data={plotdata}
           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-          style={{ backgroundColor: '#a9a9a9' }}
+          style={{ backgroundColor: '#ffffff' }}
         >
+          <CartesianGrid stroke="#a9a9a9" />
           <XAxis dataKey="timestamp" tick={xTickFormatter} interval={0} />
           <YAxis />
           <Tooltip />
@@ -340,37 +342,37 @@ export const BarGraph = (props: any) => {
             dataKey="happiness1"
             stackId={1}
             fill={color[0]}
-            name="ワクワクする場所"
+            name={questionTitles.happiness1}
           />
           <Bar
             dataKey="happiness2"
             stackId={1}
             fill={color[1]}
-            name="発見の学びの場所"
+            name={questionTitles.happiness2}
           />
           <Bar
             dataKey="happiness3"
             stackId={1}
             fill={color[2]}
-            name="ホッとする場所"
+            name={questionTitles.happiness3}
           />
           <Bar
             dataKey="happiness4"
             stackId={1}
             fill={color[3]}
-            name="自分を取り戻せる場所"
+            name={questionTitles.happiness4}
           />
           <Bar
             dataKey="happiness5"
             stackId={1}
             fill={color[4]}
-            name="自慢の場所"
+            name={questionTitles.happiness5}
           />
           <Bar
             dataKey="happiness6"
             stackId={1}
             fill={color[5]}
-            name="思い出の場所"
+            name={questionTitles.happiness6}
           />
         </BarChart>
       </ResponsiveContainer>
