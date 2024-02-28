@@ -118,8 +118,8 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      - "KEYCLOAK_ADMIN=${POSTGREUSER}" 
-      - "KEYCLOAK_ADMIN_PASSWORD=${POSTGREPASSWORD}"
+      - "KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}" 
+      - "KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}"
       - "KC_DB=postgres"
       - "KC_DB_URL=jdbc:postgresql://postgres:5432/postgres"
       - "KC_DB_USERNAME=${POSTGREUSER}"
