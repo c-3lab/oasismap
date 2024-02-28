@@ -1,4 +1,10 @@
-import { XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import {
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from 'recharts'
 import { BarChart, Bar, LineChart, Legend, Line } from 'recharts'
 import { DateTime } from 'luxon'
 
@@ -254,8 +260,9 @@ export const LineGraph = (props: any) => {
           height={250}
           data={plotdata}
           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-          style={{ backgroundColor: '#a9a9a9' }}
+          style={{ backgroundColor: '#ffffff' }}
         >
+          <CartesianGrid stroke="#a9a9a9" />
           <XAxis dataKey="timestamp" tick={xTickFormatter} interval={0} />
           <YAxis
             tickCount={11}
