@@ -335,7 +335,38 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
                 icon={getIconByType(pin.type, pin.answer)}
               >
                 <Popup>
-                  <p>{pin.title}</p>
+                  <table border={1}>
+                    {pin.basetime && (
+                      <tr>
+                        <th>回答日時</th>
+                        <th>{pin.timestamp}</th>
+                      </tr>
+                    )}
+                    <tr>
+                      <th>ワクワクする場所</th>
+                      <th>{pin.answer1}</th>
+                    </tr>
+                    <tr>
+                      <th>発見の学びの場所</th>
+                      <th>{pin.answer2}</th>
+                    </tr>
+                    <tr>
+                      <th>ホッとする場所</th>
+                      <th>{pin.answer3}</th>
+                    </tr>
+                    <tr>
+                      <th>自分を取り戻せる場所</th>
+                      <th>{pin.answer4}</th>
+                    </tr>
+                    <tr>
+                      <th>自慢の場所</th>
+                      <th>{pin.answer5}</th>
+                    </tr>
+                    <tr>
+                      <th>思い出の場所</th>
+                      <th>{pin.answer6}</th>
+                    </tr>
+                  </table>
                 </Popup>
               </Marker>
             ))}
@@ -351,7 +382,38 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
                 icon={getIconByType(pin.type, pin.answer)}
               >
                 <Popup>
-                  <p>{pin.title}</p>
+                  <table border={1}>
+                    {pin.basetime && (
+                      <tr>
+                        <th>回答日時</th>
+                        <th>{pin.timestamp}</th>
+                      </tr>
+                    )}
+                    <tr>
+                      <th>ワクワクする場所</th>
+                      <th>{pin.answer1}</th>
+                    </tr>
+                    <tr>
+                      <th>発見の学びの場所</th>
+                      <th>{pin.answer2}</th>
+                    </tr>
+                    <tr>
+                      <th>ホッとする場所</th>
+                      <th>{pin.answer3}</th>
+                    </tr>
+                    <tr>
+                      <th>自分を取り戻せる場所</th>
+                      <th>{pin.answer4}</th>
+                    </tr>
+                    <tr>
+                      <th>自慢の場所</th>
+                      <th>{pin.answer5}</th>
+                    </tr>
+                    <tr>
+                      <th>思い出の場所</th>
+                      <th>{pin.answer6}</th>
+                    </tr>
+                  </table>
                 </Popup>
               </Marker>
             ))}
@@ -367,7 +429,38 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
                 icon={getIconByType(pin.type, pin.answer)}
               >
                 <Popup>
-                  <p>{pin.title}</p>
+                  <table border={1}>
+                    {pin.basetime && (
+                      <tr>
+                        <th>回答日時</th>
+                        <th>{pin.timestamp}</th>
+                      </tr>
+                    )}
+                    <tr>
+                      <th>ワクワクする場所</th>
+                      <th>{pin.answer1}</th>
+                    </tr>
+                    <tr>
+                      <th>発見の学びの場所</th>
+                      <th>{pin.answer2}</th>
+                    </tr>
+                    <tr>
+                      <th>ホッとする場所</th>
+                      <th>{pin.answer3}</th>
+                    </tr>
+                    <tr>
+                      <th>自分を取り戻せる場所</th>
+                      <th>{pin.answer4}</th>
+                    </tr>
+                    <tr>
+                      <th>自慢の場所</th>
+                      <th>{pin.answer5}</th>
+                    </tr>
+                    <tr>
+                      <th>思い出の場所</th>
+                      <th>{pin.answer6}</th>
+                    </tr>
+                  </table>
                 </Popup>
               </Marker>
             ))}
@@ -383,7 +476,38 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
                 icon={getIconByType(pin.type, pin.answer)}
               >
                 <Popup>
-                  <p>{pin.title}</p>
+                  <table border={1}>
+                    {pin.basetime && (
+                      <tr>
+                        <th>回答日時</th>
+                        <th>{pin.timestamp}</th>
+                      </tr>
+                    )}
+                    <tr>
+                      <th>ワクワクする場所</th>
+                      <th>{pin.answer1}</th>
+                    </tr>
+                    <tr>
+                      <th>発見の学びの場所</th>
+                      <th>{pin.answer2}</th>
+                    </tr>
+                    <tr>
+                      <th>ホッとする場所</th>
+                      <th>{pin.answer3}</th>
+                    </tr>
+                    <tr>
+                      <th>自分を取り戻せる場所</th>
+                      <th>{pin.answer4}</th>
+                    </tr>
+                    <tr>
+                      <th>自慢の場所</th>
+                      <th>{pin.answer5}</th>
+                    </tr>
+                    <tr>
+                      <th>思い出の場所</th>
+                      <th>{pin.answer6}</th>
+                    </tr>
+                  </table>
                 </Popup>
               </Marker>
             ))}
@@ -399,7 +523,38 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
                 icon={getIconByType(pin.type, pin.answer)}
               >
                 <Popup>
-                  <p>{pin.title}</p>
+                  <table border={1}>
+                    {pin.basetime && (
+                      <tr>
+                        <th>回答日時</th>
+                        <th>{pin.timestamp}</th>
+                      </tr>
+                    )}
+                    <tr>
+                      <th>ワクワクする場所</th>
+                      <th>{pin.answer1}</th>
+                    </tr>
+                    <tr>
+                      <th>発見の学びの場所</th>
+                      <th>{pin.answer2}</th>
+                    </tr>
+                    <tr>
+                      <th>ホッとする場所</th>
+                      <th>{pin.answer3}</th>
+                    </tr>
+                    <tr>
+                      <th>自分を取り戻せる場所</th>
+                      <th>{pin.answer4}</th>
+                    </tr>
+                    <tr>
+                      <th>自慢の場所</th>
+                      <th>{pin.answer5}</th>
+                    </tr>
+                    <tr>
+                      <th>思い出の場所</th>
+                      <th>{pin.answer6}</th>
+                    </tr>
+                  </table>
                 </Popup>
               </Marker>
             ))}
@@ -415,7 +570,38 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
                 icon={getIconByType(pin.type, pin.answer)}
               >
                 <Popup>
-                  <p>{pin.title}</p>
+                  <table border={1}>
+                    {pin.basetime && (
+                      <tr>
+                        <th>回答日時</th>
+                        <th>{pin.timestamp}</th>
+                      </tr>
+                    )}
+                    <tr>
+                      <th>ワクワクする場所</th>
+                      <th>{pin.answer1}</th>
+                    </tr>
+                    <tr>
+                      <th>発見の学びの場所</th>
+                      <th>{pin.answer2}</th>
+                    </tr>
+                    <tr>
+                      <th>ホッとする場所</th>
+                      <th>{pin.answer3}</th>
+                    </tr>
+                    <tr>
+                      <th>自分を取り戻せる場所</th>
+                      <th>{pin.answer4}</th>
+                    </tr>
+                    <tr>
+                      <th>自慢の場所</th>
+                      <th>{pin.answer5}</th>
+                    </tr>
+                    <tr>
+                      <th>思い出の場所</th>
+                      <th>{pin.answer6}</th>
+                    </tr>
+                  </table>
                 </Popup>
               </Marker>
             ))}
