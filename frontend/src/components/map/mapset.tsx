@@ -63,6 +63,8 @@ const questionTitles = {
   happiness6: '思い出の場所',
 }
 
+export { questionTitles }
+
 const MapOverlay = ({ type, filteredPins }) => (
   <LayersControl.Overlay checked name={questionTitles[type]}>
     <LayerGroup>
@@ -84,27 +86,27 @@ const MapOverlay = ({ type, filteredPins }) => (
               )}
               <tbody>
                 <tr>
-                  <th>ワクワクする場所</th>
+                  <th>{questionTitles.happiness1}</th>
                   <th>{pin.answer1}</th>
                 </tr>
                 <tr>
-                  <th>発見の学びの場所</th>
+                  <th>{questionTitles.happiness2}</th>
                   <th>{pin.answer2}</th>
                 </tr>
                 <tr>
-                  <th>ホッとする場所</th>
+                  <th>{questionTitles.happiness3}</th>
                   <th>{pin.answer3}</th>
                 </tr>
                 <tr>
-                  <th>自分を取り戻せる場所</th>
+                  <th>{questionTitles.happiness4}</th>
                   <th>{pin.answer4}</th>
                 </tr>
                 <tr>
-                  <th>自慢の場所</th>
+                  <th>{questionTitles.happiness5}</th>
                   <th>{pin.answer5}</th>
                 </tr>
                 <tr>
-                  <th>思い出の場所</th>
+                  <th>{questionTitles.happiness6}</th>
                   <th>{pin.answer6}</th>
                 </tr>
               </tbody>

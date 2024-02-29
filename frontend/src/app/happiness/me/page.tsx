@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { ResponsiveContainer } from 'recharts'
-//import Map from '@/components/happiness/map'
 const MapSet = dynamic(() => import('@/components/map/mapset'), { ssr: false })
 import { GetPin, COLORS } from '@/components/utils/pin'
 import {
@@ -94,11 +93,9 @@ const HappinessMe: React.FC = () => {
             minHeight: '300px',
           }}
         >
-          グラフ表示エリア
           <ResponsiveContainer width="100%" height={300}>
             <BarGraph
               plotdata={MyHappiness[period]}
-              title="時間"
               color={COLORS}
               xTickFormatter={renderCustomDayTick}
             />
