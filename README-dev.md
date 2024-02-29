@@ -67,6 +67,45 @@ MAP_DEFAULT_LATITUDE=35.967169
 MAP_DEFAULT_LONGITUDE=139.394617
 MAP_DEFAULT_ZOOM=13
 DATASET_LIST_BY=menu
+KC_HOSTNAME_URL=https://xxxx-xxx-xxx-x-xx.ngrok-free.app
+KC_HOSTNAME_ADMIN_URL=https://xxxx-xxx-xxx-x-xx.ngrok-free.app
+```
+
+### keycloak 初期設定
+1. ngrokのアカウントを登録する  
+https://ngrok.com/
+
+2. 手順に従いngrokをインストールする  
+https://ngrok.com/docs/getting-started/
+
+3. ngrok起動
+```
+ngrok http 8080
+```
+
+```
+Try the new Traffic Inspector dev preview: https://ngrok.com/r/ti                                   
+                                                                                                    
+Session Status                online                                                                
+Account                       アカウント名 (Plan: Free)                                            
+Version                       3.6.0                                                                 
+Region                        Japan (jp)                                                            
+Latency                       5ms                                                                   
+Web Interface                 http://127.0.0.1:4040                                                 
+Forwarding                    https://xxxx-xxx-xxx-x-xx.ngrok-free.app -> http://localhost:8080     
+                                                                                                    
+Connections                   ttl     opn     rt1     rt5     p50     p90                           
+                              1224    0       0.00    0.01    0.06    6.29                          
+                                                                                                    
+HTTP Requests                                                                                       
+```
+
+4. `Forwarding` から https:// で始まるURLを取得する
+
+5. 環境変数 `KC_HOSTNAME_URL` `KC_HOSTNAME_ADMIN_URL` に上記のURLを設定する
+```
+KC_HOSTNAME_URL=https://xxxx-xxx-xxx-x-xx.ngrok-free.app
+KC_HOSTNAME_ADMIN_URL=https://xxxx-xxx-xxx-x-xx.ngrok-free.app
 ```
 
 ### frontend 初期設定
@@ -103,9 +142,24 @@ docker compose -f docker-compose-dev.yml ps
 NAME       ...(省略) STATUS          ...(省略) PORTS                                       
 backend              Up 1 minutes             0.0.0.0:4000->4000/tcp, :::4000->4000/tcp
 frontend             Up 1 minutes             0.0.0.0:3000->3000/tcp, :::3000->3000/tcp
+keycloak             Up 1 minutes             0.0.0.0:8080->8080/tcp, :::8080->8080/tcp, 8443/tcp
+postgres             Up 1 minutes             5432/tcp
 ```
 
+### Keycloak 自動設定
+[レルム初期セットアップ](keycloak/README.md) 手順を実施
+
 ### 接続確認
+
+#### Keycloak
+1. 以下にブラウザから接続して「Welcome to Keycloak」ページを確認
+```
+http://localhost:8080
+```
+
+2. 「Administration Console」をクリック
+
+3. 環境変数 `KEYCLOAK_ADMIN` `KEYCLOAK_ADMIN_PASSWORD` に指定した認証情報でログイン
 
 #### フロントエンド
 1. コンテナに入る
