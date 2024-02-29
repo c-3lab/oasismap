@@ -8,6 +8,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ListItem from '@mui/material/ListItem'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
+import { signOut } from 'next-auth/react'
 
 interface GeneralSidebarProps {
   isOpen?: boolean
@@ -43,7 +44,7 @@ const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
             </ListItemButton>
           </ListItem>
           <ListItem key="logout" disablePadding>
-            <ListItemButton onClick={() => router.push(`/login`)}>
+            <ListItemButton onClick={() => signOut({ callbackUrl: '/login' })}>
               <ListItemText primary="ログアウト" />
             </ListItemButton>
           </ListItem>
