@@ -21,3 +21,5 @@ KEYCLOAK_CLIENT_ISSUER=https://keycloak.example.com/realms/oasismap
 
 NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=CHANGE_TO_RANDOM_STRING
+
+BACKEND_URL=http://localhost:4000
