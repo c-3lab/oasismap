@@ -58,7 +58,14 @@ export class HappinessService {
         type: key,
         location: {
           type: entity.location.type,
-          value: entity.location.value,
+          value: {
+            type: entity.location.value.type,
+            // orionは経度緯度の順なので緯度経度に整形
+            coordinates: [
+              entity.location.value.coordinates[1],
+              entity.location.value.coordinates[0],
+            ],
+          },
         },
         timestamp: {
           type: entity.timestamp.type,
