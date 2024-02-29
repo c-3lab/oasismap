@@ -26,6 +26,7 @@ const Layout: React.FC<LayoutProps> = ({ simple = false, children }) => {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
 
+  // パス名が変更されたらサイドバーを閉じる
   useEffect(() => {
     setIsOpen(false)
   }, [pathname])
