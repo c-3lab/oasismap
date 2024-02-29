@@ -1,0 +1,64 @@
+{
+    "values": [
+        {
+            "key": "KeycloakRootURL",
+            "value": "http://keycloak:8080"
+        },
+        {
+            "key": "KeycloakTokenEndpoint",
+            "value": "http://keycloak:8080/realms/master/protocol/openid-connect/token"
+        },
+        {
+            "key": "RealmName",
+            "value": "oasismap"
+        },
+        {
+            "key": "RealmDisplayName",
+            "value": "OASISmap"
+        },
+        {
+            "key": "RealmDisplayNameHtml",
+            "value": "OASISmap"
+        },
+        {
+            "key": "RealmLoginTheme",
+            "value": "keycloak"
+        },
+        {
+            "key": "RealmMunicipalUserGroupName",
+            "value": "managers"
+        },
+        {
+            "key": "RealmEventUserGroupName",
+            "value": "users"
+        },
+        {
+            "key": "RealmSSLRequired",
+            "value": "none"
+        },
+        {
+            "key": "RealmSSOSessionIdleTimeout",
+            "value": 1800
+        },
+        {
+            "key": "RealmSSOSessionMaxLifespan",
+            "value": 36000
+        },
+        {
+            "key": "GoogleClientID",
+            "value": ""
+        },
+        {
+            "key": "GoogleClientSecret",
+            "value": ""
+        },
+        {
+            "key": "PostBrokerLoginFlowAlias",
+            "value": ""
+        },
+        {
+            "key": "ClientBaseURL",
+            "value": "http://localhost:3000"
+        }
+    ]
+}
