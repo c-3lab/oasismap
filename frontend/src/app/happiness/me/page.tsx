@@ -2,6 +2,7 @@
 import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { ResponsiveContainer } from 'recharts'
@@ -15,17 +16,29 @@ import {
 
 import { BarGraph, myHappinessData } from '@/components/happiness/graph'
 import fetchData from '@/components/happiness/fetch'
-const backendurl = 'http://localhost:8000/api/happiness/me'
+import { current, toISO8601 } from '@/libs/date-format'
+const backendurl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/happiness/me`
 
 const HappinessMe: React.FC = () => {
   const router = useRouter()
   const [period, setPeriod] = useState(PeriodType.Month)
   const [pinData, setPinData] = useState<any>([])
   const [MyHappiness, setMyHappiness] = useState<any>([])
+  const { data: session } = useSession()
 
   const getData = async () => {
     try {
-      const data = await fetchData(backendurl)
+      const params = {
+        start: toISO8601(startDateTimeProps.value),
+        end: toISO8601(endDateTimeProps.value),
+        period: period,
+        zoomLevel: 12,
+      }
+      const data = await fetchData(
+        backendurl,
+        session?.user!.accessToken!,
+        params
+      )
       setPinData(GetPin(data))
       setMyHappiness(myHappinessData(data))
     } catch (error) {
@@ -34,16 +47,17 @@ const HappinessMe: React.FC = () => {
   }
 
   useEffect(() => {
+    if (!session) return
     getData()
-  }, [])
+  }, [session])
 
   const startDateTimeProps = useDateTime({
-    date: '2024-01-26',
-    time: '09:00',
+    date: current().date,
+    time: '00:00',
   })
   const endDateTimeProps = useDateTime({
-    date: '2024-01-27',
-    time: '12:00',
+    date: current().date,
+    time: '23:59',
   })
 
   const renderCustomDayTick = (tickProps: any) => {
