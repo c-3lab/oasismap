@@ -79,12 +79,6 @@ export class HappinessService {
     };
   }
 
-  // TODO: authorizationからニックネームを取得する
-  private getNicknameFromToken(authorization: string): string {
-    console.log(authorization);
-    return 'nickname';
-  }
-
   private createEntities(
     userAttribute: UserAttribute,
     body: CreateHappinessDto,
