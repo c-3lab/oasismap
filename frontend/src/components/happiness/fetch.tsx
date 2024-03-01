@@ -1,8 +1,26 @@
-const fetchData = async (url: string): Promise<any> => {
+interface HappinessParams {
+  start: string
+  end: string
+  period: string
+  zoomLevel: number
+}
+
+const fetchData = async (
+  url: string,
+  token: string,
+  params: HappinessParams,
+): Promise<any> => {
   try {
-    const response = await fetch(url, {
+    const query = new URLSearchParams({
+      start: params.start,
+      end: params.end,
+      period: params.period,
+      zoomLevel: params.zoomLevel.toString(),
+    })
+    const response = await fetch(`${url}?${query}`, {
       method: 'GET',
       headers: {
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     })
