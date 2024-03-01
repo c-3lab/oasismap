@@ -16,7 +16,8 @@ import {
 import { LineGraph, ourHappinessData } from '@/components/happiness/graph'
 import fetchData from '@/components/happiness/fetch'
 import { PROFILE_TYPE } from '@/libs/constants'
-const backendurl = 'http://localhost:8000/api/happiness/all'
+import { current, toISO8601 } from '@/libs/date-format'
+const backendurl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/happiness/all`
 
 const HappinessAll: React.FC = () => {
   const router = useRouter()
@@ -27,7 +28,17 @@ const HappinessAll: React.FC = () => {
 
   const getData = async () => {
     try {
-      const data = await fetchData(backendurl)
+      const params = {
+        start: toISO8601(startDateTimeProps.value),
+        end: toISO8601(endDateTimeProps.value),
+        period: period,
+        zoomLevel: 12,
+      }
+      const data = await fetchData(
+        backendurl,
+        session?.user!.accessToken!,
+        params
+      )
       setPinData(GetPin(data['map_data']))
       setOurHappiness(ourHappinessData(data['graph_data']))
     } catch (error) {
@@ -36,16 +47,17 @@ const HappinessAll: React.FC = () => {
   }
 
   useEffect(() => {
+    if (!session) return
     getData()
-  }, [])
+  }, [session])
 
   const startDateTimeProps = useDateTime({
-    date: '2024-01-26',
-    time: '09:00',
+    date: current().date,
+    time: '00:00',
   })
   const endDateTimeProps = useDateTime({
-    date: '2024-01-27',
-    time: '12:00',
+    date: current().date,
+    time: '23:59',
   })
 
   const renderCustomDayTick = (tickProps: any) => {

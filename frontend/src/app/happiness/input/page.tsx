@@ -12,6 +12,8 @@ import {
 } from '@mui/material'
 
 import { messageContext } from '@/contexts/message-context'
+import { useSession } from 'next-auth/react'
+import postData from '@/components/happiness/post'
 
 type HappinessKey =
   | 'happiness1'
@@ -21,11 +23,14 @@ type HappinessKey =
   | 'happiness5'
   | 'happiness6'
 
+const backendurl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/happiness`
+
 const HappinessInput: React.FC = () => {
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
   const searchParams = useSearchParams()
   const referral = searchParams.get('referral') || 'me'
+  const { data: session } = useSession()
 
   const [checkboxValues, setCheckboxValues] = useState<{
     [key in HappinessKey]: number
@@ -55,9 +60,35 @@ const HappinessInput: React.FC = () => {
     setCheckboxValues((prev) => ({ ...prev, [key]: prev[key] ? 0 : 1 }))
   }
 
-  const submitForm = () => {
+  const submitForm = async () => {
+    const position = await getCurrentPosition()
+    await postData(backendurl, session?.user!.accessToken!, {
+      latitude: position.latitude,
+      longitude: position.longitude,
+      happiness: checkboxValues,
+    })
     noticeMessageContext.showMessage('幸福度の送信が完了しました')
     router.push(`/happiness/${referral}`)
+  }
+
+  const getCurrentPosition = async () => {
+    if (location.protocol === 'http:') {
+      return {
+        latitude: 35.696031,
+        longitude: 139.6879481,
+      }
+    } else {
+      /* global GeolocationPosition */
+      const position: GeolocationPosition = await new Promise(
+        (resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject)
+        }
+      )
+      return {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      }
+    }
   }
 
   return (
