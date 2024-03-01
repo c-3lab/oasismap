@@ -76,12 +76,12 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
 
    実行例:
    ```
-   KEYCLOAK_ADMIN=admin
-   KEYCLOAK_ADMIN_PASSWORD=********
-   example@ubuntu:~$ docker run --network oasismap_backend-network --volume /home/example/oasismap/keycloak:/etc/newman/keycloak \
+   example@ubuntu:~/oasismap/keycloak$ KEYCLOAK_ADMIN=admin
+   example@ubuntu:~/oasismap/keycloak$ KEYCLOAK_ADMIN_PASSWORD=********
+   example@ubuntu:~/oasismap/keycloak$ docker run --network oasismap_backend-network --volume /home/example/oasismap/keycloak:/etc/newman/keycloak \
    > postman/newman:latest run --bail --environment /etc/newman/keycloak/variables.json \
-     --env-var "KeycloakAdminUser=$KEYCLOAK_ADMIN" \
-     --env-var "KeycloakAdminPassword=$KEYCLOAK_ADMIN_PASSWORD" \
+   > --env-var "KeycloakAdminUser=$KEYCLOAK_ADMIN" \
+   > --env-var "KeycloakAdminPassword=$KEYCLOAK_ADMIN_PASSWORD" \
    > /etc/newman/keycloak/postman-collection.json
    newman
 
