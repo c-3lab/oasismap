@@ -22,14 +22,18 @@
   "dependencies": {
     "@mui/material": "^5.15.6",
     "@mui/material-nextjs": "^5.15.6",
+    "jsonwebtoken": "^9.0.2",
+    "jwks-rsa": "^3.1.0",
     "luxon": "^3.4.4",
     "next": "14.1.0",
+    "next-auth": "^4.24.6",
     "react": "^18",
     "react-dom": "^18",
     "recharts": "^2.11.0",
     "starseeker-frontend": "file:externals/StarSeeker/StarSeeker/frontend"
   },
   "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.6",
     "@types/luxon": "^3.4.2",
     "@types/node": "^20",
     "@types/react": "^18",
