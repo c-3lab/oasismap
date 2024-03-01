@@ -1,0 +1,52 @@
+/* Keycloakから流用したスタイルの上書き */
+body {
+  background-image: none;
+  background-color: #FFF;
+  min-width: 375px;
+}
+.login-pf body {
+  background: none;
+}
+.login-pf-page .login-pf-header h1 {
+  font-size: 20px;
+}
+.login-pf-page .login-pf-signup {
+  display: none;
+}
+.card-pf {
+  border-top: none;
+}
+#kc-header {
+  color: black;
+  text-align: center;
+}
+#kc-header-wrapper {
+  color: black;
+  font-size: 29px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 3px;
+  line-height: 1.2em;
+  padding: 62px 10px 20px;
+  white-space: normal;
+}
+#kc-form-buttons .pf-c-button {
+  background-color: #459586;
+}
+
+/* 独自に追加した要素のスタイル */
+/* ヘッダー */
+.custom-header {
+  background-color: #459586;
+  height: 64px;
+  padding: 16px 24px;
+  box-shadow: 0px 2px 4px -1px rgba(0,0,0,0.2), 0px 4px 5px 0px rgba(0,0,0,0.14), 0px 1px 10px 0px rgba(0,0,0,0.12);
+}
+.custom-header-label {
+  color: #FFF;
+  margin: 0;
+  font-weight: 500;
+  font-size: 1.25rem;
+  line-height: 1.6;
+  letter-spacing: 0.0075em;
+}
