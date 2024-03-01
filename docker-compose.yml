@@ -30,6 +30,7 @@ services:
       - "POSTGRES_PASSWORD=${POSTGREPASSWORD}"
       - "POSTGRES_DATABASE=postgres"
       - "TYPEORM_SYNCHRONIZE=false"
+      - "FRONTEND_URL=${NEXTAUTH_URL}"
     volumes:
       - ./backend:/app/backend
     networks:
