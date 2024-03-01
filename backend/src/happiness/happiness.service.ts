@@ -46,13 +46,11 @@ export class HappinessService {
   }
 
   async findHapinessMe(
-    authorization: string,
+    nickname: string,
     start: string,
     end: string,
   ): Promise<HappinessMeResponse[]> {
-    const query = `nickname==${this.getNicknameFromToken(
-      authorization,
-    )};timestamp>=${start};timestamp<=${end}`;
+    const query = `nickname==${nickname};timestamp>=${start};timestamp<=${end}`;
     const happinessEntities = await this.getHappinessEntities(query);
     return this.toHappinessMeResponse(happinessEntities);
   }
