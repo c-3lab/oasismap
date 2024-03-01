@@ -12,7 +12,7 @@ import {
 } from '@mui/material'
 
 import Header from '@/components/header'
-import GeneralSidebar from '@/components/sidebar/general-sidebar'
+import Sidebar from '@/components/sidebar/sidebar'
 import { messageContext } from '@/contexts/message-context'
 import { useNoticeMessage } from '@/hooks/notice-message'
 import { SessionProvider } from 'next-auth/react'
@@ -57,7 +57,7 @@ const Layout: React.FC<LayoutProps> = ({ simple = false, children }) => {
                 <Toolbar />
                 {children}
               </Box>
-              <GeneralSidebar
+              <Sidebar
                 isOpen={isOpen}
                 handleDrawerClose={() => {
                   setIsOpen(false)
