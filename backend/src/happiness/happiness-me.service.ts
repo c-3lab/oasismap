@@ -60,10 +60,7 @@ export class HappinessMeService {
             ],
           },
         },
-        timestamp: {
-          type: entity.timestamp.type,
-          value: entity.timestamp.value,
-        },
+        timestamp: entity.timestamp.value,
         answers: {
           happiness1: entity.happiness1.value,
           happiness2: entity.happiness2.value,

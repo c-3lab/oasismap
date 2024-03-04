@@ -8,10 +8,7 @@ export interface HappinessMeResponse {
       coordinates: [number, number];
     };
   };
-  timestamp: {
-    type: string;
-    value: string;
-  };
+  timestamp: string;
   answers: {
     happiness1: number;
     happiness2: number;
