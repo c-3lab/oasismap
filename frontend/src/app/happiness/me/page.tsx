@@ -16,7 +16,7 @@ import {
 
 import { BarGraph, myHappinessData } from '@/components/happiness/graph'
 import fetchData from '@/components/happiness/fetch'
-import { current, toISO8601 } from '@/libs/date-format'
+import { current, previous, toISO8601 } from '@/libs/date-format'
 const backendurl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/happiness/me`
 
 const HappinessMe: React.FC = () => {
@@ -25,6 +25,9 @@ const HappinessMe: React.FC = () => {
   const [pinData, setPinData] = useState<any>([])
   const [MyHappiness, setMyHappiness] = useState<any>([])
   const { data: session } = useSession()
+
+  const defaultStart = previous()
+  const defaultEnd = current()
 
   const getData = async () => {
     try {
@@ -52,12 +55,12 @@ const HappinessMe: React.FC = () => {
   }, [session])
 
   const startDateTimeProps = useDateTime({
-    date: current().date,
-    time: '00:00',
+    date: defaultStart.date,
+    time: defaultStart.time,
   })
   const endDateTimeProps = useDateTime({
-    date: current().date,
-    time: '23:59',
+    date: defaultEnd.date,
+    time: defaultEnd.time,
   })
 
   const renderCustomDayTick = (tickProps: any) => {
