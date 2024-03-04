@@ -50,7 +50,7 @@ export class HappinessService {
     start: string,
     end: string,
   ): Promise<HappinessMeResponse[]> {
-    const query = `nickname==${nickname};timestamp>=${start};timestamp<=${end}`;
+    const query = `nickname==${nickname};timestamp>=${new Date(start).toISOString()};timestamp<=${new Date(end).toISOString()}`;
     const happinessEntities = await this.getHappinessEntities(query);
     return this.toHappinessMeResponse(happinessEntities);
   }
@@ -61,7 +61,10 @@ export class HappinessService {
     period: 'time' | 'day' | 'month',
     zoomLevel: number,
   ): Promise<HappinessAllResponse> {
-    const query = `timestamp>=${start};timestamp<=${end}`;
+    const startISOSting = new Date(start).toISOString();
+    const endISOSting = new Date(end).toISOString();
+
+    const query = `timestamp>=${startISOSting};timestamp<=${endISOSting}`;
     const happinessEntities = await this.getHappinessEntities(query);
     const gridEntities = this.generateGridEntities(
       zoomLevel,
@@ -72,8 +75,8 @@ export class HappinessService {
       map_data: this.toHappinessAllMapData(gridEntities),
       graph_data: this.calculateGraphData(
         happinessEntities,
-        start,
-        end,
+        startISOSting,
+        endISOSting,
         period,
       ),
     };
@@ -335,19 +338,19 @@ export class HappinessService {
 
   private calculateGraphData(
     entities: HappinessEntities[],
-    start: string,
-    end: string,
+    startISOSting: string,
+    endISOSting: string,
     period: 'time' | 'day' | 'month',
   ): GraphData[] {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    const startDate = new Date(startISOSting);
+    const endDate = new Date(endISOSting);
     const result: GraphData[] = [];
 
     while (startDate <= endDate) {
-      const timestamp = startDate.toISOString();
+      const timestamp = startISOSting;
 
       const filteredData = entities.filter((entity) => {
-        const entityTimestamp = new Date(entity.timestamp.value).toISOString();
+        const entityTimestamp = entity.timestamp.value;
         return entityTimestamp.startsWith(
           timestamp.slice(
             0,
