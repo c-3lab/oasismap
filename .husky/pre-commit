@@ -1,0 +1,21 @@
+#!/usr/bin/env sh
+TARGET=$(echo "$GIT_PREFIX" | cut -d "/" -f1)
+
+# ルートディレクトリでの git commit を防止
+if [ "$TARGET" = "" ]; then
+  echo "\e[31mWarning: ルートディレクトリではhuskyを実行できません\e[m"
+  echo "\e[31mExecute サブディレクトリ内で git commit を行うか '-n' オプションを指定してください\e[m"
+  exit 1
+fi
+
+# TARGET ディレクトリ外のステージングファイルが commit されるのを防止
+STAGED_FILES=$(git diff --name-only --cached)
+for FILE in $STAGED_FILES; do
+  if [ "$(echo "$FILE" | cut -d "/" -f1)" != "$TARGET" ]; then
+    echo "\e[31mWarning: ステージングされた '$FILE' は '$TARGET' ディレクトリの外にあります\e[m"
+    exit 1
+  fi
+done
+
+cd $TARGET
+npm run lint-staged

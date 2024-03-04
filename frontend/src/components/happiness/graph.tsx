@@ -1,9 +1,16 @@
-import { XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts'
+import {
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from 'recharts'
 import { BarChart, Bar, LineChart, Legend, Line } from 'recharts'
 import { DateTime } from 'luxon'
+import { questionTitles } from '../map/mapset'
 
 interface happinessObj {
-  timestamp: number
+  timestamp: string
   happiness1: number
   happiness2: number
   happiness3: number
@@ -16,12 +23,6 @@ interface happinessSet {
   month: happinessObj[]
   day: happinessObj[]
   time: happinessObj[]
-}
-
-interface dataSet {
-  month: dataObj[]
-  day: dataObj[]
-  time: dataObj[]
 }
 
 interface dataObj {
@@ -54,7 +55,7 @@ function insertTimestamp(
     const matchingObjects = objects.filter((obj) => Number(obj.timestamp) === t)
     if (matchingObjects.length === 0) {
       objects.push({
-        timestamp: t,
+        timestamp: String(t).padStart(2, '0'),
         happiness1: 0,
         happiness2: 0,
         happiness3: 0,
@@ -67,18 +68,14 @@ function insertTimestamp(
   return objects
 }
 
-function filterByTimestamp(objects: dataObj[]): dataSet {
+function filterByTimestamp(objects: happinessObj[]): happinessSet {
   const now = DateTime.local()
   const oneday = now.minus({ day: 1 })
   const onemonth = now.minus({ month: 1 })
   const oneyear = now.minus({ year: 1 })
 
-  //重複する幸福度を除去
-  const filteredObj = objects.filter((h) => h.type == 'happiness1')
-
-  //古い幸福度を除去
   const result = {
-    day: filteredObj
+    day: objects
       .filter(
         (obj) =>
           DateTime.fromISO(obj.timestamp).toFormat('yyyy-MM-dd-HH') >
@@ -88,7 +85,7 @@ function filterByTimestamp(objects: dataObj[]): dataSet {
         ...obj,
         timestamp: DateTime.fromISO(obj.timestamp).toFormat('dd'),
       })),
-    month: filteredObj
+    month: objects
       .filter(
         (obj) =>
           DateTime.fromISO(obj.timestamp).toFormat('yyyy-MM-dd-HH') >
@@ -98,7 +95,7 @@ function filterByTimestamp(objects: dataObj[]): dataSet {
         ...obj,
         timestamp: DateTime.fromISO(obj.timestamp).toFormat('MM'),
       })),
-    time: filteredObj
+    time: objects
       .filter(
         (obj) =>
           DateTime.fromISO(obj.timestamp).toFormat('yyyy-MM-dd-HH') >
@@ -112,7 +109,7 @@ function filterByTimestamp(objects: dataObj[]): dataSet {
   return result
 }
 
-function aveByTimestamp(objects: dataObj[]): happinessObj[] {
+function aveByTimestamp(objects: happinessObj[]): happinessObj[] {
   const result: happinessObj[] = []
 
   const timeList = new Set(objects.map((item) => item['timestamp']))
@@ -120,12 +117,12 @@ function aveByTimestamp(objects: dataObj[]): happinessObj[] {
     const h = [0, 0, 0, 0, 0, 0]
     const matchingObjects = objects.filter((obj) => obj.timestamp === time)
     matchingObjects.forEach((item) => {
-      h[0] += item.answers['happiness1']
-      h[1] += item.answers['happiness2']
-      h[2] += item.answers['happiness3']
-      h[3] += item.answers['happiness4']
-      h[4] += item.answers['happiness5']
-      h[5] += item.answers['happiness6']
+      h[0] += item.happiness1
+      h[1] += item.happiness2
+      h[2] += item.happiness3
+      h[3] += item.happiness4
+      h[4] += item.happiness5
+      h[5] += item.happiness6
     })
 
     result.push({
@@ -141,8 +138,8 @@ function aveByTimestamp(objects: dataObj[]): happinessObj[] {
 
   return result
 }
-//日付が同じ場合は合算
-function sumByTimestamp(objects: dataObj[]): happinessObj[] {
+
+function sumByTimestamp(objects: happinessObj[]): happinessObj[] {
   const result: happinessObj[] = []
 
   const timeList = new Set(objects.map((item) => item['timestamp']))
@@ -151,12 +148,12 @@ function sumByTimestamp(objects: dataObj[]): happinessObj[] {
     const h = [0, 0, 0, 0, 0, 0]
     const matchingObjects = objects.filter((obj) => obj.timestamp === time)
     matchingObjects.forEach((item) => {
-      h[0] += item.answers['happiness1']
-      h[1] += item.answers['happiness2']
-      h[2] += item.answers['happiness3']
-      h[3] += item.answers['happiness4']
-      h[4] += item.answers['happiness5']
-      h[5] += item.answers['happiness6']
+      h[0] += item.happiness1
+      h[1] += item.happiness2
+      h[2] += item.happiness3
+      h[3] += item.happiness4
+      h[4] += item.happiness5
+      h[5] += item.happiness6
     })
 
     result.push({
@@ -187,7 +184,7 @@ function sortByCurrentTime(
   return objects
 }
 
-export function ourHappinessData(objects: dataObj[]): happinessSet {
+export function ourHappinessData(objects: happinessObj[]): happinessSet {
   const now = DateTime.local()
   const filterData = filterByTimestamp(objects)
   const sumData = {
@@ -197,13 +194,13 @@ export function ourHappinessData(objects: dataObj[]): happinessSet {
   }
 
   sumData['month'] = insertTimestamp(sumData['month'], 1, 12).sort(
-    (a, b) => a.timestamp - b.timestamp
+    (a, b) => Number(a.timestamp) - Number(b.timestamp)
   )
   sumData['day'] = insertTimestamp(sumData['day'], 1, 31).sort(
-    (a, b) => a.timestamp - b.timestamp
+    (a, b) => Number(a.timestamp) - Number(b.timestamp)
   )
   sumData['time'] = insertTimestamp(sumData['time'], 0, 23).sort(
-    (a, b) => a.timestamp - b.timestamp
+    (a, b) => Number(a.timestamp) - Number(b.timestamp)
   )
   sumData['month'] = sortByCurrentTime(sumData['month'], now.month)
   sumData['day'] = sortByCurrentTime(sumData['day'], now.day)
@@ -213,20 +210,36 @@ export function ourHappinessData(objects: dataObj[]): happinessSet {
 
 export function myHappinessData(objects: dataObj[]): happinessSet {
   const now = DateTime.local()
-  const filterData = filterByTimestamp(objects)
+
+  const formatObj: happinessObj[] = []
+  objects
+    .filter((h) => h.type == 'happiness1')
+    .forEach((obj) => {
+      formatObj.push({
+        timestamp: obj.timestamp,
+        happiness1: obj.answers['happiness1'],
+        happiness2: obj.answers['happiness2'],
+        happiness3: obj.answers['happiness3'],
+        happiness4: obj.answers['happiness4'],
+        happiness5: obj.answers['happiness5'],
+        happiness6: obj.answers['happiness6'],
+      })
+    })
+
+  const filterData = filterByTimestamp(formatObj)
   const sumData = {
     day: sumByTimestamp(filterData['day']),
     month: sumByTimestamp(filterData['month']),
     time: sumByTimestamp(filterData['time']),
   }
   sumData['month'] = insertTimestamp(sumData['month'], 1, 12).sort(
-    (a, b) => a.timestamp - b.timestamp
+    (a, b) => Number(a.timestamp) - Number(b.timestamp)
   )
   sumData['day'] = insertTimestamp(sumData['day'], 1, 31).sort(
-    (a, b) => a.timestamp - b.timestamp
+    (a, b) => Number(a.timestamp) - Number(b.timestamp)
   )
   sumData['time'] = insertTimestamp(sumData['time'], 0, 23).sort(
-    (a, b) => a.timestamp - b.timestamp
+    (a, b) => Number(a.timestamp) - Number(b.timestamp)
   )
 
   sumData['month'] = sortByCurrentTime(sumData['month'], now.month)
@@ -248,8 +261,9 @@ export const LineGraph = (props: any) => {
           height={250}
           data={plotdata}
           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-          style={{ backgroundColor: '#FFFFFF' }}
+          style={{ backgroundColor: '#ffffff' }}
         >
+          <CartesianGrid stroke="#a9a9a9" />
           <XAxis dataKey="timestamp" tick={xTickFormatter} interval={0} />
           <YAxis
             tickCount={11}
@@ -263,36 +277,42 @@ export const LineGraph = (props: any) => {
             dataKey="happiness1"
             stroke={color[0]}
             dot={true}
+            name={questionTitles.happiness1}
           />
           <Line
             type="monotone"
             dataKey="happiness2"
             stroke={color[1]}
             dot={true}
+            name={questionTitles.happiness2}
           />
           <Line
             type="monotone"
             dataKey="happiness3"
             stroke={color[2]}
             dot={true}
+            name={questionTitles.happiness3}
           />
           <Line
             type="monotone"
             dataKey="happiness4"
             stroke={color[3]}
             dot={true}
+            name={questionTitles.happiness4}
           />
           <Line
             type="monotone"
             dataKey="happiness5"
             stroke={color[4]}
             dot={true}
+            name={questionTitles.happiness5}
           />
           <Line
             type="monotone"
             dataKey="happiness6"
             stroke={color[5]}
             dot={true}
+            name={questionTitles.happiness6}
           />
         </LineChart>
       </ResponsiveContainer>
@@ -302,7 +322,6 @@ export const LineGraph = (props: any) => {
 
 export const BarGraph = (props: any) => {
   const { title, plotdata, color, xTickFormatter } = props
-
   return (
     <>
       <h3 className="text-white text-center">{title}</h3>
@@ -312,18 +331,49 @@ export const BarGraph = (props: any) => {
           height={250}
           data={plotdata}
           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-          style={{ backgroundColor: '#FFFFFF' }}
+          style={{ backgroundColor: '#ffffff' }}
         >
+          <CartesianGrid stroke="#a9a9a9" />
           <XAxis dataKey="timestamp" tick={xTickFormatter} interval={0} />
           <YAxis />
           <Tooltip />
           <Legend verticalAlign="bottom" />
-          <Bar dataKey="happiness1" stackId={1} fill={color[0]} />
-          <Bar dataKey="happiness2" stackId={1} fill={color[1]} />
-          <Bar dataKey="happiness3" stackId={1} fill={color[2]} />
-          <Bar dataKey="happiness4" stackId={1} fill={color[3]} />
-          <Bar dataKey="happiness5" stackId={1} fill={color[4]} />
-          <Bar dataKey="happiness6" stackId={1} fill={color[5]} />
+          <Bar
+            dataKey="happiness1"
+            stackId={1}
+            fill={color[0]}
+            name={questionTitles.happiness1}
+          />
+          <Bar
+            dataKey="happiness2"
+            stackId={1}
+            fill={color[1]}
+            name={questionTitles.happiness2}
+          />
+          <Bar
+            dataKey="happiness3"
+            stackId={1}
+            fill={color[2]}
+            name={questionTitles.happiness3}
+          />
+          <Bar
+            dataKey="happiness4"
+            stackId={1}
+            fill={color[3]}
+            name={questionTitles.happiness4}
+          />
+          <Bar
+            dataKey="happiness5"
+            stackId={1}
+            fill={color[4]}
+            name={questionTitles.happiness5}
+          />
+          <Bar
+            dataKey="happiness6"
+            stackId={1}
+            fill={color[5]}
+            name={questionTitles.happiness6}
+          />
         </BarChart>
       </ResponsiveContainer>
     </>

@@ -1,0 +1,378 @@
+{
+    "map_data":[
+        {
+        "id": "a72722b3-adbc-21f4-ea1f-65fcd3a0fc0f",
+        "type": "happiness1",
+        "location": {
+            "type": "geo:json",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7286770448517,
+                    139.72412109375
+                ]
+            }
+        },
+        "answers": {
+            "happiness1": 0.72,
+            "happiness2": 0.4,
+            "happiness3": 0.18,
+            "happiness4": 0.95778,
+            "happiness5": 0.852,
+            "happiness6": 0.432
+        }
+      },
+      {
+        "id": "ee38e30a-c452-daf8-f7f6-aa48c082dc4f",
+        "type": "happiness2",
+        "location": {
+            "type": "geo:json",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7286770448517,
+                    139.72412109375
+                ]
+            }
+        },
+        "answers": {
+            "happiness1": 0.72,
+            "happiness2": 0.4,
+            "happiness3": 0.18,
+            "happiness4": 0.95778,
+            "happiness5": 0.852,
+            "happiness6": 0.432
+        }
+      },
+      {
+        "id": "5f779f7b-fcab-ea25-1ba3-4b8310f0f9db",
+        "type": "happiness3",
+        "location": {
+            "type": "geo:json",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7286770448517,
+                    139.72412109375
+                ]
+            }
+        },
+        "answers": {
+            "happiness1": 0.72,
+            "happiness2": 0.4,
+            "happiness3": 0.18,
+            "happiness4": 0.95778,
+            "happiness5": 0.852,
+            "happiness6": 0.432
+        }
+      },
+      {
+        "id": "c64f54cd-a164-8be8-1cfd-caf8f6f60100",
+        "type": "happiness4",
+        "location": {
+            "type": "geo:json",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7286770448517,
+                    139.72412109375
+                ]
+            }
+        },
+        "answers": {
+            "happiness1": 0.72,
+            "happiness2": 0.4,
+            "happiness3": 0.18,
+            "happiness4": 0.95778,
+            "happiness5": 0.852,
+            "happiness6": 0.432
+        }
+      },
+      {
+        "id": "38f6efe8-c276-fe03-46be-06e8d7452bf2",
+        "type": "happiness5",
+        "location": {
+            "type": "geo:json",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7286770448517,
+                    139.72412109375
+                ]
+            }
+        },
+        "answers": {
+            "happiness1": 0.72,
+            "happiness2": 0.4,
+            "happiness3": 0.18,
+            "happiness4": 0.95778,
+            "happiness5": 0.852,
+            "happiness6": 0.432
+        }
+      },
+      {
+        "id": "22ef24fe-913e-4c24-15ac-d09a142d7cf9",
+        "type": "happiness6",
+        "location": {
+            "type": "geo:json",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    35.7286770448517,
+                    139.72412109375
+                ]
+            }
+        },
+        "answers": {
+            "happiness1": 0.72,
+            "happiness2": 0.4,
+            "happiness3": 0.18,
+            "happiness4": 0.95778,
+            "happiness5": 0.852,
+            "happiness6": 0.432
+        }
+      },
+      {
+        "id": "e2fa2f46-c612-03f7-2d1e-dc48ba7ca3ac",
+        "type": "happiness1",
+        "location": {
+            "type": "geo:json",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    34.2662121,
+                    133.719081
+                ]
+            }
+        },
+        "answers": {
+            "happiness1": 0.91,
+            "happiness2": 0.66,
+            "happiness3": 0.251,
+            "happiness4": 0.4,
+            "happiness5": 0.4395712,
+            "happiness6": 0.782
+        }
+      },
+      {
+        "id": "56ddb4b9-4ad4-47f4-ec62-0e17507f4a89",
+        "type": "happiness2",
+        "location": {
+            "type": "geo:json",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    34.2662121,
+                    133.719081
+                ]
+            }
+        },
+        "answers": {
+            "happiness1": 0.91,
+            "happiness2": 0.66,
+            "happiness3": 0.251,
+            "happiness4": 0.4,
+            "happiness5": 0.4395712,
+            "happiness6": 0.782
+        }
+      },
+      {
+        "id": "d96df6aa-e64c-516f-0ae7-45b0c11d1cc1",
+        "type": "happiness3",
+        "location": {
+            "type": "geo:json",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    34.2662121,
+                    133.719081
+                ]
+            }
+        },
+        "answers": {
+            "happiness1": 0.91,
+            "happiness2": 0.66,
+            "happiness3": 0.251,
+            "happiness4": 0.4,
+            "happiness5": 0.4395712,
+            "happiness6": 0.782
+        }
+      },
+      {
+        "id": "feea15d5-a868-2dce-9acf-d15954e9df67",
+        "type": "happiness4",
+        "location": {
+            "type": "geo:json",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    34.2662121,
+                    133.719081
+                ]
+            }
+        },
+        "answers": {
+            "happiness1": 0.91,
+            "happiness2": 0.66,
+            "happiness3": 0.251,
+            "happiness4": 0.4,
+            "happiness5": 0.4395712,
+            "happiness6": 0.782
+        }
+      },
+      {
+        "id": "21823130-6a52-5604-1182-90cd1f7e3a2f",
+        "type": "happiness5",
+        "location": {
+            "type": "geo:json",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    34.2662121,
+                    133.719081
+                ]
+            }
+        },
+        "answers": {
+            "happiness1": 0.91,
+            "happiness2": 0.66,
+            "happiness3": 0.251,
+            "happiness4": 0.4,
+            "happiness5": 0.4395712,
+            "happiness6": 0.782
+        }
+      },
+      {
+        "id": "eff8ea4f-43e8-c2b3-0d22-308a727d1066",
+        "type": "happiness6",
+        "location": {
+            "type": "geo:json",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    34.2662121,
+                    133.719081
+                ]
+            }
+        },
+        "answers": {
+            "happiness1": 0.91,
+            "happiness2": 0.66,
+            "happiness3": 0.251,
+            "happiness4": 0.4,
+            "happiness5": 0.4395712,
+            "happiness6": 0.782
+        }
+      }
+    ],
+    "graph_data":[
+        {
+          "timestamp": "2023-10-01T00:00:00",
+          "happiness1": 0.701,
+          "happiness2": 0.524,
+          "happiness3": 0.642,
+          "happiness4": 0.9,
+          "happiness5": 0.7985,
+          "happiness6": 0.855
+        },
+        {
+          "timestamp": "2023-11-01T00:00:00",
+          "happiness1": 0.912,
+          "happiness2": 0.701924,
+          "happiness3": 0.08,
+          "happiness4": 0.532,
+          "happiness5": 0.4115,
+          "happiness6": 0.85
+        },
+        {
+          "timestamp": "2023-12-01T00:00:00",
+          "happiness1": 0.9724,
+          "happiness2": 0.8446,
+          "happiness3": 0.212,
+          "happiness4": 0.84,
+          "happiness5": 0.42,
+          "happiness6": 0.89
+        },
+        {
+          "timestamp": "2024-01-01T00:00:00",
+          "happiness1": 1,
+          "happiness2": 0.85,
+          "happiness3": 0.5,
+          "happiness4": 0.124,
+          "happiness5": 0.76,
+          "happiness6": 0.982
+        },
+        {
+          "timestamp": "2024-02-01T00:00:00",
+          "happiness1": 0.98,
+          "happiness2": 0.822,
+          "happiness3": 0.65,
+          "happiness4": 0.92,
+          "happiness5": 0.89445225,
+          "happiness6": 0.985
+        },
+        {
+          "timestamp": "2024-03-01T00:00:00",
+          "happiness1": 0.2874,
+          "happiness2": 0.2,
+          "happiness3": 0.94,
+          "happiness4": 0.56,
+          "happiness5": 0.245,
+          "happiness6": 0.52
+        },
+        {
+          "timestamp": "2024-04-01T00:00:00",
+          "happiness1": 0.692,
+          "happiness2": 0.512,
+          "happiness3": 0.38,
+          "happiness4": 0.82,
+          "happiness5": 0.726,
+          "happiness6": 0.25
+        },
+        {
+          "timestamp": "2024-05-01T00:00:00",
+          "happiness1": 0.96,
+          "happiness2": 0.242,
+          "happiness3": 0.654,
+          "happiness4": 0.742,
+          "happiness5": 0.58,
+          "happiness6": 0.615
+        },
+        {
+          "timestamp": "2024-06-01T00:00:00",
+          "happiness1": 0.36,
+          "happiness2": 0.92,
+          "happiness3": 0.69835,
+          "happiness4": 0.92,
+          "happiness5": 0.55,
+          "happiness6": 0.895
+        },
+        {
+          "timestamp": "2024-07-01T00:00:00",
+          "happiness1": 0.736,
+          "happiness2": 0.9122,
+          "happiness3": 0.774,
+          "happiness4": 0.65,
+          "happiness5": 0.5424512,
+          "happiness6": 0.475
+        },
+        {
+          "timestamp": "2024-08-01T00:00:00",
+          "happiness1": 0.926,
+          "happiness2": 0.822,
+          "happiness3": 0.91982,
+          "happiness4": 0.54,
+          "happiness5": 0.72,
+          "happiness6": 0.95
+        },
+        {
+          "timestamp": "2024-09-01T00:00:00",
+          "happiness1": 0.96,
+          "happiness2": 0.52,
+          "happiness3": 0.552,
+          "happiness4": 0.258,
+          "happiness5": 0.86,
+          "happiness6": 0.834124
+        }
+    ]
+}

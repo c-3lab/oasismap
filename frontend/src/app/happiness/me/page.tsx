@@ -1,6 +1,6 @@
 'use client'
 import dynamic from 'next/dynamic'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
@@ -14,14 +14,28 @@ import {
 } from '@/components/fields/date-time-textbox'
 
 import { BarGraph, myHappinessData } from '@/components/happiness/graph'
-import data from './myHappiness.json'
-
-const pinData = GetPin(data)
-const MyHappiness = myHappinessData(data)
+import fetchData from '@/components/happiness/fetch'
+const backendurl = 'http://localhost:8000/api/happiness/me'
 
 const HappinessMe: React.FC = () => {
   const router = useRouter()
   const [period, setPeriod] = useState(PeriodType.Month)
+  const [pinData, setPinData] = useState<any>([])
+  const [MyHappiness, setMyHappiness] = useState<any>([])
+
+  const getData = async () => {
+    try {
+      const data = await fetchData(backendurl)
+      setPinData(GetPin(data))
+      setMyHappiness(myHappinessData(data))
+    } catch (error) {
+      console.error('Error fetching data:', error)
+    }
+  }
+
+  useEffect(() => {
+    getData()
+  }, [])
 
   const startDateTimeProps = useDateTime({
     date: '2024-01-26',
@@ -149,6 +163,7 @@ const HappinessMe: React.FC = () => {
                 variant="outlined"
                 fullWidth
                 sx={{ borderColor: 'primary.light' }}
+                onClick={getData}
               >
                 検索
               </Button>
