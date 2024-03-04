@@ -89,27 +89,27 @@ export class HappinessService {
       type: 'happiness',
       happiness1: {
         type: 'Number',
-        value: body.happiness.happiness1,
+        value: body.answers.happiness1,
       },
       happiness2: {
         type: 'Number',
-        value: body.happiness.happiness2,
+        value: body.answers.happiness2,
       },
       happiness3: {
         type: 'Number',
-        value: body.happiness.happiness3,
+        value: body.answers.happiness3,
       },
       happiness4: {
         type: 'Number',
-        value: body.happiness.happiness4,
+        value: body.answers.happiness4,
       },
       happiness5: {
         type: 'Number',
-        value: body.happiness.happiness5,
+        value: body.answers.happiness5,
       },
       happiness6: {
         type: 'Number',
-        value: body.happiness.happiness6,
+        value: body.answers.happiness6,
       },
       timestamp: {
         type: 'DateTime',
