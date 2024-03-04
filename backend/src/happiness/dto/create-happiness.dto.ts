@@ -1,7 +1,7 @@
 export class CreateHappinessDto {
   readonly latitude: number;
   readonly longitude: number;
-  readonly happiness: {
+  readonly answers: {
     happiness1: number;
     happiness2: number;
     happiness3: number;
