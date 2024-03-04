@@ -15,6 +15,7 @@ import {
 import { CreateHappinessDto } from './dto/create-happiness.dto';
 import { UserAttribute } from 'src/auth/interface/user-attribute';
 import { HappinessResponse } from './interface/happiness.response';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class HappinessService {
@@ -200,7 +201,9 @@ export class HappinessService {
             ],
           },
         },
-        timestamp: entity.timestamp.value,
+        timestamp: DateTime.fromISO(entity.timestamp.value)
+          .setZone('Asia/Tokyo')
+          .toISO(),
         answers: {
           happiness1: entity.happiness1.value,
           happiness2: entity.happiness2.value,
@@ -347,7 +350,9 @@ export class HappinessService {
     const result: GraphData[] = [];
 
     while (startDate <= endDate) {
-      const timestamp = startISOSting;
+      const timestamp = DateTime.fromISO(startISOSting)
+        .setZone('Asia/Tokyo')
+        .toISO();
 
       const filteredData = entities.filter((entity) => {
         const entityTimestamp = entity.timestamp.value;
