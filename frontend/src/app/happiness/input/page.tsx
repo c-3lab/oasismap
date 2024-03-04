@@ -65,7 +65,7 @@ const HappinessInput: React.FC = () => {
     await postData(backendurl, session?.user!.accessToken!, {
       latitude: position.latitude,
       longitude: position.longitude,
-      happiness: checkboxValues,
+      answers: checkboxValues,
     })
     noticeMessageContext.showMessage('幸福度の送信が完了しました')
     router.push(`/happiness/${referral}`)

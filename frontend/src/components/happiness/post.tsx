@@ -1,7 +1,7 @@
 interface Happiness {
   latitude: number
   longitude: number
-  happiness: {
+  answers: {
     happiness1: number
     happiness2: number
     happiness3: number
