@@ -58,7 +58,7 @@ export class HappinessService {
   async findHapinessAll(
     start: string,
     end: string,
-    period: 'time' | 'date' | 'month',
+    period: 'time' | 'day' | 'month',
     zoomLevel: number,
   ): Promise<HappinessAllResponse> {
     const query = `timestamp>=${start};timestamp<=${end}`;
@@ -340,7 +340,7 @@ export class HappinessService {
     entities: HappinessEntities[],
     start: string,
     end: string,
-    period: 'time' | 'date' | 'month',
+    period: 'time' | 'day' | 'month',
   ): GraphData[] {
     const startDate = new Date(start);
     const endDate = new Date(end);
@@ -354,7 +354,7 @@ export class HappinessService {
         return entityTimestamp.startsWith(
           timestamp.slice(
             0,
-            period === 'time' ? 13 : period === 'date' ? 10 : 7,
+            period === 'time' ? 13 : period === 'day' ? 10 : 7,
           ),
         );
       });
@@ -381,7 +381,7 @@ export class HappinessService {
 
       if (period === 'time') {
         startDate.setHours(startDate.getHours() + 1);
-      } else if (period === 'date') {
+      } else if (period === 'day') {
         startDate.setDate(startDate.getDate() + 1);
       } else if (period === 'month') {
         startDate.setMonth(startDate.getMonth() + 1);

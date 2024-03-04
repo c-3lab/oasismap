@@ -1,6 +1,6 @@
 export class GetHappinessAllDto {
   readonly start: string;
   readonly end: string;
-  readonly period: 'time' | 'date' | 'month';
+  readonly period: 'time' | 'day' | 'month';
   readonly zoomLevel: number;
 }
