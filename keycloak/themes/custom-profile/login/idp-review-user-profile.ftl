@@ -1,4 +1,7 @@
-<#import "template.ftl" as layout>
+<#import "template-idp-review-user-profile.ftl" as layout>
+<div id="custom-header" class="custom-header">
+    <div class="custom-header-label">${realm.displayNameHtml!''}</div>
+</div>
 <#import "user-profile-commons.ftl" as userProfileCommons>
 <@layout.registrationLayout displayMessage=messagesPerField.exists('global') displayRequiredFields=true; section>
     <#if section = "header">
@@ -10,12 +13,18 @@
 
             <div class="${properties.kcFormGroupClass!}">
                 <div id="kc-form-options" class="${properties.kcFormOptionsClass!}">
-                    <div class="${properties.kcFormOptionsWrapperClass!}">
+                    <div>
+                        <input type="checkbox" id="terms-checkbox" class="terms-checkbox" name="terms" onchange="onChangeCheckboxes()">
+                        <label for="terms-checkbox" class="terms-checkbox-label"><a href="利用規約URL" target="_blank">${msg("termsOfUse")}</a></label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="privacy-checkbox" class="privacy-checkbox" name="privacy" onchange="onChangeCheckboxes()">
+                        <label for="privacy-checkbox" class="privacy-checkbox-label"><a href="プライバシーポリシーURL" target="_blank">${msg("termsOfPrivacy")}</a></label>
                     </div>
                 </div>
 
                 <div id="kc-form-buttons" class="${properties.kcFormButtonsClass!}">
-                    <input class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" type="submit" value="${msg("doSubmit")}" />
+                    <input class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" type="submit" value="${msg("doRegistration")}" id="submit-button" disabled />
                 </div>
             </div>
         </form>
