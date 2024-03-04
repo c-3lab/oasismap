@@ -51,7 +51,7 @@ const HappinessMe: React.FC = () => {
   useEffect(() => {
     if (!session) return
     getData()
-  }, [session])
+  }, [session?.user?.accessToken])
 
   const startDateTimeProps = useDateTime({
     date: defaultStart.date,
