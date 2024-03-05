@@ -22,7 +22,7 @@
         },
         {
             "key": "RealmLoginTheme",
-            "value": "keycloak"
+            "value": "custom-profile"
         },
         {
             "key": "RealmMunicipalUserGroupName",
