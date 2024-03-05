@@ -55,12 +55,12 @@ body {
 }
 
 /* チェックボックス */
-.termsCheckbox, .privacyCheckbox {
+.terms-checkbox, .privacy-checkbox {
   transform: scale(1.5);
 }
 
 /* チェックボックスラベル */
-.termsCheckboxLabel, .privacyCheckboxLabel {
+.terms-checkbox-label, .privacy-checkbox-label {
   font-size: 16px;
   margin-left: 10px;
 }

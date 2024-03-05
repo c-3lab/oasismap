@@ -26,7 +26,7 @@ window.addEventListener('load', () => {
 
 // チェック済みの場合のみ登録するボタンを活性化
 const checkCheckboxes = () => {
-  const termsChecked = document.getElementById('termsCheckbox').checked;
-  const privacyChecked = document.getElementById('privacyCheckbox').checked;
+  const termsChecked = document.getElementById('terms-checkbox').checked;
+  const privacyChecked = document.getElementById('privacy-checkbox').checked;
   document.getElementById('submitButton').disabled = !(termsChecked && privacyChecked);
 };

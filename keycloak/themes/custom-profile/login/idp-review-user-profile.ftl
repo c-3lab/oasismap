@@ -14,11 +14,11 @@
             <div class="${properties.kcFormGroupClass!}">
                 <div id="kc-form-options" class="${properties.kcFormOptionsClass!}">
                     <div>
-                        <input type="checkbox" id="terms-checkbox" class="terms-checkbox" name="terms" onchange="onChangeCheckboxes()">
+                        <input type="checkbox" id="terms-checkbox" class="terms-checkbox" name="terms" onchange="checkCheckboxes()">
                         <label for="terms-checkbox" class="terms-checkbox-label"><a href="${client.attributes.tosUri}" target="_blank">${msg("termsOfUse")}</a></label>
                     </div>
                     <div>
-                        <input type="checkbox" id="privacy-checkbox" class="privacy-checkbox" name="privacy" onchange="onChangeCheckboxes()">
+                        <input type="checkbox" id="privacy-checkbox" class="privacy-checkbox" name="privacy" onchange="checkCheckboxes()">
                         <label for="privacy-checkbox" class="privacy-checkbox-label"><a href="${client.attributes.policyUri}" target="_blank">${msg("termsOfPrivacy")}</a></label>
                     </div>
                 </div>
