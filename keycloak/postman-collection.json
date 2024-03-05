@@ -735,7 +735,7 @@
 			"response": []
 		},
 		{
-			"name": "認証フロー first broker login にある Review Profile を無効",
+			"name": "認証フロー first broker login にある Review Profile を必須化",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -751,7 +751,7 @@
 							"    }, function (error, response) {\r",
 							"        if (!error) {\r",
 							"            let body = response.json();\r",
-							"            body[0].requirement = \"DISABLED\";\r",
+							"            body[0].requirement = \"REQUIRED\";\r",
 							"            pm.collectionVariables.set(\"TEMP_REQUEST_BODY\", JSON.stringify(body[0]));\r",
 							"            return;\r",
 							"        } else {\r",
@@ -772,7 +772,7 @@
 							"    pm.response.to.have.status(202);\r",
 							"});\r",
 							"\r",
-							"pm.test(\"認証フロー first broker login 内の Review Profile が無効であること\", function () {\r",
+							"pm.test(\"認証フロー first broker login 内の Review Profile が必須であること\", function () {\r",
 							"    new Promise(() => {\r",
 							"        pm.sendRequest({\r",
 							"            url:  pm.variables.get(\"KeycloakRootURL\") + \"/admin/realms/\" + pm.variables.get(\"RealmName\") + \"/authentication/flows/first broker login/executions\", \r",
@@ -782,7 +782,7 @@
 							"            },\r",
 							"        }, function (error, response) {\r",
 							"            if (!error) {\r",
-							"                pm.expect(response.json()[0].requirement).to.be.equal(\"DISABLED\");\r",
+							"                pm.expect(response.json()[0].requirement).to.be.equal(\"REQUIRED\");\r",
 							"                return;\r",
 							"            }\r",
 							"            console.error(error);\r",
@@ -1196,6 +1196,66 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "ユーザープロファイル機能の追加",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.unset(\"prefecture\");\r",
+							"pm.collectionVariables.unset(\"city\");\r",
+							"pm.test(\"HTTP ステータスコードの確認 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"if (!pm.variables.has(\"PrefectureList\")) {\r",
+							"    console.log(\"環境変数 PrefectureList が設定されていないため、この処理はスキップされます。\");\r",
+							"    pm.execution.skipRequest();\r",
+							"}\r",
+							"let prefectureAndCities=JSON.parse(`{\"value\": ` + pm.variables.get(\"PrefectureList\").replace(/\\\\\"/g, '\"').replace(/\\n/g, '') + `}`).value[0];\r",
+							"pm.collectionVariables.set(\"prefecture\", JSON.stringify(Object.keys(prefectureAndCities)));\r",
+							"pm.collectionVariables.set(\"city\", JSON.stringify(Object.values(prefectureAndCities).flat()));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"attributes\": [\r\n    {\r\n      \"name\": \"username\",\r\n      \"displayName\": \"${username}\",\r\n      \"validations\": {\r\n        \"length\": {\r\n          \"min\": 3,\r\n          \"max\": 255\r\n        },\r\n        \"username-prohibited-characters\": {},\r\n        \"up-username-not-idn-homograph\": {}\r\n      },\r\n      \"annotations\": {},\r\n      \"permissions\": {\r\n        \"view\": [\r\n          \"admin\",\r\n          \"user\"\r\n        ],\r\n        \"edit\": [\r\n          \"admin\"\r\n        ]\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"email\",\r\n      \"displayName\": \"${email}\",\r\n      \"validations\": {\r\n        \"email\": {},\r\n        \"length\": {\r\n          \"max\": 255\r\n        }\r\n      },\r\n      \"annotations\": {},\r\n      \"required\": {\r\n        \"roles\": [\r\n          \"user\"\r\n        ]\r\n      },\r\n      \"permissions\": {\r\n        \"view\": [\r\n          \"admin\",\r\n          \"user\"\r\n        ],\r\n        \"edit\": []\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"firstName\",\r\n      \"displayName\": \"${firstName}\",\r\n      \"validations\": {\r\n        \"length\": {\r\n          \"max\": 255\r\n        },\r\n        \"person-name-prohibited-characters\": {}\r\n      },\r\n      \"annotations\": {},\r\n      \"permissions\": {\r\n        \"view\": [\r\n          \"admin\",\r\n          \"user\"\r\n        ],\r\n        \"edit\": []\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"lastName\",\r\n      \"displayName\": \"${lastName}\",\r\n      \"validations\": {\r\n        \"length\": {\r\n          \"max\": 255\r\n        },\r\n        \"person-name-prohibited-characters\": {}\r\n      },\r\n      \"annotations\": {},\r\n      \"permissions\": {\r\n        \"view\": [\r\n          \"admin\",\r\n          \"user\"\r\n        ],\r\n        \"edit\": []\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"nickname\",\r\n      \"displayName\": \"${profile.attribute.nickname}\",\r\n      \"validations\": {\r\n        \"pattern\": {\r\n          \"pattern\": \"[a-zA-Z0-9-_]+\",\r\n          \"error-message\": \"profile.error.nickname\"\r\n        }\r\n      },\r\n      \"annotations\": {},\r\n      \"required\": {\r\n        \"roles\": [\r\n          \"admin\",\r\n          \"user\"\r\n        ]\r\n      },\r\n      \"permissions\": {\r\n        \"view\": [],\r\n        \"edit\": [\r\n          \"admin\",\r\n          \"user\"\r\n        ]\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"prefecture\",\r\n      \"displayName\": \"${profile.attribute.prefecture}\",\r\n      \"validations\": {\r\n        \"options\": {\r\n          \"options\": {{prefecture}}\r\n        }\r\n      },\r\n      \"annotations\": {\r\n        \"inputType\": \"select\"\r\n      },\r\n      \"required\": {\r\n        \"roles\": [\r\n          \"user\"\r\n        ]\r\n      },\r\n      \"permissions\": {\r\n        \"view\": [],\r\n        \"edit\": [\r\n          \"user\"\r\n        ]\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"city\",\r\n      \"displayName\": \"${profile.attribute.city}\",\r\n      \"validations\": {\r\n        \"options\": {\r\n          \"options\": {{city}}\r\n        }\r\n      },\r\n      \"annotations\": {\r\n        \"inputType\": \"select\"\r\n      },\r\n      \"required\": {\r\n        \"roles\": [\r\n          \"user\"\r\n        ]\r\n      },\r\n      \"permissions\": {\r\n        \"view\": [],\r\n        \"edit\": [\r\n          \"user\"\r\n        ]\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"age\",\r\n      \"displayName\": \"${profile.attribute.age}\",\r\n      \"validations\": {\r\n        \"options\": {\r\n          \"options\": [\r\n            \"10代以下\",\r\n            \"20代\",\r\n            \"30代\",\r\n            \"40代\",\r\n            \"50代\",\r\n            \"60代以上\",\r\n            \"その他\"\r\n          ]\r\n        }\r\n      },\r\n      \"annotations\": {\r\n        \"inputType\": \"select\"\r\n      },\r\n      \"required\": {\r\n        \"roles\": [\r\n          \"user\"\r\n        ]\r\n      },\r\n      \"permissions\": {\r\n        \"view\": [],\r\n        \"edit\": [\r\n          \"user\"\r\n        ]\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"gender\",\r\n      \"displayName\": \"${profile.attribute.gender}\",\r\n      \"validations\": {\r\n        \"options\": {\r\n          \"options\": [\r\n            \"男性\",\r\n            \"女性\",\r\n            \"その他\",\r\n            \"回答しない\"\r\n          ]\r\n        }\r\n      },\r\n      \"annotations\": {\r\n        \"inputType\": \"select\"\r\n      },\r\n      \"required\": {\r\n        \"roles\": [\r\n          \"user\"\r\n        ]\r\n      },\r\n      \"permissions\": {\r\n        \"view\": [],\r\n        \"edit\": [\r\n          \"user\"\r\n        ]\r\n      }\r\n    }\r\n  ],\r\n  \"groups\": []\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/users/profile",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}",
+						"users",
+						"profile"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"auth": {
@@ -1242,9 +1302,10 @@
 					"    ]",
 					"}",
 					"}, function (error, res) {",
-					"    console.error(error);",
 					"    if (!error) {",
 					"        pm.variables.set(\"KeycloakAdminAccessToken\", res.json().access_token);",
+					"    } else {",
+					"        console.error(error);",
 					"    }",
 					"});"
 				]

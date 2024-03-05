@@ -6,10 +6,15 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
 ## 前提条件
 1. Docker を利用できる環境であること。
 1. Docker イメージ postman/newman を利用できる環境であること。
+1. bash を利用できる環境であること。
+1. jq を利用できる環境であること。
+1. 都道府県名をキーとし、その値が対応する市町村名が記載された配列のJSONファイルが存在していること。(output.json)
 
 ## 動作確認環境
 - OS: Ubuntu 20.04.6
 - Docker: version 25.0.3
+- bash: version 5.0.17(1)-release
+- jq: version 1.6
 
 ## ディレクリ構成
 ```
@@ -17,6 +22,8 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
 └── keycloak
      ├── postman-collection.json  (Postman コレクション情報 version 2.1)
      ├── README.md (このファイル)
+     ├── formatting-variables.sh (都道府県および市町村情報を環境変数に追加するスクリプト)
+     ├── cities.json (都道府県名と市町村名が記載されているjsonファイル)
      └── variables.json  (環境変数情報)
 ```
 
@@ -42,6 +49,17 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
    - GoogleClientSecret: アイデンティティプロバイダー Google と接続する場合の Google Cloud Platform から発行されるクライアントシークレット
    - PostBrokerLoginFlowAlias: アイデンティティプロバイダー Google を通したログイン後に実行する認証フロー名
    - ClientRootURL: Webアプリケーション (クライアント) のルートURL (例: http://localhost:3000 または https://event.example.com など)
+1. 手順 1 でコピーしたディレクトリにて、以下のように formatting-variables.sh ファイルを実行します。  
+
+   ```
+   bash formatting-variables.sh {都道府県名と市町村名が記載されているjsonファイルのパス}
+   ```
+
+   実行例:
+   ```
+   example@ubuntu:~/oasismap/keycloak$ bash formatting-variables.sh cities.json
+   variables.jsonを更新しました。
+   ```
 
 ## 実行手順
 1. ディレクトリ keycloak を配置した端末にて、以下のように docker コマンドを実行します。  
@@ -59,12 +77,12 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
 
    実行例:
    ```
-   KEYCLOAK_ADMIN=admin
-   KEYCLOAK_ADMIN_PASSWORD=********
-   example@ubuntu:~$ docker run --network oasismap_backend-network --volume /home/example/oasismap/keycloak:/etc/newman/keycloak \
+   example@ubuntu:~/oasismap/keycloak$ KEYCLOAK_ADMIN=admin
+   example@ubuntu:~/oasismap/keycloak$ KEYCLOAK_ADMIN_PASSWORD=********
+   example@ubuntu:~/oasismap/keycloak$ docker run --network oasismap_backend-network --volume /home/example/oasismap/keycloak:/etc/newman/keycloak \
    > postman/newman:latest run --bail --environment /etc/newman/keycloak/variables.json \
-     --env-var "KeycloakAdminUser=$KEYCLOAK_ADMIN" \
-     --env-var "KeycloakAdminPassword=$KEYCLOAK_ADMIN_PASSWORD" \
+   > --env-var "KeycloakAdminUser=$KEYCLOAK_ADMIN" \
+   > --env-var "KeycloakAdminPassword=$KEYCLOAK_ADMIN_PASSWORD" \
    > /etc/newman/keycloak/postman-collection.json
    newman
 
@@ -72,9 +90,6 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
 
    → 追加対象のレルム削除
     POST http://keycloak:8080/realms/master/protocol/openid-connect/token [200 OK, 2.5kB, 101ms]
-
-     null
-
     DELETE http://keycloak:8080/admin/realms/oasismap [204 No Content, 187B, 958ms]
     ?  HTTP ステータスコードの確認 204 No Content or 404 Not Found
 
@@ -86,30 +101,27 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
       ・
       ・
 
-   → 自治体向けクライアントの追加
-    POST http://keycloak:8080/realms/master/protocol/openid-connect/token [200 OK, 2.44kB, 45ms]
-
-     null
-
-    POST http://keycloak:8080/admin/realms/oasismap/clients [201 Created, 331B, 13ms]
-    ?  HTTP ステータスコードの確認 201 Created
+   → ユーザープロファイル機能の追加
+    POST http://keycloak:8080/realms/master/protocol/openid-connect/token [200 OK, 2.44kB, 33ms]
+    PUT http://keycloak:8080/admin/realms/oasismap/users/profile [200 OK, 1.91kB, 75ms]
+    ?  HTTP ステータスコードの確認 200 OK
 
     ┌─────────────────────────┬──────────────────────┬───────────────────┐
     │                         │             executed │            failed │
     ├─────────────────────────┼──────────────────────┼───────────────────┤
     │              iterations │                   1  │                0  │
     ├─────────────────────────┼──────────────────────┼───────────────────┤
-    │                requests │                  42  │                0  │
+    │                requests │                  44  │                0  │
     ├─────────────────────────┼──────────────────────┼───────────────────┤
-    │            test-scripts │                  32  │                0  │
+    │            test-scripts │                  34  │                0  │
     ├─────────────────────────┼──────────────────────┼───────────────────┤
-    │      prerequest-scripts │                  31  │                0  │
+    │      prerequest-scripts │                  33  │                0  │
     ├─────────────────────────┼──────────────────────┼───────────────────┤
-    │              assertions │                  18  │                0  │
+    │              assertions │                  19  │                0  │
     ├─────────────────────────┴──────────────────────┴───────────────────┤
     │ total run duration: 6.6s                                           │
     ├────────────────────────────────────────────────────────────────────┤
-    │ total data received: 102.39kB (approx)                             │
+    │ total data received: 105.9kB (approx)                              │
     ├────────────────────────────────────────────────────────────────────┤
     │ average response time: 97ms [min: 6ms, max: 1904ms, s.d.: 277ms]   │
     └────────────────────────────────────────────────────────────────────┘
