@@ -22,6 +22,8 @@ services:
     environment:
       - "API_PORT=4000"
       - "ORION_URI=http://orion:1026"
+      - "ORION_FIWARE_SERVICE=Goverment"
+      - "ORION_FIWARE_SERVICE_PATH=/Happiness"
       - "POSTGRES_HOST=postgres"
       - "POSTGRES_PORT=5432"
       - "POSTGRES_USERNAME=${POSTGREUSER}"
