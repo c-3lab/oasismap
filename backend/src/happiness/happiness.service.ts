@@ -15,6 +15,7 @@ import {
 import { CreateHappinessDto } from './dto/create-happiness.dto';
 import { UserAttribute } from 'src/auth/interface/user-attribute';
 import { HappinessResponse } from './interface/happiness.response';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class HappinessService {
@@ -50,7 +51,7 @@ export class HappinessService {
     start: string,
     end: string,
   ): Promise<HappinessMeResponse[]> {
-    const query = `nickname==${nickname};timestamp>=${start};timestamp<=${end}`;
+    const query = `nickname==${nickname};timestamp>=${new Date(start).toISOString()};timestamp<=${new Date(end).toISOString()}`;
     const happinessEntities = await this.getHappinessEntities(query);
     return this.toHappinessMeResponse(happinessEntities);
   }
@@ -58,10 +59,13 @@ export class HappinessService {
   async findHapinessAll(
     start: string,
     end: string,
-    period: 'time' | 'date' | 'month',
+    period: 'time' | 'day' | 'month',
     zoomLevel: number,
   ): Promise<HappinessAllResponse> {
-    const query = `timestamp>=${start};timestamp<=${end}`;
+    const startISOSting = new Date(start).toISOString();
+    const endISOSting = new Date(end).toISOString();
+
+    const query = `timestamp>=${startISOSting};timestamp<=${endISOSting}`;
     const happinessEntities = await this.getHappinessEntities(query);
     const gridEntities = this.generateGridEntities(
       zoomLevel,
@@ -72,8 +76,8 @@ export class HappinessService {
       map_data: this.toHappinessAllMapData(gridEntities),
       graph_data: this.calculateGraphData(
         happinessEntities,
-        start,
-        end,
+        startISOSting,
+        endISOSting,
         period,
       ),
     };
@@ -89,27 +93,27 @@ export class HappinessService {
       type: 'happiness',
       happiness1: {
         type: 'Number',
-        value: body.happiness.happiness1,
+        value: body.answers.happiness1,
       },
       happiness2: {
         type: 'Number',
-        value: body.happiness.happiness2,
+        value: body.answers.happiness2,
       },
       happiness3: {
         type: 'Number',
-        value: body.happiness.happiness3,
+        value: body.answers.happiness3,
       },
       happiness4: {
         type: 'Number',
-        value: body.happiness.happiness4,
+        value: body.answers.happiness4,
       },
       happiness5: {
         type: 'Number',
-        value: body.happiness.happiness5,
+        value: body.answers.happiness5,
       },
       happiness6: {
         type: 'Number',
-        value: body.happiness.happiness6,
+        value: body.answers.happiness6,
       },
       timestamp: {
         type: 'DateTime',
@@ -197,10 +201,9 @@ export class HappinessService {
             ],
           },
         },
-        timestamp: {
-          type: entity.timestamp.type,
-          value: entity.timestamp.value,
-        },
+        timestamp: DateTime.fromISO(entity.timestamp.value)
+          .setZone('Asia/Tokyo')
+          .toISO(),
         answers: {
           happiness1: entity.happiness1.value,
           happiness2: entity.happiness2.value,
@@ -338,23 +341,25 @@ export class HappinessService {
 
   private calculateGraphData(
     entities: HappinessEntities[],
-    start: string,
-    end: string,
-    period: 'time' | 'date' | 'month',
+    startISOSting: string,
+    endISOSting: string,
+    period: 'time' | 'day' | 'month',
   ): GraphData[] {
-    const startDate = new Date(start);
-    const endDate = new Date(end);
+    const startDate = new Date(startISOSting);
+    const endDate = new Date(endISOSting);
     const result: GraphData[] = [];
 
     while (startDate <= endDate) {
-      const timestamp = startDate.toISOString();
+      const timestamp = DateTime.fromISO(startISOSting)
+        .setZone('Asia/Tokyo')
+        .toISO();
 
       const filteredData = entities.filter((entity) => {
-        const entityTimestamp = new Date(entity.timestamp.value).toISOString();
+        const entityTimestamp = entity.timestamp.value;
         return entityTimestamp.startsWith(
           timestamp.slice(
             0,
-            period === 'time' ? 13 : period === 'date' ? 10 : 7,
+            period === 'time' ? 13 : period === 'day' ? 10 : 7,
           ),
         );
       });
@@ -381,7 +386,7 @@ export class HappinessService {
 
       if (period === 'time') {
         startDate.setHours(startDate.getHours() + 1);
-      } else if (period === 'date') {
+      } else if (period === 'day') {
         startDate.setDate(startDate.getDate() + 1);
       } else if (period === 'month') {
         startDate.setMonth(startDate.getMonth() + 1);
