@@ -3,6 +3,7 @@ import Typography from '@mui/material/Typography'
 import IconButton from '@mui/material/IconButton'
 import MenuIcon from '@mui/icons-material/Menu'
 import AppBar from '@mui/material/AppBar'
+import { PROFILE_TYPE } from '@/libs/constants'
 import { useSession } from 'next-auth/react'
 
 interface HeaderProps {
@@ -12,7 +13,12 @@ interface HeaderProps {
 
 const Nickname = () => {
   const { data: session } = useSession()
-  return session ? `${session.user!.nickname} さん` : ''
+  const titles = {
+    [PROFILE_TYPE.GENERAL]: ' さん',
+    [PROFILE_TYPE.ADMIN]: '',
+  }
+  const title = titles[session?.user?.type!]
+  return session ? `${session.user!.nickname}${title}` : ''
 }
 
 const Header: React.FC<HeaderProps> = ({

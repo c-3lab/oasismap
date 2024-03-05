@@ -2,6 +2,7 @@
 import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { ResponsiveContainer } from 'recharts'
@@ -14,6 +15,7 @@ import {
 
 import { LineGraph, ourHappinessData } from '@/components/happiness/graph'
 import fetchData from '@/components/happiness/fetch'
+import { PROFILE_TYPE } from '@/libs/constants'
 const backendurl = 'http://localhost:8000/api/happiness/all'
 
 const HappinessAll: React.FC = () => {
@@ -21,6 +23,7 @@ const HappinessAll: React.FC = () => {
   const [period, setPeriod] = useState(PeriodType.Month)
   const [pinData, setPinData] = useState<any>([])
   const [OurHappiness, setOurHappiness] = useState<any>([])
+  const { data: session } = useSession()
 
   const getData = async () => {
     try {
@@ -166,17 +169,19 @@ const HappinessAll: React.FC = () => {
               </Button>
             </Grid>
           </Grid>
-          <Grid item xs={12} md={12} lg={8}>
-            <Button
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-              onClick={() => router.push('/happiness/input?referral=all')}
-            >
-              幸福度を入力
-            </Button>
-          </Grid>
+          {session?.user?.type === PROFILE_TYPE.GENERAL && (
+            <Grid item xs={12} md={12} lg={8}>
+              <Button
+                variant="contained"
+                color="primary"
+                size="large"
+                fullWidth
+                onClick={() => router.push('/happiness/input?referral=all')}
+              >
+                幸福度を入力
+              </Button>
+            </Grid>
+          )}
         </Grid>
       </Grid>
     </Grid>

@@ -45,12 +45,15 @@ const handler = NextAuth({
       })
 
       token.nickname = decodedToken.nickname
-
+      token.userType = decodedToken.userType
       return token
     },
     async session({ session, token }) {
       if (token.nickname) {
         session.user.nickname = token.nickname as string
+      }
+      if (token.userType) {
+        session.user.type = token.userType as string
       }
 
       return session
