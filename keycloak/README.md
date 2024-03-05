@@ -23,6 +23,7 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
      ├── postman-collection.json  (Postman コレクション情報 version 2.1)
      ├── README.md (このファイル)
      ├── formatting-variables.sh (都道府県および市町村情報を環境変数に追加するスクリプト)
+     ├── cities.json (都道府県名と市町村名が記載されているjsonファイル)
      └── variables.json  (環境変数情報)
 ```
 
@@ -56,7 +57,7 @@ Keycloak の Admin REST API に対して、PostmanのCLI版である newman で 
 
    実行例:
    ```
-   example@ubuntu:~/oasismap/keycloak$ bash formatting-variables.sh /tmp/output.json
+   example@ubuntu:~/oasismap/keycloak$ bash formatting-variables.sh cities.json
    variables.jsonを更新しました。
    ```
 
