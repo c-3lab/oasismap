@@ -58,17 +58,30 @@ cp _env .env
 2. .env の設定値を環境に合わせて編集する
 
 以下一例
+
+※`GENERAL_USER_KEYCLOAK_CLIENT_SECRET` は後ほど設定
 ```
 MONGOUSERNAME=user
 MONGOPASSWORD=pass
 POSTGREUSER=user
 POSTGREPASSWORD=pass
+
 MAP_DEFAULT_LATITUDE=35.967169
 MAP_DEFAULT_LONGITUDE=139.394617
 MAP_DEFAULT_ZOOM=13
 DATASET_LIST_BY=menu
+
+KEYCLOAK_ADMIN=example
+KEYCLOAK_ADMIN_PASSWORD=CHANGE_TO_RANDOM_STRING
 KC_HOSTNAME_URL=https://xxxx-xxx-xxx-x-xx.ngrok-free.app
 KC_HOSTNAME_ADMIN_URL=https://xxxx-xxx-xxx-x-xx.ngrok-free.app
+
+GENERAL_USER_KEYCLOAK_CLIENT_ID=general-user-client
+GENERAL_USER_KEYCLOAK_CLIENT_SECRET=
+KEYCLOAK_CLIENT_ISSUER=https://xxxx-xxx-xxx-x-xx.ngrok-free.app/realms/oasismap
+
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=sampleRandamString
 ```
 
 ### keycloak 初期設定
@@ -143,13 +156,27 @@ NAME       ...(省略) STATUS          ...(省略) PORTS
 backend              Up 1 minutes             0.0.0.0:4000->4000/tcp, :::4000->4000/tcp
 frontend             Up 1 minutes             0.0.0.0:3000->3000/tcp, :::3000->3000/tcp
 keycloak             Up 1 minutes             0.0.0.0:8080->8080/tcp, :::8080->8080/tcp, 8443/tcp
+mongo                Up 1 minutes             27017/tcp
+orion                Up 1 minutes             0.0.0.0:1026->1026/tcp, :::1026
 postgres             Up 1 minutes             5432/tcp
 ```
+
+### Google Cloud 事前準備
+1. [Google Cloud](https://console.cloud.google.com/apis/credentials)に接続
+
+2. `プロジェクトを選択` から新しいプロジェクトを作成
+
+3. `認証情報を作成` を選択して `OAuth クライアント ID` を作成
+
+4. アプリケーションの種類に `ウェブアプリケーション` を選択して作成
+
+5. クライアントID、シークレットを `keycloak/variables.json` の `GoogleClientID` `GoogleClientSecret` に転記
+
 
 ### Keycloak 自動設定
 [レルム初期セットアップ](keycloak/README.md) 手順を実施
 
-### 接続確認
+### 環境変数の準備と追加
 
 #### Keycloak
 1. 以下にブラウザから接続して「Welcome to Keycloak」ページを確認
@@ -160,6 +187,27 @@ http://localhost:8080
 2. 「Administration Console」をクリック
 
 3. 環境変数 `KEYCLOAK_ADMIN` `KEYCLOAK_ADMIN_PASSWORD` に指定した認証情報でログイン
+
+4. Google CloudにリダイレクトURIを設定
+    1. `realm` から `oasismap` を選択
+    2. 左のメニューバーから `Identity providers` を選択
+    3. `google` をクリック
+    4. `Redirect URI` の値をコピーして控えておく
+    5. [Google Cloud](https://console.cloud.google.com/apis/credentials)に接続
+    6. 事前準備にて作成した認証情報を選択
+    7. `承認済みのリダイレクトURI` に控えておいた `Redirect URI` を転記
+
+5. 環境変数 `GENERAL_USER_KEYCLOAK_CLIENT_SECRET`の設定
+    1. `realm` から `oasismap` を選択
+    2. 左のメニューバーから `client` をクリック
+    3. `general-user-client` をクリック
+    4. `Credentials` をクリック
+    5. `Client Secret` の値を `GENERAL_USER_KEYCLOAK_CLIENT_SECRET` に転記
+
+6. コンテナを再起動して環境変数を反映させる
+```
+docker compose -f docker-compose-dev.yml up -d frontend
+```
 
 #### フロントエンド
 1. コンテナに入る
