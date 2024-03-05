@@ -59,7 +59,7 @@ cp _env .env
 
 以下一例
 
-※`GENERAL_USER_KEYCLOAK_CLIENT_SECRET` は後ほど設定
+※`GENERAL_USER_KEYCLOAK_CLIENT_SECRET` , `ADMIN_KEYCLOAK_CLIENT_SECRET` は後ほど設定
 ```
 MONGOUSERNAME=user
 MONGOPASSWORD=pass
@@ -78,6 +78,8 @@ KC_HOSTNAME_ADMIN_URL=https://xxxx-xxx-xxx-x-xx.ngrok-free.app
 
 GENERAL_USER_KEYCLOAK_CLIENT_ID=general-user-client
 GENERAL_USER_KEYCLOAK_CLIENT_SECRET=
+ADMIN_KEYCLOAK_CLIENT_ID=admin-client
+ADMIN_KEYCLOAK_CLIENT_SECRET=
 KEYCLOAK_CLIENT_ISSUER=https://xxxx-xxx-xxx-x-xx.ngrok-free.app/realms/oasismap
 
 NEXTAUTH_URL=http://localhost:3000
@@ -204,7 +206,14 @@ http://localhost:8080
     4. `Credentials` をクリック
     5. `Client Secret` の値を `GENERAL_USER_KEYCLOAK_CLIENT_SECRET` に転記
 
-6. コンテナを再起動して環境変数を反映させる
+6. 環境変数 `ADMIN_KEYCLOAK_CLIENT_SECRET`の設定
+    1. `realm` に `oasismap` を選択
+    2. 左のメニューバーから `client` をクリック
+    3. `admin-client` をクリック
+    4. `Credentials` をクリック
+    5. `Client Secret` の値を `ADMIN_KEYCLOAK_CLIENT_SECRET` に転記
+
+7. コンテナを再起動して環境変数を反映させる
 ```
 docker compose -f docker-compose-dev.yml up -d frontend
 ```
