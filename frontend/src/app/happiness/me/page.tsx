@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { DateTime } from 'luxon'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { ResponsiveContainer } from 'recharts'
@@ -27,11 +28,16 @@ const HappinessMe: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const { data: session, status } = useSession()
 
+  const defaultStart = DateTime.local().minus({ days: 1 })
+  const defaultEnd = DateTime.local()
+
   const getData = async () => {
     try {
       const url = backendUrl + '/api/happiness/me'
       const startDateTime = toDateTime(startDateTimeProps.value).toISO()
-      const endDateTime = toDateTime(endDateTimeProps.value).toISO()
+      const endDateTime = toDateTime(endDateTimeProps.value)
+        .endOf('minute')
+        .toISO()
       // 日付の変換に失敗した場合
       if (!startDateTime || !endDateTime) {
         console.error('Date conversion failed.')
@@ -53,23 +59,23 @@ const HappinessMe: React.FC = () => {
   }
 
   useEffect(() => {
-    return setIsLoading(false);
-  }, []);
+    return setIsLoading(false)
+  }, [])
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading) return
     if (status !== 'authenticated') return
     getData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading, status])
 
   const startDateTimeProps = useDateTime({
-    date: '2024-01-26',
-    time: '09:00',
+    date: defaultStart.toFormat('yyyy-MM-dd'),
+    time: defaultStart.toFormat('HH:mm'),
   })
   const endDateTimeProps = useDateTime({
-    date: '2024-01-27',
-    time: '12:00',
+    date: defaultEnd.toFormat('yyyy-MM-dd'),
+    time: defaultEnd.toFormat('HH:mm'),
   })
 
   const renderCustomDayTick = (tickProps: any) => {
