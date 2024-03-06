@@ -70,7 +70,7 @@ const HappinessInput: React.FC = () => {
         {
           latitude: position.latitude!,
           longitude: position.longitude!,
-          happiness: checkboxValues,
+          answers: checkboxValues,
         },
         session?.user?.accessToken!
       )
