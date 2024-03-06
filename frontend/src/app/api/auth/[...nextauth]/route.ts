@@ -45,6 +45,7 @@ const handler = NextAuth({
       })
 
       token.accessToken = account.access_token
+      token.idToken = account.id_token
       token.nickname = decodedToken.nickname
       token.type = decodedToken.profile.type
 
@@ -62,6 +63,18 @@ const handler = NextAuth({
       }
 
       return session
+    },
+  },
+  events: {
+    async signOut({ token }) {
+      if (token.idToken) {
+        const url =
+          process.env.KEYCLOAK_CLIENT_ISSUER + '/protocol/openid-connect/logout'
+        const query = new URLSearchParams({
+          id_token_hint: token.idToken as string,
+        })
+        await fetch(`${url}?${query}`)
+      }
     },
   },
 })
