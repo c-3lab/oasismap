@@ -16,7 +16,9 @@ import {
 import { LineGraph, ourHappinessData } from '@/components/happiness/graph'
 import fetchData from '@/libs/fetch'
 import { PROFILE_TYPE } from '@/libs/constants'
-const backendurl = 'http://localhost:8000/api/happiness/all'
+import { toDateTime } from '@/libs/date-converter'
+
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
 const HappinessAll: React.FC = () => {
   const router = useRouter()
@@ -27,7 +29,20 @@ const HappinessAll: React.FC = () => {
 
   const getData = async () => {
     try {
-      const data = await fetchData(backendurl)
+      const url = backendUrl + '/api/happiness/all'
+      const startDateTime = toDateTime(startDateTimeProps.value).toISO()
+      const endDateTime = toDateTime(endDateTimeProps.value).toISO()
+      // 日付の変換に失敗した場合
+      if (!startDateTime || !endDateTime) {
+        console.error('Date conversion failed.')
+        return
+      }
+      const data = await fetchData(url, {
+        start: startDateTime,
+        end: endDateTime,
+        period: period,
+        zoomLevel: parseInt(process.env.NEXT_PUBLIC_MAP_DEFAULT_ZOOM!) || 13,
+      })
       setPinData(GetPin(data['map_data']))
       setOurHappiness(ourHappinessData(data['graph_data']))
     } catch (error) {
@@ -37,6 +52,7 @@ const HappinessAll: React.FC = () => {
 
   useEffect(() => {
     getData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const startDateTimeProps = useDateTime({

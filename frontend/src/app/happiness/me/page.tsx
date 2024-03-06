@@ -2,6 +2,7 @@
 import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { ResponsiveContainer } from 'recharts'
@@ -14,17 +15,35 @@ import {
 
 import { BarGraph, myHappinessData } from '@/components/happiness/graph'
 import fetchData from '@/libs/fetch'
-const backendurl = 'http://localhost:8000/api/happiness/me'
+import { toDateTime } from '@/libs/date-converter'
+
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
 const HappinessMe: React.FC = () => {
   const router = useRouter()
   const [period, setPeriod] = useState(PeriodType.Month)
   const [pinData, setPinData] = useState<any>([])
   const [MyHappiness, setMyHappiness] = useState<any>([])
+  const { data: session } = useSession()
 
   const getData = async () => {
     try {
-      const data = await fetchData(backendurl)
+      const url = backendUrl + '/api/happiness/me'
+      const startDateTime = toDateTime(startDateTimeProps.value).toISO()
+      const endDateTime = toDateTime(endDateTimeProps.value).toISO()
+      // 日付の変換に失敗した場合
+      if (!startDateTime || !endDateTime) {
+        console.error('Date conversion failed.')
+        return
+      }
+      const data = await fetchData(
+        url,
+        {
+          start: startDateTime,
+          end: endDateTime,
+        },
+        session?.user?.accessToken!
+      )
       setPinData(GetPin(data))
       setMyHappiness(myHappinessData(data))
     } catch (error) {
@@ -34,6 +53,7 @@ const HappinessMe: React.FC = () => {
 
   useEffect(() => {
     getData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const startDateTimeProps = useDateTime({
