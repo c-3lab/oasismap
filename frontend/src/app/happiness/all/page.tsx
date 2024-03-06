@@ -25,7 +25,8 @@ const HappinessAll: React.FC = () => {
   const [period, setPeriod] = useState(PeriodType.Month)
   const [pinData, setPinData] = useState<any>([])
   const [OurHappiness, setOurHappiness] = useState<any>([])
-  const { data: session } = useSession()
+  const [isLoading, setIsLoading] = useState(true)
+  const { data: session, status } = useSession()
 
   const getData = async () => {
     try {
@@ -51,9 +52,15 @@ const HappinessAll: React.FC = () => {
   }
 
   useEffect(() => {
+    return setIsLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (status !== 'authenticated') return
     getData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [isLoading, status])
 
   const startDateTimeProps = useDateTime({
     date: '2024-01-26',
