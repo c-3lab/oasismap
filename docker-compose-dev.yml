@@ -127,6 +127,31 @@ services:
       retries: 10
       start_period: 10s
 
+  cygnus:
+    image: fiware/cygnus-ngsi:3.5.0
+    hostname: cygnus
+    container_name: cygnus
+    depends_on:
+      - postgres
+    ports:
+        - "5055:5055"
+        - "5080:5080"
+    environment:
+      - "CYGNUS_POSTGRESQL_HOST=postgres"
+      - "CYGNUS_POSTGRESQL_PORT=5432"
+      - "CYGNUS_POSTGRESQL_USER=${POSTGREUSER}"
+      - "CYGNUS_POSTGRESQL_PASS=${POSTGREPASSWORD}"
+      - "CYGNUS_POSTGRESQL_ENABLE_CACHE=true"
+      - "CYGNUS_POSTGRESQL_SERVICE_PORT=5055"
+      - "CYGNUS_POSTGRESQL_DATABASE=cygnus"
+      - "CYGNUS_POSTGRESQL_DATA_MODEL=dm-by-service-path"
+      - "CYGNUS_POSTGRESQL_ATTR_PERSISTENCE=column"
+      - "CYGNUS_LOG_LEVEL=DEBUG"
+      - "CYGNUS_SERVICE_PORT=5055"
+      - "CYGNUS_API_PORT=5080"
+    networks:
+      - backend-network
+
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.4
     hostname: keycloak
