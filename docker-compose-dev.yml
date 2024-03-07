@@ -16,6 +16,11 @@ services:
       - "ORION_FIWARE_SERVICE_PATH=/Happiness"
       - "KEYCLOAK_CLIENT_ISSUER=${KEYCLOAK_CLIENT_ISSUER}"
       - "FRONTEND_URL=${NEXTAUTH_URL}"
+      - "POSTGRES_HOST=postgres"
+      - "POSTGRES_PORT=5432"
+      - "POSTGRES_USER=${POSTGREUSER}"
+      - "POSTGRES_PASSWORD=${POSTGREPASSWORD}"
+      - "POSTGRES_DATABASE=cygnus"
     volumes:
       - ./backend:/app/backend
     networks:
