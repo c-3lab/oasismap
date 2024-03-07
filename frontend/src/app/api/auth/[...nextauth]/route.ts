@@ -47,8 +47,7 @@ const handler = NextAuth({
       token.accessToken = account.access_token
       token.idToken = account.id_token
       token.nickname = decodedToken.nickname
-      token.type = decodedToken.profile.type
-
+      token.userType = decodedToken.userType
       return token
     },
     async session({ session, token }) {
@@ -58,8 +57,8 @@ const handler = NextAuth({
       if (token.nickname) {
         session.user.nickname = token.nickname as string
       }
-      if (token.type) {
-        session.user.type = token.type as string
+      if (token.userType) {
+        session.user.type = token.userType as string
       }
 
       return session
