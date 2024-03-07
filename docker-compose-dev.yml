@@ -123,6 +123,7 @@ services:
       - "PGDATABASE=postgres"
     volumes:
       - ./site/postgres/data:/var/lib/postgresql/data
+      - ./setup/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - backend-network
     healthcheck:
