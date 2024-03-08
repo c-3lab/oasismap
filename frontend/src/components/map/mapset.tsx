@@ -7,6 +7,7 @@ import {
   Popup,
   LayersControl,
   LayerGroup,
+  useMapEvent,
 } from 'react-leaflet'
 import { LatLngTuple } from 'leaflet'
 import React from 'react'
@@ -118,6 +119,13 @@ const MapOverlay = ({ type, filteredPins }) => (
   </LayersControl.Overlay>
 )
 
+function MapEvent() {
+  const map = useMapEvent('zoom', () => {
+    console.log(map.getZoom())
+    return null
+  })
+}
+
 const MapSet: React.FC<Props> = ({ pinData }) => {
   const filteredPinsByType = (type) =>
     pinData.filter((pin) => pin.type === type)
@@ -129,10 +137,13 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
       scrollWheelZoom={true}
       zoomControl={false}
     >
+      <MapEvent />
       <ZoomControl position={'bottomleft'} />
       <TileLayer
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
         url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        maxZoom="18"
+        minZoom="10"
       />
       <LayersControl position="topright">
         {Object.keys(questionTitles).map((type) => (
