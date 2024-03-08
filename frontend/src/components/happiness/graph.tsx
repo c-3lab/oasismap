@@ -208,9 +208,6 @@ export function ourHappinessData(objects: happinessObj[]): happinessSet {
   sumData['month'] = sortByCurrentTime(sumData['month'], now.month)
   sumData['day'] = sortByCurrentTime(sumData['day'], now.day)
   sumData['time'] = sortByCurrentTime(sumData['time'], now.hour)
-  console.log(sumData['month'])
-  console.log(sumData['day'])
-  console.log(sumData['time'])
   return sumData
 }
 
@@ -251,9 +248,6 @@ export function myHappinessData(objects: dataObj[]): happinessSet {
   sumData['month'] = sortByCurrentTime(sumData['month'], now.month)
   sumData['day'] = sortByCurrentTime(sumData['day'], now.day)
   sumData['time'] = sortByCurrentTime(sumData['time'], now.hour)
-  console.log(sumData['month'])
-  console.log(sumData['day'])
-  console.log(sumData['time'])
 
   return sumData
 }
