@@ -177,9 +177,12 @@ function sortByCurrentTime(
     (obj) => Number(obj.timestamp) === date
   )
   if (currentIndex !== -1) {
-    objects.unshift(
-      ...objects.splice(currentIndex, objects.length - currentIndex)
-    )
+    const currentTimestampObj = objects.splice(currentIndex, 1)[0]
+    const rotatedArray = objects
+      .slice(currentIndex)
+      .concat(objects.slice(0, currentIndex))
+    rotatedArray.push(currentTimestampObj)
+    return rotatedArray
   }
   return objects
 }
@@ -205,6 +208,9 @@ export function ourHappinessData(objects: happinessObj[]): happinessSet {
   sumData['month'] = sortByCurrentTime(sumData['month'], now.month)
   sumData['day'] = sortByCurrentTime(sumData['day'], now.day)
   sumData['time'] = sortByCurrentTime(sumData['time'], now.hour)
+  console.log(sumData['month'])
+  console.log(sumData['day'])
+  console.log(sumData['time'])
   return sumData
 }
 
@@ -245,6 +251,9 @@ export function myHappinessData(objects: dataObj[]): happinessSet {
   sumData['month'] = sortByCurrentTime(sumData['month'], now.month)
   sumData['day'] = sortByCurrentTime(sumData['day'], now.day)
   sumData['time'] = sortByCurrentTime(sumData['time'], now.hour)
+  console.log(sumData['month'])
+  console.log(sumData['day'])
+  console.log(sumData['time'])
 
   return sumData
 }
