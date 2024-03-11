@@ -19,9 +19,13 @@ const Login: React.FC = () => {
             fullWidth
             sx={{ my: 2, textTransform: 'none' }}
             onClick={() =>
-              signIn('general-user-keycloak-client', {
-                callbackUrl: '/happiness/me',
-              })
+              signIn(
+                'general-user-keycloak-client',
+                {
+                  callbackUrl: '/happiness/me',
+                },
+                { prompt: 'login' }
+              )
             }
           >
             Google
