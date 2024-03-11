@@ -3,13 +3,14 @@ import {
   TileLayer,
   ZoomControl,
   useMap,
+  useMapEvents,
   Marker,
   Popup,
   LayersControl,
   LayerGroup,
 } from 'react-leaflet'
 import { LatLngTuple } from 'leaflet'
-import React from 'react'
+import React, { Dispatch, SetStateAction } from 'react'
 import 'leaflet/dist/leaflet.css'
 import {
   redIcon,
@@ -288,11 +289,24 @@ type Props = {
     servicePath: string
   }
   pinData: any[]
+  setZoomLevel?: Dispatch<SetStateAction<number>>
 }
 
 const ClosePopup = () => {
   const map = useMap()
   map.closePopup()
+  return null
+}
+
+const ZoomLevel: React.FC<{
+  setZoomLevel?: Dispatch<SetStateAction<number>>
+}> = ({ setZoomLevel }) => {
+  const map = useMapEvents({
+    zoomend: () => {
+      if (!setZoomLevel) return
+      setZoomLevel(map.getZoom())
+    },
+  })
   return null
 }
 
@@ -307,7 +321,7 @@ const questionTitles = {
 
 export { questionTitles }
 
-const MapSet: React.FC<Props> = ({ pinData }) => {
+const MapSet: React.FC<Props> = ({ pinData, setZoomLevel }) => {
   const h1 = pinData.filter((pin) => pin.type === 'happiness1')
   const h2 = pinData.filter((pin) => pin.type === 'happiness2')
   const h3 = pinData.filter((pin) => pin.type === 'happiness3')
@@ -612,6 +626,7 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
       </LayersControl>
 
       <ClosePopup />
+      <ZoomLevel setZoomLevel={setZoomLevel} />
     </MapContainer>
   )
 }
