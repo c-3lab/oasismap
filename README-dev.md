@@ -161,6 +161,65 @@ http://localhost:8080
 
 3. 環境変数 `KEYCLOAK_ADMIN` `KEYCLOAK_ADMIN_PASSWORD` に指定した認証情報でログイン
 
+4. Google CloudにリダイレクトURIを設定
+    1. `realm` から `oasismap` を選択
+    2. 左のメニューバーから `Identity providers` を選択
+    3. `google` をクリック
+    4. `Redirect URI` の値をコピーして控えておく
+    5. [Google Cloud](https://console.cloud.google.com/apis/credentials)に接続
+    6. 事前準備にて作成した認証情報を選択
+    7. `承認済みのリダイレクトURI` に控えておいた `Redirect URI` を転記
+
+5. 環境変数 `GENERAL_USER_KEYCLOAK_CLIENT_SECRET`の設定
+    1. `realm` から `oasismap` を選択
+    2. 左のメニューバーから `client` をクリック
+    3. `general-user-client` をクリック
+    4. `Credentials` をクリック
+    5. `Client Secret` の値を `GENERAL_USER_KEYCLOAK_CLIENT_SECRET` に転記
+
+6. 環境変数 `ADMIN_KEYCLOAK_CLIENT_SECRET`の設定
+    1. `realm` に `oasismap` を選択
+    2. 左のメニューバーから `client` をクリック
+    3. `admin-client` をクリック
+    4. `Credentials` をクリック
+    5. `Client Secret` の値を `ADMIN_KEYCLOAK_CLIENT_SECRET` に転記
+
+7. コンテナを再起動して環境変数を反映させる
+```
+docker compose -f docker-compose-dev.yml up -d frontend
+```
+
+### orionにサブスクリプション設定を行う
+
+以下を実行
+```
+curl -iX POST \
+  --url 'http://localhost:1026/v2/subscriptions' \
+  --header 'content-type: application/json' \
+  --header 'Fiware-Service: Goverment' \
+  --header 'Fiware-ServicePath: /Happiness' \
+  --data '{
+  "description": "Notice of entities change",
+  "subject": {
+    "entities": [
+      {
+        "idPattern": ".*", "type": "happiness"
+      }
+    ],
+    "condition": {
+      "attrs": []
+    }
+  },
+  "notification": {
+    "http": {
+      "url": "http://cygnus:5055/notify"
+    }
+  }
+}'
+```
+
+### 動作確認
+
 #### フロントエンド
 1. コンテナに入る
 ```
