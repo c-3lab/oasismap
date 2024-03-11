@@ -14,7 +14,7 @@ import {
 } from '@/components/fields/date-time-textbox'
 
 import { LineGraph, ourHappinessData } from '@/components/happiness/graph'
-import fetchData from '@/components/happiness/fetch'
+import fetchData from '@/libs/fetch'
 import { PROFILE_TYPE } from '@/libs/constants'
 const backendurl = 'http://localhost:8000/api/happiness/all'
 
