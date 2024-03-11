@@ -32,6 +32,7 @@ services:
       - "TYPEORM_SYNCHRONIZE=false"
       - "KEYCLOAK_CLIENT_ISSUER=${KEYCLOAK_CLIENT_ISSUER}"
       - "FRONTEND_URL=${NEXTAUTH_URL}"
+      - "REVERSE_GEOCODING_URL=${REVERSE_GEOCODING_URL}"
     volumes:
       - ./backend:/app/backend
     networks:

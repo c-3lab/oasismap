@@ -21,6 +21,7 @@ services:
       - "POSTGRES_USER=${POSTGREUSER}"
       - "POSTGRES_PASSWORD=${POSTGREPASSWORD}"
       - "POSTGRES_DATABASE=cygnus"
+      - "REVERSE_GEOCODING_URL=${REVERSE_GEOCODING_URL}"
     volumes:
       - ./backend:/app/backend
     networks:
