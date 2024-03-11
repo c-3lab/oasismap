@@ -13,8 +13,8 @@ interface Happiness {
 
 const postData = async (
   url: string,
-  token: string,
-  requestBody: Happiness
+  requestBody: Happiness,
+  token: string
 ): Promise<any> => {
   try {
     const response = await fetch(url, {

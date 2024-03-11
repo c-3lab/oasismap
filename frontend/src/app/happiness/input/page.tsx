@@ -1,6 +1,7 @@
 'use client'
 import React, { useContext, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import {
   Checkbox,
   Button,
@@ -12,8 +13,8 @@ import {
 } from '@mui/material'
 
 import { messageContext } from '@/contexts/message-context'
-import { useSession } from 'next-auth/react'
-import postData from '@/components/happiness/post'
+import postData from '@/libs/post'
+import { getCurrentPosition } from '@/libs/geolocation'
 
 type HappinessKey =
   | 'happiness1'
@@ -23,7 +24,7 @@ type HappinessKey =
   | 'happiness5'
   | 'happiness6'
 
-const backendurl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/happiness`
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
 const HappinessInput: React.FC = () => {
   const noticeMessageContext = useContext(messageContext)
@@ -61,33 +62,23 @@ const HappinessInput: React.FC = () => {
   }
 
   const submitForm = async () => {
-    const position = await getCurrentPosition()
-    await postData(backendurl, session?.user!.accessToken!, {
-      latitude: position.latitude,
-      longitude: position.longitude,
-      answers: checkboxValues,
-    })
-    noticeMessageContext.showMessage('幸福度の送信が完了しました')
-    router.push(`/happiness/${referral}`)
-  }
-
-  const getCurrentPosition = async () => {
-    if (location.protocol === 'http:') {
-      return {
-        latitude: 35.696031,
-        longitude: 139.6879481,
-      }
-    } else {
-      /* global GeolocationPosition */
-      const position: GeolocationPosition = await new Promise(
-        (resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject)
-        }
+    try {
+      const position = await getCurrentPosition()
+      const url = backendUrl + '/api/happiness'
+      await postData(
+        url,
+        {
+          latitude: position.latitude!,
+          longitude: position.longitude!,
+          answers: checkboxValues,
+        },
+        session?.user?.accessToken!
       )
-      return {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-      }
+      noticeMessageContext.showMessage('幸福度の送信が完了しました')
+      router.push(`/happiness/${referral}`)
+    } catch (error) {
+      // TODO: スナックバーでエラー表示を行う
+      console.error('Error:', error)
     }
   }
 

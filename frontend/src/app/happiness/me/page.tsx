@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { DateTime } from 'luxon'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { ResponsiveContainer } from 'recharts'
@@ -15,32 +16,41 @@ import {
 } from '@/components/fields/date-time-textbox'
 
 import { BarGraph, myHappinessData } from '@/components/happiness/graph'
-import fetchData from '@/components/happiness/fetch'
-import { current, previous, toISO8601 } from '@/libs/date-format'
-const backendurl = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/happiness/me`
+import fetchData from '@/libs/fetch'
+import { toDateTime } from '@/libs/date-converter'
+
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
 const HappinessMe: React.FC = () => {
   const router = useRouter()
   const [period, setPeriod] = useState(PeriodType.Month)
   const [pinData, setPinData] = useState<any>([])
   const [MyHappiness, setMyHappiness] = useState<any>([])
-  const { data: session } = useSession()
+  const [isLoading, setIsLoading] = useState(true)
+  const { data: session, status } = useSession()
 
-  const defaultStart = previous()
-  const defaultEnd = current()
+  const defaultStart = DateTime.local().minus({ days: 1 })
+  const defaultEnd = DateTime.local()
 
   const getData = async () => {
     try {
-      const params = {
-        start: toISO8601(startDateTimeProps.value),
-        end: toISO8601(endDateTimeProps.value),
-        period: period,
-        zoomLevel: 12,
+      const url = backendUrl + '/api/happiness/me'
+      const startDateTime = toDateTime(startDateTimeProps.value).toISO()
+      const endDateTime = toDateTime(endDateTimeProps.value)
+        .endOf('minute')
+        .toISO()
+      // 日付の変換に失敗した場合
+      if (!startDateTime || !endDateTime) {
+        console.error('Date conversion failed.')
+        return
       }
       const data = await fetchData(
-        backendurl,
-        session?.user!.accessToken!,
-        params
+        url,
+        {
+          start: startDateTime,
+          end: endDateTime,
+        },
+        session?.user?.accessToken!
       )
       setPinData(GetPin(data))
       setMyHappiness(myHappinessData(data))
@@ -50,17 +60,23 @@ const HappinessMe: React.FC = () => {
   }
 
   useEffect(() => {
-    if (!session) return
+    return setIsLoading(false)
+  }, [])
+
+  useEffect(() => {
+    if (isLoading) return
+    if (status !== 'authenticated') return
     getData()
-  }, [session?.user?.accessToken])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, status])
 
   const startDateTimeProps = useDateTime({
-    date: defaultStart.date,
-    time: defaultStart.time,
+    date: defaultStart.toFormat('yyyy-MM-dd'),
+    time: defaultStart.toFormat('HH:mm'),
   })
   const endDateTimeProps = useDateTime({
-    date: defaultEnd.date,
-    time: defaultEnd.time,
+    date: defaultEnd.toFormat('yyyy-MM-dd'),
+    time: defaultEnd.toFormat('HH:mm'),
   })
 
   const renderCustomDayTick = (tickProps: any) => {
