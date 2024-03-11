@@ -13,7 +13,7 @@ import {
 } from '@/components/fields/date-time-textbox'
 
 import { BarGraph, myHappinessData } from '@/components/happiness/graph'
-import fetchData from '@/components/happiness/fetch'
+import fetchData from '@/libs/fetch'
 const backendurl = 'http://localhost:8000/api/happiness/me'
 
 const HappinessMe: React.FC = () => {
