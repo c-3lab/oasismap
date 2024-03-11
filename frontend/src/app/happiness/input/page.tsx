@@ -1,6 +1,7 @@
 'use client'
 import React, { useContext, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import {
   Checkbox,
   Button,
@@ -12,6 +13,8 @@ import {
 } from '@mui/material'
 
 import { messageContext } from '@/contexts/message-context'
+import postData from '@/libs/post'
+import { getCurrentPosition } from '@/libs/geolocation'
 
 type HappinessKey =
   | 'happiness1'
@@ -21,11 +24,14 @@ type HappinessKey =
   | 'happiness5'
   | 'happiness6'
 
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+
 const HappinessInput: React.FC = () => {
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
   const searchParams = useSearchParams()
   const referral = searchParams.get('referral') || 'me'
+  const { data: session } = useSession()
 
   const [checkboxValues, setCheckboxValues] = useState<{
     [key in HappinessKey]: number
@@ -55,9 +61,25 @@ const HappinessInput: React.FC = () => {
     setCheckboxValues((prev) => ({ ...prev, [key]: prev[key] ? 0 : 1 }))
   }
 
-  const submitForm = () => {
-    noticeMessageContext.showMessage('幸福度の送信が完了しました')
-    router.push(`/happiness/${referral}`)
+  const submitForm = async () => {
+    try {
+      const position = await getCurrentPosition()
+      const url = backendUrl + '/api/happiness'
+      await postData(
+        url,
+        {
+          latitude: position.latitude!,
+          longitude: position.longitude!,
+          answers: checkboxValues,
+        },
+        session?.user?.accessToken!
+      )
+      noticeMessageContext.showMessage('幸福度の送信が完了しました')
+      router.push(`/happiness/${referral}`)
+    } catch (error) {
+      // TODO: スナックバーでエラー表示を行う
+      console.error('Error:', error)
+    }
   }
 
   return (
