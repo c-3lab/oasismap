@@ -190,6 +190,15 @@ services:
       retries: 10
       start_period: 10s
 
+  keycloak-extension:
+    container_name: keycloak-extension
+    image: maven:latest
+    tty: true
+    volumes:
+      - ./keycloak-extension:/build
+    working_dir: /build
+    entrypoint: sleep infinity
+
 networks:
   backend-network:
     driver: bridge
