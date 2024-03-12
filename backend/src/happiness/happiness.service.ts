@@ -11,6 +11,7 @@ import { CreateHappinessDto } from './dto/create-happiness.dto';
 import { UserAttribute } from 'src/auth/interface/user-attribute';
 import { HappinessResponse } from './interface/happiness.response';
 import { DateTime } from 'luxon';
+import { Address } from './interface/address';
 
 @Injectable()
 export class HappinessService {
@@ -28,7 +29,11 @@ export class HappinessService {
     body: CreateHappinessDto,
   ): Promise<HappinessResponse> {
     const id = uuidv4();
-    const entities = this.createEntities(userAttribute, body, id);
+    const address = await this.getAddress(
+      body.latitude.toString(),
+      body.longitude.toString(),
+    );
+    const entities = this.createEntities(id, body, userAttribute, address);
     await this.postHappinessEntitiy(entities);
 
     const happinessResponse: HappinessResponse = {
@@ -50,9 +55,10 @@ export class HappinessService {
   }
 
   private createEntities(
-    userAttribute: UserAttribute,
-    body: CreateHappinessDto,
     id: string,
+    body: CreateHappinessDto,
+    userAttribute: UserAttribute,
+    address: Address,
   ): HappinessEntities {
     const formattedData: HappinessEntities = {
       id: id,
@@ -98,7 +104,7 @@ export class HappinessService {
         metadata: {
           place: {
             type: 'Text',
-            value: '東京都渋谷区',
+            value: address.level4 + address.level7,
           },
         },
       },
@@ -180,5 +186,20 @@ export class HappinessService {
         },
       }));
     });
+  }
+
+  private async getAddress(
+    latitude: string,
+    longitude: string,
+  ): Promise<Address> {
+    const response = await axios.get(process.env.REVERSE_GEOCODING_URI, {
+      params: {
+        lat: latitude,
+        lon: longitude,
+        format: 'geocodejson',
+        zoom: 10,
+      },
+    });
+    return response.data.features[0].properties.geocoding.admin;
   }
 }
