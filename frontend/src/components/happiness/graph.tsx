@@ -177,9 +177,12 @@ function sortByCurrentTime(
     (obj) => Number(obj.timestamp) === date
   )
   if (currentIndex !== -1) {
-    objects.unshift(
-      ...objects.splice(currentIndex, objects.length - currentIndex)
-    )
+    const currentTimestampObj = objects.splice(currentIndex, 1)[0]
+    const rotatedArray = objects
+      .slice(currentIndex)
+      .concat(objects.slice(0, currentIndex))
+    rotatedArray.push(currentTimestampObj)
+    return rotatedArray
   }
   return objects
 }
