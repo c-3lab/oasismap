@@ -22,6 +22,8 @@ const fetchData = async (
       headers: {
         'Content-Type': 'application/json',
         ...(token && { Authorization: `Bearer ${token}` }),
+        // TODO: デモ用にngrokの確認画面を非表示
+        'ngrok-skip-browser-warning': 'value',
       },
     })
     const jsonData = await response.json()

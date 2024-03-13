@@ -22,6 +22,8 @@ const postData = async (
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
+        // TODO: デモ用にngrokの確認画面を非表示
+        'ngrok-skip-browser-warning': 'value',
       },
       body: JSON.stringify(requestBody),
     })
