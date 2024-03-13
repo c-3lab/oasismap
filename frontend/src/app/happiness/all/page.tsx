@@ -7,7 +7,6 @@ import { DateTime } from 'luxon'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { ResponsiveContainer } from 'recharts'
-//import Map from '@/components/happiness/map'
 const MapSet = dynamic(() => import('@/components/map/mapset'), { ssr: false })
 import { GetPin, COLORS } from '@/components/utils/pin'
 import {
@@ -130,11 +129,9 @@ const HappinessAll: React.FC = () => {
             minHeight: '300px',
           }}
         >
-          グラフ表示エリア
           <ResponsiveContainer width="100%" height={300}>
             <LineGraph
               plotdata={OurHappiness[period]}
-              title="時間"
               color={COLORS}
               xTickFormatter={renderCustomDayTick}
             />
@@ -205,7 +202,7 @@ const HappinessAll: React.FC = () => {
               </Button>
             </Grid>
           </Grid>
-          {session?.user!.type === PROFILE_TYPE.GENERAL && (
+          {session?.user?.type === PROFILE_TYPE.GENERAL && (
             <Grid item xs={12} md={12} lg={8}>
               <Button
                 variant="contained"
