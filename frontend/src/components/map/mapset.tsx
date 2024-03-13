@@ -3,16 +3,16 @@ import {
   TileLayer,
   ZoomControl,
   useMap,
-  useMapEvents,
   Marker,
   Popup,
   LayersControl,
   LayerGroup,
 } from 'react-leaflet'
 import { LatLngTuple } from 'leaflet'
-import React, { Dispatch, SetStateAction } from 'react'
+import React, { useState, useEffect } from 'react'
 import 'leaflet/dist/leaflet.css'
 import { getIconByType } from '../utils/Icon'
+import { getCurrentPosition } from '../../libs/geolocation'
 
 const loadEnvAsNumber = (
   variable: string | undefined,
@@ -24,20 +24,10 @@ const loadEnvAsNumber = (
   return value
 }
 
-const defaultLatitude = loadEnvAsNumber(
-  String(process.env.NEXT_PUBLIC_MAP_DEFAULT_LATITUDE),
-  35.6581107
-)
-const defaultLongitude = loadEnvAsNumber(
-  String(process.env.NEXT_PUBLIC_MAP_DEFAULT_LONGITUDE),
-  139.7387888
-)
 const defaultZoom = loadEnvAsNumber(
   String(process.env.NEXT_PUBLIC_MAP_DEFAULT_ZOOM),
   13
 )
-
-const defaultPosition: LatLngTuple = [defaultLatitude, defaultLongitude]
 
 type Props = {
   pointEntities: any[]
@@ -47,24 +37,11 @@ type Props = {
     servicePath: string
   }
   pinData: any[]
-  setZoomLevel?: Dispatch<SetStateAction<number>>
 }
 
 const ClosePopup = () => {
   const map = useMap()
   map.closePopup()
-  return null
-}
-
-const ZoomLevel: React.FC<{
-  setZoomLevel?: Dispatch<SetStateAction<number>>
-}> = ({ setZoomLevel }) => {
-  const map = useMapEvents({
-    zoomend: () => {
-      if (!setZoomLevel) return
-      setZoomLevel(map.getZoom())
-    },
-  })
   return null
 }
 
@@ -133,12 +110,54 @@ const MapOverlay = ({ type, filteredPins }) => (
 )
 
 const MapSet: React.FC<Props> = ({ pinData }) => {
+  const [currentPosition, setCurrentPosition] = useState<LatLngTuple | null>(
+    null
+  )
+  const [error, setError] = useState<Error | null>(null)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const positionResult = await getCurrentPosition()
+
+        if (
+          positionResult &&
+          positionResult.latitude !== undefined &&
+          positionResult.longitude !== undefined
+        ) {
+          const newPosition: LatLngTuple = [
+            positionResult.latitude,
+            positionResult.longitude,
+          ]
+          setCurrentPosition(newPosition)
+        } else {
+          console.error('Error: Unable to get current position.')
+          setError(new Error('Unable to get current position'))
+        }
+      } catch (error) {
+        console.error('Error in getCurrentPosition:', error)
+        setError(error as Error)
+      }
+    }
+
+    fetchData()
+  }, [])
+
+  if (error) {
+    console.error('Error: Unable to get current position.', error)
+    return null
+  }
+
+  if (currentPosition === null) {
+    return <p>Loading...</p>
+  }
+
   const filteredPinsByType = (type) =>
     pinData.filter((pin) => pin.type === type)
 
   return (
     <MapContainer
-      center={defaultPosition}
+      center={currentPosition}
       zoom={defaultZoom}
       scrollWheelZoom={true}
       zoomControl={false}
@@ -158,7 +177,6 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
         ))}
       </LayersControl>
       <ClosePopup />
-      <ZoomLevel setZoomLevel={setZoomLevel} />
     </MapContainer>
   )
 }
