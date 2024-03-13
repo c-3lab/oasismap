@@ -31,7 +31,7 @@ const HappinessInput: React.FC = () => {
   const router = useRouter()
   const searchParams = useSearchParams()
   const referral = searchParams.get('referral') || 'me'
-  const { data: session } = useSession()
+  const { update } = useSession()
 
   const [checkboxValues, setCheckboxValues] = useState<{
     [key in HappinessKey]: number
@@ -65,6 +65,9 @@ const HappinessInput: React.FC = () => {
     try {
       const position = await getCurrentPosition()
       const url = backendUrl + '/api/happiness'
+      // アクセストークンを再取得
+      const updatedSession = await update()
+
       await postData(
         url,
         {
@@ -72,7 +75,7 @@ const HappinessInput: React.FC = () => {
           longitude: position.longitude!,
           answers: checkboxValues,
         },
-        session?.user?.accessToken!
+        updatedSession?.user?.accessToken!
       )
       noticeMessageContext.showMessage('幸福度の送信が完了しました')
       router.push(`/happiness/${referral}`)

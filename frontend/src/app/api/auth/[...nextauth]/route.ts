@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth'
 import KeycloakProvider from 'next-auth/providers/keycloak'
+import { JWT } from 'next-auth/jwt'
 import jwt, { JwtHeader, JwtPayload, SigningKeyCallback } from 'jsonwebtoken'
 import jwksClient, { SigningKey } from 'jwks-rsa'
 
@@ -20,35 +21,43 @@ const handler = NextAuth({
   ],
   callbacks: {
     async jwt({ token, account }) {
-      if (!account) {
+      if (account) {
+        const url =
+          process.env.KEYCLOAK_CLIENT_ISSUER +
+          '/.well-known/openid-configuration'
+        const response = await fetch(url)
+        const json = await response.json()
+        const client = jwksClient({
+          jwksUri: json.jwks_uri,
+        })
+
+        const getKey = (header: JwtHeader, callback: SigningKeyCallback) => {
+          client.getSigningKey(header.kid, (err, key?: SigningKey) => {
+            callback(null, key?.getPublicKey())
+          })
+        }
+
+        const decodedToken = await new Promise<JwtPayload>((resolve) => {
+          jwt.verify(account.access_token as string, getKey, (err, decoded) => {
+            resolve(decoded as JwtPayload)
+          })
+        })
+
+        token.accessToken = account.access_token
+        token.accessTokenExpires = decodedToken.exp as number
+        token.refreshToken = account.refresh_token
+        token.idToken = account.id_token
+        token.clientId = decodedToken.azp
+        token.nickname = decodedToken.nickname
+        token.userType = decodedToken.userType
         return token
       }
 
-      const url =
-        process.env.KEYCLOAK_CLIENT_ISSUER + '/.well-known/openid-configuration'
-      const response = await fetch(url)
-      const json = await response.json()
-      const client = jwksClient({
-        jwksUri: json.jwks_uri,
-      })
-
-      function getKey(header: JwtHeader, callback: SigningKeyCallback) {
-        client.getSigningKey(header.kid, function (err, key?: SigningKey) {
-          callback(null, key?.getPublicKey())
-        })
+      if (Date.now() < (token.accessTokenExpires as number)) {
+        return token
       }
 
-      const decodedToken = await new Promise<JwtPayload>((resolve) => {
-        jwt.verify(account.access_token as string, getKey, (err, decoded) => {
-          resolve(decoded as JwtPayload)
-        })
-      })
-
-      token.accessToken = account.access_token
-      token.idToken = account.id_token
-      token.nickname = decodedToken.nickname
-      token.userType = decodedToken.userType
-      return token
+      return await refreshAccessToken(token)
     },
     async session({ session, token }) {
       if (token.accessToken) {
@@ -77,5 +86,53 @@ const handler = NextAuth({
     },
   },
 })
+
+const refreshAccessToken = async (token: JWT): Promise<JWT> => {
+  try {
+    const clientId = token.clientId as string
+    const refreshToken = token.refreshToken as string
+    const url =
+      process.env.KEYCLOAK_CLIENT_ISSUER + '/protocol/openid-connect/token'
+    const clientSecrets = {
+      [process.env.GENERAL_USER_KEYCLOAK_CLIENT_ID!]:
+        process.env.GENERAL_USER_KEYCLOAK_CLIENT_SECRET,
+      [process.env.ADMIN_KEYCLOAK_CLIENT_ID!]:
+        process.env.ADMIN_KEYCLOAK_CLIENT_SECRET,
+    }
+    const requestBody = new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecrets[clientId] as string,
+      refresh_token: refreshToken,
+      grant_type: 'refresh_token',
+    })
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: requestBody,
+    })
+
+    const refreshedTokens = await response.json()
+
+    if (!response.ok) {
+      throw refreshedTokens
+    }
+
+    return {
+      ...token,
+      accessToken: refreshedTokens.access_token,
+      accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
+      refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
+    }
+  } catch (error) {
+    console.log(error)
+
+    return {
+      ...token,
+      error: 'RefreshAccessTokenError',
+    }
+  }
+}
 
 export { handler as GET, handler as POST }

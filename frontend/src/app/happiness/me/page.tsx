@@ -17,6 +17,7 @@ import {
 import { BarGraph, myHappinessData } from '@/components/happiness/graph'
 import fetchData from '@/libs/fetch'
 import { toDateTime } from '@/libs/date-converter'
+import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -25,8 +26,8 @@ const HappinessMe: React.FC = () => {
   const [period, setPeriod] = useState(PeriodType.Month)
   const [pinData, setPinData] = useState<any>([])
   const [MyHappiness, setMyHappiness] = useState<any>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const { data: session, status } = useSession()
+  const { isTokenFetched } = useTokenFetchStatus()
+  const { update } = useSession()
 
   const defaultStart = DateTime.local().minus({ days: 1 })
   const defaultEnd = DateTime.local()
@@ -43,13 +44,16 @@ const HappinessMe: React.FC = () => {
         console.error('Date conversion failed.')
         return
       }
+      // アクセストークンを再取得
+      const updatedSession = await update()
+
       const data = await fetchData(
         url,
         {
           start: startDateTime,
           end: endDateTime,
         },
-        session?.user?.accessToken!
+        updatedSession?.user?.accessToken!
       )
       setPinData(GetPin(data))
       setMyHappiness(myHappinessData(data))
@@ -59,15 +63,10 @@ const HappinessMe: React.FC = () => {
   }
 
   useEffect(() => {
-    return setIsLoading(false)
-  }, [])
-
-  useEffect(() => {
-    if (isLoading) return
-    if (status !== 'authenticated') return
+    if (!isTokenFetched) return
     getData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, status])
+  }, [isTokenFetched])
 
   const startDateTimeProps = useDateTime({
     date: defaultStart.toFormat('yyyy-MM-dd'),
