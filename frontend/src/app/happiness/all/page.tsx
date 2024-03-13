@@ -28,6 +28,9 @@ const HappinessAll: React.FC = () => {
   const [pinData, setPinData] = useState<any>([])
   const [OurHappiness, setOurHappiness] = useState<any>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [zoomLevel, setZoomLevel] = useState<number>(
+    parseInt(process.env.NEXT_PUBLIC_MAP_DEFAULT_ZOOM!) || 13
+  )
   const { data: session, status } = useSession()
 
   const defaultStart = DateTime.local().minus({ days: 1 })
@@ -49,7 +52,7 @@ const HappinessAll: React.FC = () => {
         start: startDateTime,
         end: endDateTime,
         period: period,
-        zoomLevel: parseInt(process.env.NEXT_PUBLIC_MAP_DEFAULT_ZOOM!) || 13,
+        zoomLevel: zoomLevel,
       })
       setPinData(GetPin(data['map_data']))
       setOurHappiness(ourHappinessData(data['graph_data']))
@@ -67,7 +70,7 @@ const HappinessAll: React.FC = () => {
     if (status !== 'authenticated') return
     getData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, status])
+  }, [isLoading, status, zoomLevel])
 
   const startDateTimeProps = useDateTime({
     date: defaultStart.toFormat('yyyy-MM-dd'),
@@ -105,6 +108,7 @@ const HappinessAll: React.FC = () => {
           surfaceEntities={[]}
           fiware={{ servicePath: '', tenant: '' }}
           pinData={pinData}
+          setZoomLevel={setZoomLevel}
         />
       </Grid>
       <Grid
