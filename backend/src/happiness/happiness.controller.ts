@@ -19,11 +19,13 @@ import { HappinessResponse } from './interface/happiness.response';
 import { HappinessExportService } from './happiness-export.service';
 import type { Response } from 'express';
 import { DateTime } from 'luxon';
+import { HappinessAllService } from './happiness-all.service';
 
 @Controller('/api/happiness')
 export class HappinessController {
   constructor(
     private readonly happinessService: HappinessService,
+    private readonly happinessAllService: HappinessAllService,
     private readonly happinessExportService: HappinessExportService,
     private readonly authService: AuthService,
   ) {}
@@ -60,7 +62,7 @@ export class HappinessController {
   async getHapinessAll(
     @Query() getHappinessAllDto: GetHappinessAllDto,
   ): Promise<HappinessAllResponse> {
-    return this.happinessService.findHapinessAll(
+    return this.happinessAllService.findHapinessAll(
       getHappinessAllDto.start,
       getHappinessAllDto.end,
       getHappinessAllDto.period,
