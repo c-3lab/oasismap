@@ -23,3 +23,4 @@ NEXTAUTH_URL=http://localhost:3000
 NEXTAUTH_SECRET=CHANGE_TO_RANDOM_STRING
 
 BACKEND_URL=http://localhost:4000
+REVERSE_GEOCODING_URI=https://nominatim.openstreetmap.org/reverse
