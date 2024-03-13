@@ -3,13 +3,14 @@ import {
   TileLayer,
   ZoomControl,
   useMap,
+  useMapEvents,
   Marker,
   Popup,
   LayersControl,
   LayerGroup,
 } from 'react-leaflet'
 import { LatLngTuple } from 'leaflet'
-import React from 'react'
+import React, { Dispatch, SetStateAction } from 'react'
 import 'leaflet/dist/leaflet.css'
 import { getIconByType } from '../utils/Icon'
 
@@ -46,11 +47,24 @@ type Props = {
     servicePath: string
   }
   pinData: any[]
+  setZoomLevel?: Dispatch<SetStateAction<number>>
 }
 
 const ClosePopup = () => {
   const map = useMap()
   map.closePopup()
+  return null
+}
+
+const ZoomLevel: React.FC<{
+  setZoomLevel?: Dispatch<SetStateAction<number>>
+}> = ({ setZoomLevel }) => {
+  const map = useMapEvents({
+    zoomend: () => {
+      if (!setZoomLevel) return
+      setZoomLevel(map.getZoom())
+    },
+  })
   return null
 }
 
@@ -144,6 +158,7 @@ const MapSet: React.FC<Props> = ({ pinData }) => {
         ))}
       </LayersControl>
       <ClosePopup />
+      <ZoomLevel setZoomLevel={setZoomLevel} />
     </MapContainer>
   )
 }
