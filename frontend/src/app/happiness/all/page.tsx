@@ -3,7 +3,6 @@ import dynamic from 'next/dynamic'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { DateTime } from 'luxon'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { ResponsiveContainer } from 'recharts'
@@ -11,7 +10,7 @@ const MapSet = dynamic(() => import('@/components/map/mapset'), { ssr: false })
 import { GetPin, COLORS } from '@/components/utils/pin'
 import {
   DateTimeTextbox,
-  useDateTime,
+  useDateTimeProps,
 } from '@/components/fields/date-time-textbox'
 
 import { LineGraph, ourHappinessData } from '@/components/happiness/graph'
@@ -28,21 +27,17 @@ const HappinessAll: React.FC = () => {
   const [pinData, setPinData] = useState<any>([])
   const [OurHappiness, setOurHappiness] = useState<any>([])
   const { isTokenFetched } = useTokenFetchStatus()
+  const { startProps, endProps } = useDateTimeProps(period)
   const [zoomLevel, setZoomLevel] = useState<number>(
     parseInt(process.env.NEXT_PUBLIC_MAP_DEFAULT_ZOOM!) || 13
   )
   const { data: session } = useSession()
 
-  const defaultStart = DateTime.local().minus({ days: 1 })
-  const defaultEnd = DateTime.local()
-
   const getData = async () => {
     try {
       const url = backendUrl + '/api/happiness/all'
-      const startDateTime = toDateTime(startDateTimeProps.value).toISO()
-      const endDateTime = toDateTime(endDateTimeProps.value)
-        .endOf('minute')
-        .toISO()
+      const startDateTime = toDateTime(startProps.value).toISO()
+      const endDateTime = toDateTime(endProps.value).endOf('minute').toISO()
       // 日付の変換に失敗した場合
       if (!startDateTime || !endDateTime) {
         console.error('Date conversion failed.')
@@ -66,15 +61,6 @@ const HappinessAll: React.FC = () => {
     getData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTokenFetched, zoomLevel])
-
-  const startDateTimeProps = useDateTime({
-    date: defaultStart.toFormat('yyyy-MM-dd'),
-    time: defaultStart.toFormat('HH:mm'),
-  })
-  const endDateTimeProps = useDateTime({
-    date: defaultEnd.toFormat('yyyy-MM-dd'),
-    time: defaultEnd.toFormat('HH:mm'),
-  })
 
   const renderCustomDayTick = (tickProps: any) => {
     const { x, y, payload } = tickProps
@@ -175,14 +161,14 @@ const HappinessAll: React.FC = () => {
             <DateTimeTextbox
               dateLabel="開始日"
               timeLabel="時間"
-              {...startDateTimeProps}
+              {...startProps}
             />
           </Grid>
           <Grid item xs={12} md={12} lg={8}>
             <DateTimeTextbox
               dateLabel="終了日"
               timeLabel="時間"
-              {...endDateTimeProps}
+              {...endProps}
             />
           </Grid>
           <Grid container item xs={12} md={12} lg={8} columnSpacing={1}>
