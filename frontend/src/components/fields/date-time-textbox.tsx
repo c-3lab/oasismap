@@ -8,6 +8,7 @@ import { PeriodType } from '@/types/period'
 interface DateTimeTextboxProps {
   dateLabel: string
   timeLabel: string
+  period: PeriodType
   value: OasismapDateTime
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
 }
@@ -35,6 +36,7 @@ export const DateTimeTextbox: React.FC<DateTimeTextboxProps> = (props) => {
           type="time"
           value={props.value.time}
           onChange={props.onChange}
+          disabled={props.period !== PeriodType.Time}
           fullWidth
         />
       </Grid>

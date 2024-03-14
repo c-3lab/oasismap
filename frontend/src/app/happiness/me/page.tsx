@@ -161,6 +161,7 @@ const HappinessMe: React.FC = () => {
             <DateTimeTextbox
               dateLabel="開始日"
               timeLabel="時間"
+              period={period}
               {...startProps}
             />
           </Grid>
@@ -168,6 +169,7 @@ const HappinessMe: React.FC = () => {
             <DateTimeTextbox
               dateLabel="終了日"
               timeLabel="時間"
+              period={period}
               {...endProps}
             />
           </Grid>
