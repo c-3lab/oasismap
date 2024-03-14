@@ -26,7 +26,7 @@ const HappinessMe: React.FC = () => {
   const [pinData, setPinData] = useState<any>([])
   const [MyHappiness, setMyHappiness] = useState<any>([])
   const { isTokenFetched } = useTokenFetchStatus()
-  const { startProps, endProps } = useDateTimeProps(period)
+  const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
   const { update } = useSession()
 
   const getData = async () => {
@@ -61,7 +61,7 @@ const HappinessMe: React.FC = () => {
     if (!isTokenFetched) return
     getData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTokenFetched])
+  }, [isTokenFetched, updatedPeriod])
 
   const renderCustomDayTick = (tickProps: any) => {
     const { x, y, payload } = tickProps
