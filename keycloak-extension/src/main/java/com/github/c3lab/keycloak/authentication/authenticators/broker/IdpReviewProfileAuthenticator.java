@@ -160,6 +160,12 @@
          attributes.putIfAbsent(UserModel.USERNAME, Collections.singletonList(updatedProfile.getUsername()));
          UserProfile profile = profileProvider.create(UserProfileContext.IDP_REVIEW, attributes, updatedProfile);
  
+         // 追加しようとしているNickname
+         String newNickname = attributes.get("nickname").get(0);
+ 
+         // 他のユーザーのプロファイル情報を取得し、Nicknameとの重複を確認
+         Stream<UserModel> usersWithSameNickname = context.getSession().users().searchForUserByUserAttributeStream(context.getRealm(),"nickname", newNickname);
+ 
          try {
             profile.update((attributeName, userModel, oldValue) -> {
                 event.clone().detail(Details.CONTEXT, UserProfileContext.IDP_REVIEW.name()).success();
@@ -177,6 +183,18 @@
  
              return;
          }
+
+         // 重複がある場合はエラーメッセージを設定してチャレンジを返す
+         if (usersWithSameNickname.count() != 0) {
+
+            Response challenge = context.form()
+                .setError("ニックネームは既に使用されています。別のニックネームを入力してください。")
+                .setAttribute(LoginFormsProvider.UPDATE_PROFILE_CONTEXT_ATTR, userCtx)
+                .setFormData(formData)
+                .createUpdateProfilePage();
+                context.challenge(challenge);
+            return;
+        }
  
          userCtx.saveToAuthenticationSession(context.getAuthenticationSession(), BROKERED_CONTEXT_NOTE);
  

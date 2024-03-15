@@ -82,7 +82,7 @@
  
      @Override
      public String getDisplayType() {
-         return "Review Profile";
+         return "Enhanced Review Profile";
      }
  
      @Override
