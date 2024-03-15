@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { HappinessEntities } from './interface/happiness-entities';
+import { HappinessEntity } from './interface/happiness-entity';
 import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
 import {
@@ -48,7 +48,7 @@ export class HappinessAllService {
 
   private async getHappinessEntities(
     query: string,
-  ): Promise<HappinessEntities[]> {
+  ): Promise<HappinessEntity[]> {
     const response = await axios.get(`${process.env.ORION_URI}/v2/entities`, {
       headers: {
         'Fiware-Service': `${process.env.ORION_FIWARE_SERVICE}`,
@@ -64,15 +64,15 @@ export class HappinessAllService {
   // タイル座標毎にエンティティを整理
   private generateGridEntities(
     zoomLevel: number,
-    happinessEntities: HappinessEntities[],
+    happinessEntities: HappinessEntity[],
   ): {
     latitude: number;
     longitude: number;
-    happinessEntities: HappinessEntities[];
+    happinessEntities: HappinessEntity[];
   }[] {
     const mapSize = this.tileSize * Math.pow(2, zoomLevel);
 
-    const result: { [key: string]: HappinessEntities[] } = {};
+    const result: { [key: string]: HappinessEntity[] } = {};
 
     happinessEntities.forEach((entity) => {
       const [longitude, latitude] = entity.location.value.coordinates;
@@ -155,7 +155,7 @@ export class HappinessAllService {
     gridEntities: {
       latitude: number;
       longitude: number;
-      happinessEntities: HappinessEntities[];
+      happinessEntities: HappinessEntity[];
     }[],
   ): MapData[] {
     return gridEntities.flatMap((entity) => {
@@ -204,7 +204,7 @@ export class HappinessAllService {
   }
 
   private calculateGraphData(
-    entities: HappinessEntities[],
+    entities: HappinessEntity[],
     start: string,
     end: string,
     period: 'time' | 'day' | 'month',
@@ -263,10 +263,7 @@ export class HappinessAllService {
     return result;
   }
 
-  private averageHappiness(
-    entities: HappinessEntities[],
-    happinessKey: string,
-  ) {
+  private averageHappiness(entities: HappinessEntity[], happinessKey: string) {
     if (entities.length === 0) return 0;
 
     const sum = entities

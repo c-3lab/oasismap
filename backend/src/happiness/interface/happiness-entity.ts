@@ -1,4 +1,4 @@
-export interface HappinessEntities {
+export interface HappinessEntity {
   id: string;
   type: string;
   happiness1: {

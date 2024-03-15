@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { HappinessEntities } from './interface/happiness-entities';
+import { HappinessEntity } from './interface/happiness-entity';
 import { HappinessMeResponse } from './interface/happiness-me.response';
 import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
@@ -36,7 +36,7 @@ export class HappinessMeService {
 
   private async getHappinessEntities(
     query: string,
-  ): Promise<HappinessEntities[]> {
+  ): Promise<HappinessEntity[]> {
     const response = await axios.get(`${process.env.ORION_URI}/v2/entities`, {
       headers: {
         'Fiware-Service': `${process.env.ORION_FIWARE_SERVICE}`,
@@ -50,7 +50,7 @@ export class HappinessMeService {
   }
 
   private toHappinessMeResponse(
-    entities: HappinessEntities[],
+    entities: HappinessEntity[],
   ): HappinessMeResponse[] {
     return entities.flatMap((entity) => {
       return HappinessMeService.keys.map((key) => ({
