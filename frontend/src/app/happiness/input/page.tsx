@@ -13,6 +13,7 @@ import {
 } from '@mui/material'
 
 import { messageContext } from '@/contexts/message-context'
+import { MessageType } from '@/types/message-type'
 import postData from '@/libs/post'
 import { getCurrentPosition } from '@/libs/geolocation'
 
@@ -77,11 +78,17 @@ const HappinessInput: React.FC = () => {
         },
         updatedSession?.user?.accessToken!
       )
-      noticeMessageContext.showMessage('幸福度の送信が完了しました')
+      noticeMessageContext.showMessage(
+        '幸福度の送信が完了しました',
+        MessageType.Success
+      )
       router.push(`/happiness/${referral}`)
     } catch (error) {
-      // TODO: スナックバーでエラー表示を行う
       console.error('Error:', error)
+      noticeMessageContext.showMessage(
+        '幸福度の送信に失敗しました',
+        MessageType.Error
+      )
     }
   }
 

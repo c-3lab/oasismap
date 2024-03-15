@@ -74,7 +74,7 @@ const Layout: React.FC<LayoutProps> = ({ simple = false, children }) => {
             >
               <Alert
                 onClose={noticeMessageContext.clearMessage}
-                severity="success"
+                severity={noticeMessageContext.type}
                 variant="filled"
                 sx={{ width: '100%' }}
               >
