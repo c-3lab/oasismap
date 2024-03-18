@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { HappinessController } from './happiness.controller';
-import { HappinessService } from './happiness.service';
+import { HappinessMeService } from './happiness-me.service';
+import { HappinessAllService } from './happiness-all.service';
 
 @Module({
   controllers: [HappinessController],
-  providers: [HappinessService],
+  providers: [HappinessMeService, HappinessAllService],
 })
 export class HappinessModule {}

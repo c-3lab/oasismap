@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class HappinessService {
+export class HappinessMeService {
   static keys = [
     'happiness1',
     'happiness2',
@@ -53,7 +53,7 @@ export class HappinessService {
     entities: HappinessEntities[],
   ): HappinessMeResponse[] {
     return entities.flatMap((entity) => {
-      return HappinessService.keys.map((key) => ({
+      return HappinessMeService.keys.map((key) => ({
         id: uuidv4(),
         type: key,
         location: {
