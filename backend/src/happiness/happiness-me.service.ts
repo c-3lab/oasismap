@@ -3,6 +3,7 @@ import { HappinessEntity } from './interface/happiness-entity';
 import { HappinessMeResponse } from './interface/happiness-me.response';
 import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
+import { UserAttribute } from 'src/auth/interface/user-attribute';
 
 @Injectable()
 export class HappinessMeService {
@@ -16,22 +17,14 @@ export class HappinessMeService {
   ];
 
   async findHapinessMe(
-    authorization: string,
+    userAttribute: UserAttribute,
     start: string,
     end: string,
   ): Promise<HappinessMeResponse[]> {
-    const query = `nickname==${this.getNicknameFromToken(
-      authorization,
-    )};timestamp>=${start};timestamp<=${end}`;
+    const query = `nickname==${userAttribute.nickname};timestamp>=${start};timestamp<=${end}`;
     const happinessEntities = await this.getHappinessEntities(query);
 
     return this.toHappinessMeResponse(happinessEntities);
-  }
-
-  // TODO: authorizationからニックネームを取得する
-  private getNicknameFromToken(authorization: string): string {
-    console.log(authorization);
-    return 'nickname';
   }
 
   private async getHappinessEntities(

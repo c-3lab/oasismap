@@ -38,8 +38,10 @@ export class HappinessController {
     @Headers('Authorization') authorization: string,
     @Query() getHappinessMeDto: GetHappinessMeDto,
   ): Promise<HappinessMeResponse[]> {
+    const userAttribute =
+      await this.authService.getUserAttributeFromAuthorization(authorization);
     return this.happinessMeService.findHapinessMe(
-      authorization,
+      userAttribute,
       getHappinessMeDto.start,
       getHappinessMeDto.end,
     );
