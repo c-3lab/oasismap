@@ -88,7 +88,7 @@ export class HappinessInputService {
       },
       address: {
         type: 'Text',
-        value: userAttribute.address,
+        value: userAttribute.prefecture + userAttribute.city,
       },
     };
 

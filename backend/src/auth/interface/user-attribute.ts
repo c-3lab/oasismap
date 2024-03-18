@@ -1,5 +1,6 @@
 export class UserAttribute {
   nickname: string;
   age: string;
-  address: string;
+  prefecture: string;
+  city: string;
 }
