@@ -2,6 +2,7 @@ import axios from 'axios';
 import { HappinessEntity } from './interface/happiness-entity';
 import { HappinessMeResponse } from './interface/happiness-me.response';
 import { v4 as uuidv4 } from 'uuid';
+import { DateTime } from 'luxon';
 import { Injectable } from '@nestjs/common';
 import { UserAttribute } from 'src/auth/interface/user-attribute';
 
@@ -21,7 +22,9 @@ export class HappinessMeService {
     start: string,
     end: string,
   ): Promise<HappinessMeResponse[]> {
-    const query = `nickname==${userAttribute.nickname};timestamp>=${start};timestamp<=${end}`;
+    const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
+    const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
+    const query = `nickname==${userAttribute.nickname};timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;
     const happinessEntities = await this.getHappinessEntities(query);
 
     return this.toHappinessMeResponse(happinessEntities);
@@ -60,10 +63,9 @@ export class HappinessMeService {
             ],
           },
         },
-        timestamp: {
-          type: entity.timestamp.type,
-          value: entity.timestamp.value,
-        },
+        timestamp: DateTime.fromISO(entity.timestamp.value)
+          .setZone('Asia/Tokyo')
+          .toISO(),
         answers: {
           happiness1: entity.happiness1.value,
           happiness2: entity.happiness2.value,

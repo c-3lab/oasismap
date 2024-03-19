@@ -44,7 +44,8 @@ export class AuthService {
     const userAttribute: UserAttribute = {
       nickname: decodedToken.nickname,
       age: decodedToken.age,
-      address: decodedToken.address,
+      prefecture: decodedToken.prefecture,
+      city: decodedToken.city,
     };
 
     return userAttribute;

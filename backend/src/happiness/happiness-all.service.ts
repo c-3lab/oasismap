@@ -28,7 +28,10 @@ export class HappinessAllService {
     period: 'time' | 'day' | 'month',
     zoomLevel: number,
   ): Promise<HappinessAllResponse> {
-    const query = `timestamp>=${start};timestamp<=${end}`;
+    const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
+    const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
+
+    const query = `timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;
     const happinessEntities = await this.getHappinessEntities(query);
     const gridEntities = this.generateGridEntities(
       zoomLevel,
@@ -39,8 +42,8 @@ export class HappinessAllService {
       map_data: this.toHappinessAllMapData(gridEntities),
       graph_data: this.calculateGraphData(
         happinessEntities,
-        start,
-        end,
+        startAsUTC,
+        endAsUTC,
         period,
       ),
     };
@@ -205,12 +208,12 @@ export class HappinessAllService {
 
   private calculateGraphData(
     entities: HappinessEntity[],
-    start: string,
-    end: string,
+    startAsUTC: string,
+    endAsUTC: string,
     period: 'time' | 'day' | 'month',
   ): GraphData[] {
-    const startDate = DateTime.fromISO(start);
-    const endDate = DateTime.fromISO(end);
+    const startDate = DateTime.fromISO(startAsUTC);
+    const endDate = DateTime.fromISO(endAsUTC);
     const result: GraphData[] = [];
 
     const periodMap = {

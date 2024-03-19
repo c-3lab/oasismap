@@ -15,6 +15,7 @@ services:
       - "ORION_FIWARE_SERVICE=Goverment"
       - "ORION_FIWARE_SERVICE_PATH=/Happiness"
       - "KEYCLOAK_CLIENT_ISSUER=${KEYCLOAK_CLIENT_ISSUER}"
+      - "FRONTEND_URL=${NEXTAUTH_URL}"
     volumes:
       - ./backend:/app/backend
     networks:
