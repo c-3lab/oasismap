@@ -1,8 +1,9 @@
 import axios from 'axios';
-import { HappinessEntities } from './interface/happiness-entities';
+import { HappinessEntity } from './interface/happiness-entity';
 import { HappinessMeResponse } from './interface/happiness-me.response';
 import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
+import { UserAttribute } from 'src/auth/interface/user-attribute';
 
 @Injectable()
 export class HappinessMeService {
@@ -16,27 +17,19 @@ export class HappinessMeService {
   ];
 
   async findHapinessMe(
-    authorization: string,
+    userAttribute: UserAttribute,
     start: string,
     end: string,
   ): Promise<HappinessMeResponse[]> {
-    const query = `nickname==${this.getNicknameFromToken(
-      authorization,
-    )};timestamp>=${start};timestamp<=${end}`;
+    const query = `nickname==${userAttribute.nickname};timestamp>=${start};timestamp<=${end}`;
     const happinessEntities = await this.getHappinessEntities(query);
 
     return this.toHappinessMeResponse(happinessEntities);
   }
 
-  // TODO: authorizationからニックネームを取得する
-  private getNicknameFromToken(authorization: string): string {
-    console.log(authorization);
-    return 'nickname';
-  }
-
   private async getHappinessEntities(
     query: string,
-  ): Promise<HappinessEntities[]> {
+  ): Promise<HappinessEntity[]> {
     const response = await axios.get(`${process.env.ORION_URI}/v2/entities`, {
       headers: {
         'Fiware-Service': `${process.env.ORION_FIWARE_SERVICE}`,
@@ -50,7 +43,7 @@ export class HappinessMeService {
   }
 
   private toHappinessMeResponse(
-    entities: HappinessEntities[],
+    entities: HappinessEntity[],
   ): HappinessMeResponse[] {
     return entities.flatMap((entity) => {
       return HappinessMeService.keys.map((key) => ({
