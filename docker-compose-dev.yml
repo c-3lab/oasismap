@@ -16,6 +16,11 @@ services:
       - "ORION_FIWARE_SERVICE_PATH=/Happiness"
       - "KEYCLOAK_CLIENT_ISSUER=${KEYCLOAK_CLIENT_ISSUER}"
       - "FRONTEND_URL=${NEXTAUTH_URL}"
+      - "POSTGRES_HOST=postgres"
+      - "POSTGRES_PORT=5432"
+      - "POSTGRES_USER=${POSTGREUSER}"
+      - "POSTGRES_PASSWORD=${POSTGREPASSWORD}"
+      - "POSTGRES_DATABASE=cygnus"
     volumes:
       - ./backend:/app/backend
     networks:
@@ -61,7 +66,7 @@ services:
       - frontend-network
       
   mongo:
-    image: mongo:6.0.12
+    image: mongo:6.0.14
     hostname: mongo
     container_name: mongo
     expose:
@@ -77,7 +82,7 @@ services:
       - backend-network
 
   orion:
-    image: fiware/orion:3.10.1
+    image: fiware/orion:3.11.0
     hostname: orion
     container_name: orion
     ports:
@@ -118,6 +123,7 @@ services:
       - "PGDATABASE=postgres"
     volumes:
       - ./site/postgres/data:/var/lib/postgresql/data
+      - ./setup/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - backend-network
     healthcheck:
@@ -126,6 +132,31 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+
+  cygnus:
+    image: fiware/cygnus-ngsi:3.5.0
+    hostname: cygnus
+    container_name: cygnus
+    depends_on:
+      - postgres
+    ports:
+        - "5055:5055"
+        - "5080:5080"
+    environment:
+      - "CYGNUS_POSTGRESQL_HOST=postgres"
+      - "CYGNUS_POSTGRESQL_PORT=5432"
+      - "CYGNUS_POSTGRESQL_USER=${POSTGREUSER}"
+      - "CYGNUS_POSTGRESQL_PASS=${POSTGREPASSWORD}"
+      - "CYGNUS_POSTGRESQL_ENABLE_CACHE=true"
+      - "CYGNUS_POSTGRESQL_SERVICE_PORT=5055"
+      - "CYGNUS_POSTGRESQL_DATABASE=cygnus"
+      - "CYGNUS_POSTGRESQL_DATA_MODEL=dm-by-service-path"
+      - "CYGNUS_POSTGRESQL_ATTR_PERSISTENCE=column"
+      - "CYGNUS_LOG_LEVEL=DEBUG"
+      - "CYGNUS_SERVICE_PORT=5055"
+      - "CYGNUS_API_PORT=5080"
+    networks:
+      - backend-network
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.4

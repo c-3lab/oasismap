@@ -218,6 +218,38 @@ http://localhost:8080
 docker compose -f docker-compose-dev.yml up -d frontend
 ```
 
+### orionにサブスクリプション設定を行う
+
+以下を実行
+```
+curl -iX POST \
+  --url 'http://localhost:1026/v2/subscriptions' \
+  --header 'content-type: application/json' \
+  --header 'Fiware-Service: Goverment' \
+  --header 'Fiware-ServicePath: /Happiness' \
+  --data '{
+  "description": "Notice of entities change",
+  "subject": {
+    "entities": [
+      {
+        "idPattern": ".*",
+        "type": "happiness"
+      }
+    ],
+    "condition": {
+      "attrs": []
+    }
+  },
+  "notification": {
+    "http": {
+      "url": "http://cygnus:5055/notify"
+    }
+  }
+}'
+```
+
+### 動作確認
+
 #### フロントエンド
 1. コンテナに入る
 ```
