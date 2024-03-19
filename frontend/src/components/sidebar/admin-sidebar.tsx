@@ -1,3 +1,4 @@
+import { useRouter } from 'next/navigation'
 import Box from '@mui/material/Box'
 import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
@@ -14,7 +15,11 @@ interface AdminSidebarProps {
   handleDrawerClose: () => void
 }
 
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+
 const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
+  const router = useRouter()
+
   return (
     <Drawer
       anchor="right"
@@ -33,7 +38,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
           <ListItem key="happiness" disablePadding>
             <ListItemButton
               onClick={() => {
-                // TOOD: リクエスト送信処理
+                router.push(`${backendUrl}/api/happiness/export`)
               }}
             >
               <ListItemText primary="データのエクスポート" />
