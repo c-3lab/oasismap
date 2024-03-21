@@ -78,6 +78,7 @@
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
+    "globalSetup": "<rootDir>/src/test-setup-env.ts",
     "collectCoverageFrom": [
       "**/*.(t|j)s",
       "!**/.eslintrc.js",
