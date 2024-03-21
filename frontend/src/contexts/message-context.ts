@@ -1,13 +1,16 @@
 import { createContext } from 'react'
+import { MessageType } from '@/types/message-type'
 
 type MessagesContextType = {
   message: string | null
-  showMessage: (text: string) => void
+  type: MessageType
+  showMessage: (text: string, type: MessageType) => void
   clearMessage: () => void
 }
 
 export const messageContext = createContext<MessagesContextType>({
   message: null,
+  type: MessageType.Success,
   showMessage: () => {},
   clearMessage: () => {},
 })

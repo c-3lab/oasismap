@@ -1,10 +1,11 @@
 'use client'
 import dynamic from 'next/dynamic'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
+import { MessageType } from '@/types/message-type'
 import { ResponsiveContainer } from 'recharts'
 const MapSet = dynamic(() => import('@/components/map/mapset'), { ssr: false })
 import { GetPin, COLORS } from '@/components/utils/pin'
@@ -14,6 +15,7 @@ import {
 } from '@/components/fields/date-time-textbox'
 
 import { LineGraph, ourHappinessData } from '@/components/happiness/graph'
+import { messageContext } from '@/contexts/message-context'
 import fetchData from '@/libs/fetch'
 import { PROFILE_TYPE } from '@/libs/constants'
 import { toDateTime } from '@/libs/date-converter'
@@ -22,6 +24,7 @@ import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
 const HappinessAll: React.FC = () => {
+  const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
   const [period, setPeriod] = useState(PeriodType.Month)
   const [pinData, setPinData] = useState<any>([])
@@ -53,6 +56,10 @@ const HappinessAll: React.FC = () => {
       setOurHappiness(ourHappinessData(data['graph_data']))
     } catch (error) {
       console.error('Error fetching data:', error)
+      noticeMessageContext.showMessage(
+        '幸福度の検索に失敗しました',
+        MessageType.Error
+      )
     }
   }
 

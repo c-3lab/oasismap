@@ -25,6 +25,10 @@ const fetchData = async (
       },
     })
     const jsonData = await response.json()
+
+    if (response.status >= 400) {
+      throw Error(jsonData)
+    }
     return jsonData
   } catch (error) {
     console.error('Error:', error)

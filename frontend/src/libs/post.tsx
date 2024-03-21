@@ -26,6 +26,10 @@ const postData = async (
       body: JSON.stringify(requestBody),
     })
     const jsonData = await response.json()
+
+    if (response.status >= 400) {
+      throw Error(jsonData)
+    }
     return jsonData
   } catch (error) {
     console.error('Error:', error)
