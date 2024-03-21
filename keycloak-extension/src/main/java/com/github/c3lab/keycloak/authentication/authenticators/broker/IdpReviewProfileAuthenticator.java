@@ -145,43 +145,8 @@
              }
  
              @Override
-             public String getFirstName() {
-                 return userCtx.getFirstName();
-             }
- 
-             @Override
-             public void setFirstName(String firstName) {
-                 userCtx.setFirstName(firstName);
-             }
- 
-             @Override
-             public String getEmail() {
-                 return userCtx.getEmail();
-             }
- 
-             @Override
-             public void setEmail(String email) {
-                 userCtx.setEmail(email);
-             }
- 
-             @Override
-             public String getLastName() {
-                 return userCtx.getLastName();
-             }
- 
-             @Override
-             public void setLastName(String lastName) {
-                 userCtx.setLastName(lastName);
-             }
- 
-             @Override
              public String getUsername() {
                  return userCtx.getUsername();
-             }
- 
-             @Override
-             public void setUsername(String username) {
-                 userCtx.setUsername(username);
              }
  
              @Override
@@ -196,14 +161,9 @@
          UserProfile profile = profileProvider.create(UserProfileContext.IDP_REVIEW, attributes, updatedProfile);
  
          try {
-             String oldEmail = userCtx.getEmail();
- 
-             profile.update((attributeName, userModel, oldValue) -> {
-                 if (attributeName.equals(UserModel.EMAIL)) {
-                     context.getAuthenticationSession().setAuthNote(UPDATE_PROFILE_EMAIL_CHANGED, "true");
-                     event.clone().event(EventType.UPDATE_EMAIL).detail(Details.CONTEXT, UserProfileContext.IDP_REVIEW.name()).detail(Details.PREVIOUS_EMAIL, oldEmail).detail(Details.UPDATED_EMAIL, profile.getAttributes().getFirst(UserModel.EMAIL)).success();
-                 }
-             });
+            profile.update((attributeName, userModel, oldValue) -> {
+                event.clone().detail(Details.CONTEXT, UserProfileContext.IDP_REVIEW.name()).success();
+            });
          } catch (ValidationException pve) {
              List<FormMessage> errors = Validation.getFormErrorsFromValidation(pve.getErrors());
  
@@ -221,10 +181,6 @@
          userCtx.saveToAuthenticationSession(context.getAuthenticationSession(), BROKERED_CONTEXT_NOTE);
  
          logger.debugf("Profile updated successfully after first authentication with identity provider '%s' for broker user '%s'.", brokerContext.getIdpConfig().getAlias(), userCtx.getUsername());
- 
-         String newEmail = profile.getAttributes().getFirst(UserModel.EMAIL);
- 
-         event.detail(Details.UPDATED_EMAIL, newEmail);
  
          // Ensure page is always shown when user later returns to it - for example with form "back" button
          context.getAuthenticationSession().setAuthNote(ENFORCE_UPDATE_PROFILE, "true");
