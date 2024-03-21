@@ -62,8 +62,10 @@ export class HappinessController {
 
   @Get('/all')
   async getHappinessAll(
+    @Headers('Authorization') authorization: string,
     @Query() getHappinessAllDto: GetHappinessAllDto,
   ): Promise<HappinessAllResponse> {
+    await this.authService.verifyAuthorization(authorization);
     return this.happinessAllService.findHappinessAll(
       getHappinessAllDto.start,
       getHappinessAllDto.end,

@@ -8,6 +8,19 @@ export class AuthService {
   async getUserAttributeFromAuthorization(
     authorization: string,
   ): Promise<UserAttribute> {
+    const decodedToken = await this.verifyAuthorization(authorization);
+
+    const userAttribute: UserAttribute = {
+      nickname: decodedToken.nickname,
+      age: decodedToken.age,
+      prefecture: decodedToken.prefecture,
+      city: decodedToken.city,
+    };
+
+    return userAttribute;
+  }
+
+  async verifyAuthorization(authorization: string): Promise<JwtPayload> {
     const [type, token] = authorization.split(' ');
     if (type !== 'Bearer') {
       throw new UnauthorizedException('Invalid token');
@@ -41,13 +54,6 @@ export class AuthService {
       });
     });
 
-    const userAttribute: UserAttribute = {
-      nickname: decodedToken.nickname,
-      age: decodedToken.age,
-      prefecture: decodedToken.prefecture,
-      city: decodedToken.city,
-    };
-
-    return userAttribute;
+    return decodedToken;
   }
 }
