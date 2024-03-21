@@ -17,7 +17,7 @@ export class HappinessMeService {
     'happiness6',
   ];
 
-  async findHapinessMe(
+  async findHappinessMe(
     userAttribute: UserAttribute,
     start: string,
     end: string,
