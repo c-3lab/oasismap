@@ -76,8 +76,10 @@ export class HappinessController {
 
   @Get('/export')
   async exportHappiness(
+    @Headers('Authorization') authorization: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
+    await this.authService.verifyAdminAuthorization(authorization);
     const csvfile = await this.happinessExportService.exportCsv();
     const filename = DateTime.now()
       .setZone('Asia/Tokyo')
