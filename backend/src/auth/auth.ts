@@ -20,6 +20,14 @@ export class AuthService {
     return userAttribute;
   }
 
+  async verifyAdminAuthorization(authorization: string): Promise<void> {
+    const decodedToken = await this.verifyAuthorization(authorization);
+
+    if (decodedToken.azp !== process.env.ADMIN_KEYCLOAK_CLIENT_ID) {
+      throw new UnauthorizedException('Invalid token');
+    }
+  }
+
   async verifyAuthorization(authorization: string): Promise<JwtPayload> {
     const [type, token] = authorization.split(' ');
     if (type !== 'Bearer') {
