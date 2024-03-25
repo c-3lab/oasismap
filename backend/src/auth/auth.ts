@@ -37,10 +37,13 @@ export class AuthService {
     const url =
       process.env.KEYCLOAK_CLIENT_ISSUER + '/.well-known/openid-configuration';
     const response = await fetch(url);
+    console.log(response);
     const json = await response.json();
     const client = jwksClient({
       jwksUri: json.jwks_uri,
     });
+    console.log(client);
+    console.log(client.getSigningKey);
 
     function getKey(header: JwtHeader, callback: SigningKeyCallback) {
       client.getSigningKey(header.kid, function (err, key?: SigningKey) {
