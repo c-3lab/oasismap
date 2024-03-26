@@ -4,9 +4,9 @@ CREATE DATABASE cygnus;
 
 \c cygnus;
 
-CREATE SCHEMA IF NOT EXISTS goverment;
+CREATE SCHEMA IF NOT EXISTS government;
 
-CREATE TABLE IF NOT EXISTS goverment.happiness (
+CREATE TABLE IF NOT EXISTS government.happiness (
     entityId char(36) PRIMARY KEY,
     entityType text NOT NULL,
     fiwareServicePath text NOT NULL,

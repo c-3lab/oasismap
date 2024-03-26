@@ -22,7 +22,7 @@ export class HappinessAllService {
     'happiness6',
   ];
 
-  async findHapinessAll(
+  async findHappinessAll(
     start: string,
     end: string,
     period: 'time' | 'day' | 'month',

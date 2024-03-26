@@ -12,7 +12,7 @@ services:
     environment:
       - "API_PORT=4000"
       - "ORION_URI=http://orion:1026"
-      - "ORION_FIWARE_SERVICE=Goverment"
+      - "ORION_FIWARE_SERVICE=Government"
       - "ORION_FIWARE_SERVICE_PATH=/Happiness"
       - "KEYCLOAK_CLIENT_ISSUER=${KEYCLOAK_CLIENT_ISSUER}"
       - "FRONTEND_URL=${NEXTAUTH_URL}"

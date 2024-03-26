@@ -225,7 +225,7 @@ docker compose -f docker-compose-dev.yml up -d frontend
 curl -iX POST \
   --url 'http://localhost:1026/v2/subscriptions' \
   --header 'content-type: application/json' \
-  --header 'Fiware-Service: Goverment' \
+  --header 'Fiware-Service: Government' \
   --header 'Fiware-ServicePath: /Happiness' \
   --data '{
   "description": "Notice of entities change",
