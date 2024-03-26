@@ -37,19 +37,18 @@ export class AuthService {
     const url =
       process.env.KEYCLOAK_CLIENT_ISSUER + '/.well-known/openid-configuration';
     const response = await fetch(url);
-    console.log(response);
     const json = await response.json();
     const client = jwksClient({
       jwksUri: json.jwks_uri,
     });
-    console.log(client);
-    console.log(client.getSigningKey);
 
     function getKey(header: JwtHeader, callback: SigningKeyCallback) {
       client.getSigningKey(header.kid, function (err, key?: SigningKey) {
         if (err) {
+          console.log('getPublicKey err');
           callback(err);
         } else {
+          console.log('getPublicKey');
           callback(null, key?.getPublicKey());
         }
       });
@@ -58,6 +57,7 @@ export class AuthService {
     const decodedToken = await new Promise<JwtPayload>((resolve, reject) => {
       jwt.verify(token, getKey, (err, decoded) => {
         if (err) {
+          console.log(err);
           reject(new UnauthorizedException('Invalid token'));
           return;
         }
