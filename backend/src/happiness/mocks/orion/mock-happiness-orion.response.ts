@@ -292,3 +292,11 @@ export const mockHappinessAllEntities = {
     },
   ],
 };
+
+export const mockPostHappinessEntity = {
+  status: 201,
+};
+
+export const mockPostHappinessEntity500 = {
+  status: 500,
+};
