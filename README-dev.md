@@ -14,42 +14,9 @@ git clone git@github.com:c-3lab/oasismap.git
 cd oasismap
 ```
 
-### SubmoduleのStarSeekerを初期化/更新する
-```
-git submodule update --init
-```
-※ OASISmapではSubmoduleとして [StarSeeker](https://github.com/c-3lab/StarSeeker) を利用している
-
-#### 以下 未マージのStarSeekerコードを利用したい場合
-必要であれば以下手順を実行してください。
-
-##### PRを出している場合
-以下を順に実行する。
-
-```
-cd frontend/externals/StarSeeker
-git fetch
-gh pr checkout <pr-number>
-```
-
-##### PRを出す前に動作確認をしたい場合
-
-1. 初回の場合のみ、以下のコマンドを実行する(2回目以降の場合はスキップ)  
-※ 上記コマンドの `xxxxx` は作成したブランチを push したリポジトリに合わせて変更
-```
-cd frontend/externals/StarSeeker
-git remote add draft https://github.com/xxxxx/StarSeeker
-```
-
-2. 以下のコマンドを実行し、対象のブランチに checkout する
-```
-git fetch draft
-git checkout <draft/ブランチ名>
-```
-
 ### 環境変数の設定
 
-1. 環境変数ファイルをコピーする  
+1. 環境変数ファイルをコピーする
 ※ 本手順の実施前にカレントディレクトリを変更している場合、リポジトリのルートディレクトリに移動すること
 ```
 cp _env .env
@@ -87,10 +54,10 @@ NEXTAUTH_SECRET=sampleRandamString
 ```
 
 ### keycloak 初期設定
-1. ngrokのアカウントを登録する  
+1. ngrokのアカウントを登録する
 https://ngrok.com/
 
-2. 手順に従いngrokをインストールする  
+2. 手順に従いngrokをインストールする
 https://ngrok.com/docs/getting-started/
 
 3. ngrok起動
@@ -126,9 +93,7 @@ KC_HOSTNAME_ADMIN_URL=https://xxxx-xxx-xxx-x-xx.ngrok-free.app
 ### frontend 初期設定
 以下コマンドを順に実行して環境に各種パッケージをインストールする。
 ```
-cd frontend/externals/StarSeeker/StarSeeker/frontend
-npm install --legacy-peer-deps
-cd ../../../../
+cd ./frontend
 npm install
 ```
 
