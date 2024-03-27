@@ -16,7 +16,7 @@ import {
 
 import { BarGraph, myHappinessData } from '@/components/happiness/graph'
 import { messageContext } from '@/contexts/message-context'
-import fetchData from '@/libs/fetch'
+import { fetchData } from '@/libs/fetch'
 import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 

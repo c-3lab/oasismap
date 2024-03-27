@@ -16,7 +16,7 @@ import {
 
 import { LineGraph, ourHappinessData } from '@/components/happiness/graph'
 import { messageContext } from '@/contexts/message-context'
-import fetchData from '@/libs/fetch'
+import { fetchData } from '@/libs/fetch'
 import { PROFILE_TYPE } from '@/libs/constants'
 import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
