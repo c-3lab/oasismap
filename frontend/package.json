@@ -20,6 +20,7 @@
   "author": "c-3lab",
   "license": "AGPL",
   "dependencies": {
+    "@mui/icons-material": "^5.15.6",
     "@mui/material": "^5.15.6",
     "@mui/material-nextjs": "^5.15.6",
     "jsonwebtoken": "^9.0.2",
@@ -29,8 +30,8 @@
     "next-auth": "^4.24.6",
     "react": "^18",
     "react-dom": "^18",
-    "recharts": "^2.11.0",
-    "starseeker-frontend": "file:externals/StarSeeker/StarSeeker/frontend"
+    "react-leaflet": "^4.0.0",
+    "recharts": "^2.11.0"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.6",
