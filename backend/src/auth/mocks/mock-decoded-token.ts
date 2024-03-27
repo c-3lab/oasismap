@@ -1,0 +1,27 @@
+export const mockDecodedToken = {
+  // iat,exp に関してはmockライブラリ側で生成されるので省略、こちらで定義するとエラーとなる。
+  auth_time: 1711619873,
+  jti: '2b2a6bb5-a1d0-43c5-8551-f7cc406a50bf',
+  iss: 'http://example.com/realms/oasismap',
+  aud: 'account',
+  sub: '862eb991-398e-4933-8684-c3b7039afbd8',
+  typ: 'Bearer',
+  azp: 'general-user-client',
+  session_state: 'a40e1da2-6e2b-42f5-bd57-4470b61cb438',
+  acr: '1',
+  'allowed-origins': ['http://example.com'],
+  realm_access: {
+    roles: ['default-roles-oasismap', 'offline_access', 'uma_authorization'],
+  },
+  resource_access: { account: { roles: [] } },
+  scope: 'openid profile email',
+  sid: 'a40e1da2-6e2b-42f5-bd57-4470b61cb438',
+  email_verified: false,
+  gender: '男性',
+  prefecture: '東京',
+  city: '新宿',
+  nickname: 'sampleNickname',
+  userType: 'general',
+  preferred_username: '104866573771910427478',
+  age: '10代以下',
+};
