@@ -178,6 +178,32 @@ postgres             Up 1 minutes             5432/tcp
 ### Keycloak 自動設定
 [レルム初期セットアップ](keycloak/README.md) 手順を実施
 
+### カスタマイズしたProviderをbuildして配置
+1. ビルド用コンテナに入る
+```
+docker compose exec keycloak-extension bash
+```
+
+2. コンテナ内でビルド
+```
+mvn install
+```
+
+3. コンテナから抜ける
+```
+exit
+```
+
+4. ビルドしたjarファイルを `keycloak/providers` 配下に設置
+```
+cp keycloak-extension/target/authenticator-oasismap.jar keycloak/providers/authenticator-oasismap.jar
+```
+
+5. コンテナを再起動
+```
+docker compose -f docker-compose-dev.yml restart keycloak
+```
+
 ### 環境変数の準備と追加
 
 #### Keycloak

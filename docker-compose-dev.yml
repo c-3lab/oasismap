@@ -181,6 +181,7 @@ services:
     command: start-dev --features=declarative-user-profile
     volumes:
       - ./keycloak/themes:/opt/keycloak/themes
+      - ./keycloak/providers:/opt/keycloak/providers
     networks:
       - backend-network
     healthcheck:
@@ -189,6 +190,15 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+
+  keycloak-extension:
+    container_name: keycloak-extension
+    image: maven:latest
+    tty: true
+    volumes:
+      - ./keycloak-extension:/build
+    working_dir: /build
+    entrypoint: sleep infinity
 
 networks:
   backend-network:
