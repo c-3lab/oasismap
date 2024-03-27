@@ -14,7 +14,7 @@ import {
 
 import { messageContext } from '@/contexts/message-context'
 import { MessageType } from '@/types/message-type'
-import postData from '@/libs/post'
+import { postData } from '@/libs/fetch'
 import { getCurrentPosition } from '@/libs/geolocation'
 
 type HappinessKey =

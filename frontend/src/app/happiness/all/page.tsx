@@ -19,7 +19,7 @@ const LineGraph = dynamic(() => import('@/components/happiness/line-graph'), {
 })
 import { ourHappinessData } from '@/libs/graph'
 import { messageContext } from '@/contexts/message-context'
-import fetchData from '@/libs/fetch'
+import { fetchData } from '@/libs/fetch'
 import { PROFILE_TYPE } from '@/libs/constants'
 import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'

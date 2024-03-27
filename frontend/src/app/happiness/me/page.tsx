@@ -19,7 +19,7 @@ const BarGraph = dynamic(() => import('@/components/happiness/bar-graph'), {
 })
 import { myHappinessData } from '@/libs/graph'
 import { messageContext } from '@/contexts/message-context'
-import fetchData from '@/libs/fetch'
+import { fetchData } from '@/libs/fetch'
 import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 
