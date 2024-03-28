@@ -86,8 +86,8 @@
       "!**/.eslintrc.js",
       "!**/dist/**",
       "!**/coverage/**",
-      "!**/src/happiness/mocks/**",
-      "!**/src/happiness/expects/**",
+      "!**/src/**/mocks/**",
+      "!**/src/**/expects/**",
       "!**/test/**"
     ],
     "coverageDirectory": "./coverage",
