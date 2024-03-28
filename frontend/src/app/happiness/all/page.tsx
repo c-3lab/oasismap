@@ -37,7 +37,7 @@ const HappinessAll: React.FC = () => {
   const [zoomLevel, setZoomLevel] = useState<number>(
     parseInt(process.env.NEXT_PUBLIC_MAP_DEFAULT_ZOOM!) || 13
   )
-  const { data: session } = useSession()
+  const { data: session, update } = useSession()
 
   const getData = async () => {
     try {
@@ -49,12 +49,19 @@ const HappinessAll: React.FC = () => {
         console.error('Date conversion failed.')
         return
       }
-      const data = await fetchData(url, {
-        start: startDateTime,
-        end: endDateTime,
-        period: period,
-        zoomLevel: zoomLevel,
-      })
+      // アクセストークンを再取得
+      const updatedSession = await update()
+
+      const data = await fetchData(
+        url,
+        {
+          start: startDateTime,
+          end: endDateTime,
+          period: period,
+          zoomLevel: zoomLevel,
+        },
+        updatedSession?.user?.accessToken!
+      )
       setPinData(GetPin(data['map_data']))
       setOurHappiness(ourHappinessData(data['graph_data']))
     } catch (error) {

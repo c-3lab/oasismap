@@ -21,7 +21,7 @@ interface HappinessRequestBody {
 export const fetchData = async (
   url: string,
   params: HappinessParams,
-  token?: string
+  token: string
 ): Promise<any> => {
   try {
     const query = new URLSearchParams({
@@ -33,8 +33,8 @@ export const fetchData = async (
     const response = await fetch(`${url}?${query}`, {
       method: 'GET',
       headers: {
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
       },
     })
     const jsonData = await response.json()
@@ -72,5 +72,49 @@ export const postData = async (
   } catch (error) {
     console.error('Error:', error)
     throw error
+  }
+}
+
+export const download = async (url: string, token: string) => {
+  try {
+    const response = await fetch(`${url}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (response.status >= 400) {
+      const jsonData = await response.json()
+      throw Error(jsonData)
+    }
+
+    const fileName = getFileName(response) || 'export.csv'
+    const blob = new Blob([await response.blob()])
+    const objectUrl = window.URL.createObjectURL(blob)
+
+    const link = document.createElement('a')
+    link.href = objectUrl
+    link.download = fileName
+    link.click()
+
+    // Firefoxで問題になるため、処理を待ってからObjectURLを失効させる
+    setTimeout(() => {
+      window.URL.revokeObjectURL(objectUrl)
+    }, 250)
+  } catch (error) {
+    console.error('Error:', error)
+    throw error
+  }
+}
+
+const getFileName = (response: Response) => {
+  const disposition = response.headers.get('Content-Disposition') || ''
+  if (disposition) {
+    const pattern = /filename=(['"])(.*?)\1/
+    const matches = pattern.exec(disposition)
+    if (matches) {
+      return matches[2]
+    }
   }
 }
