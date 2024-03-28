@@ -56,8 +56,6 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-      cd /app/frontend/externals/StarSeeker/StarSeeker/frontend &&
-      npm install --legacy-peer-deps &&
       cd /app/frontend/ &&
       npm ci && 
       npm run build && 
