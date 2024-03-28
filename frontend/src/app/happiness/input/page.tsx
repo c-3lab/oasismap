@@ -1,7 +1,7 @@
 'use client'
 import React, { useContext, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 import {
   Checkbox,
   Button,
@@ -14,7 +14,8 @@ import {
 
 import { messageContext } from '@/contexts/message-context'
 import { MessageType } from '@/types/message-type'
-import postData from '@/libs/post'
+import { ERROR_TYPE } from '@/libs/constants'
+import { postData } from '@/libs/fetch'
 import { getCurrentPosition } from '@/libs/geolocation'
 
 type HappinessKey =
@@ -85,10 +86,19 @@ const HappinessInput: React.FC = () => {
       router.push(`/happiness/${referral}`)
     } catch (error) {
       console.error('Error:', error)
-      noticeMessageContext.showMessage(
-        '幸福度の送信に失敗しました',
-        MessageType.Error
-      )
+      if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
+        noticeMessageContext.showMessage(
+          '再ログインしてください',
+          MessageType.Error
+        )
+        signOut({ redirect: false })
+        router.push('/login')
+      } else {
+        noticeMessageContext.showMessage(
+          '幸福度の送信に失敗しました',
+          MessageType.Error
+        )
+      }
     }
   }
 
