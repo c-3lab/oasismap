@@ -24,6 +24,7 @@ services:
       - "ORION_URI=http://orion:1026"
       - "ORION_FIWARE_SERVICE=Government"
       - "ORION_FIWARE_SERVICE_PATH=/Happiness"
+      - "ADMIN_KEYCLOAK_CLIENT_ID=${ADMIN_KEYCLOAK_CLIENT_ID}"
       - "POSTGRES_HOST=postgres"
       - "POSTGRES_PORT=5432"
       - "POSTGRES_USERNAME=${POSTGREUSER}"
