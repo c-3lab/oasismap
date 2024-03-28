@@ -86,7 +86,8 @@
       "!**/coverage/**",
       "!**/src/happiness/mocks/**",
       "!**/src/happiness/expects/**",
-      "!**/test/**"
+      "!**/test/**",
+      "!**/src/main.ts"
     ],
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
