@@ -59,7 +59,10 @@ const ZoomLevel: React.FC<{
   return null
 }
 
-const questionTitles = {
+interface QuestionTitles {
+  [key: string]: string
+}
+const questionTitles: QuestionTitles = {
   happiness1: 'ワクワクする場所',
   happiness2: '発見の学びの場所',
   happiness3: 'ホッとする場所',
@@ -70,8 +73,14 @@ const questionTitles = {
 
 export { questionTitles }
 
-const MapOverlay = ({ type, filteredPins }) => (
-  <LayersControl.Overlay checked name={questionTitles[type]}>
+const MapOverlay = ({
+  type,
+  filteredPins,
+}: {
+  type: string
+  filteredPins: any[]
+}) => (
+  <LayersControl.Overlay checked name={type}>
     <LayerGroup>
       {filteredPins.map((pin, index) => (
         <Marker
@@ -166,7 +175,7 @@ const MapSet: React.FC<Props> = ({ pinData, setZoomLevel }) => {
     return <p>Loading...</p>
   }
 
-  const filteredPinsByType = (type) =>
+  const filteredPinsByType = (type: string) =>
     pinData.filter((pin) => pin.type === type)
 
   return (
@@ -187,7 +196,7 @@ const MapSet: React.FC<Props> = ({ pinData, setZoomLevel }) => {
         {Object.keys(questionTitles).map((type) => (
           <MapOverlay
             key={type}
-            type={type}
+            type={questionTitles[type]}
             filteredPins={filteredPinsByType(type)}
           />
         ))}

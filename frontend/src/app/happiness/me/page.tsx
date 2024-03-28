@@ -14,7 +14,10 @@ import {
   useDateTimeProps,
 } from '@/components/fields/date-time-textbox'
 
-import { BarGraph, myHappinessData } from '@/components/happiness/graph'
+const BarGraph = dynamic(() => import('@/components/happiness/bar-graph'), {
+  ssr: false,
+})
+import { myHappinessData } from '@/libs/graph'
 import { messageContext } from '@/contexts/message-context'
 import fetchData from '@/libs/fetch'
 import { toDateTime } from '@/libs/date-converter'
