@@ -17,10 +17,9 @@ ngrokの無料プランには利用上限がある。
 
 ## 手順
 
-### README-dev.md の手順実施
+### README.md の手順実施
 
-- [README-dev.md](../README-dev.md) に記載されている手順を実施する  
-  ※`keycloak/README.md` の手順も実施すること
+- [README.md](../README.md) に記載されている手順を実施する  
 
 ### ngrok で複数ポートのURLを公開
 
