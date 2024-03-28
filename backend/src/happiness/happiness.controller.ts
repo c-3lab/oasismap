@@ -88,6 +88,7 @@ export class HappinessController {
     res.set({
       'Content-Type': 'text/csv',
       'Content-Disposition': `attachment; filename="${filename}.csv"`,
+      'Access-Control-Expose-Headers': 'Content-Disposition',
     });
 
     return new StreamableFile(csvfile);
