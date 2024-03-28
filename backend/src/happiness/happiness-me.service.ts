@@ -40,6 +40,7 @@ export class HappinessMeService {
       },
       params: {
         q: query,
+        limit: '1000',
       },
     });
     return response.data;
