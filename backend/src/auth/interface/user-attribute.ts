@@ -1,4 +1,4 @@
-export class UserAttribute {
+export interface UserAttribute {
   nickname: string;
   age: string;
   prefecture: string;
