@@ -1,4 +1,4 @@
-import { useRouter } from 'next/navigation'
+import { useContext } from 'react'
 import Box from '@mui/material/Box'
 import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
@@ -8,7 +8,10 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ListItem from '@mui/material/ListItem'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
-import { signOut } from 'next-auth/react'
+import { messageContext } from '@/contexts/message-context'
+import { MessageType } from '@/types/message-type'
+import { download } from '@/libs/fetch'
+import { signOut, useSession } from 'next-auth/react'
 
 interface AdminSidebarProps {
   isOpen?: boolean
@@ -18,7 +21,23 @@ interface AdminSidebarProps {
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
 const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
-  const router = useRouter()
+  const noticeMessageContext = useContext(messageContext)
+  const { update } = useSession()
+
+  const downloadCsv = async () => {
+    try {
+      const url = backendUrl + '/api/happiness/export'
+      // アクセストークンを再取得
+      const updatedSession = await update()
+      await download(url, updatedSession?.user?.accessToken!)
+    } catch (error) {
+      console.error('Error:', error)
+      noticeMessageContext.showMessage(
+        'データエクスポートに失敗しました',
+        MessageType.Error
+      )
+    }
+  }
 
   return (
     <Drawer
@@ -36,11 +55,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
         <Divider />
         <List>
           <ListItem key="happiness" disablePadding>
-            <ListItemButton
-              onClick={() => {
-                router.push(`${backendUrl}/api/happiness/export`)
-              }}
-            >
+            <ListItemButton onClick={downloadCsv}>
               <ListItemText primary="データのエクスポート" />
             </ListItemButton>
           </ListItem>
