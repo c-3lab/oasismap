@@ -1,4 +1,5 @@
 import { useContext } from 'react'
+import { useRouter } from 'next/navigation'
 import Box from '@mui/material/Box'
 import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
@@ -12,6 +13,7 @@ import { messageContext } from '@/contexts/message-context'
 import { MessageType } from '@/types/message-type'
 import { download } from '@/libs/fetch'
 import { signOut, useSession } from 'next-auth/react'
+import { ERROR_TYPE } from '@/libs/constants'
 
 interface AdminSidebarProps {
   isOpen?: boolean
@@ -22,6 +24,7 @@ const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
 const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
   const noticeMessageContext = useContext(messageContext)
+  const router = useRouter()
   const { update } = useSession()
 
   const downloadCsv = async () => {
@@ -32,10 +35,19 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
       await download(url, updatedSession?.user?.accessToken!)
     } catch (error) {
       console.error('Error:', error)
-      noticeMessageContext.showMessage(
-        'データエクスポートに失敗しました',
-        MessageType.Error
-      )
+      if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
+        noticeMessageContext.showMessage(
+          '再ログインしてください',
+          MessageType.Error
+        )
+        signOut({ redirect: false })
+        router.push('/login')
+      } else {
+        noticeMessageContext.showMessage(
+          'データエクスポートに失敗しました',
+          MessageType.Error
+        )
+      }
     }
   }
 

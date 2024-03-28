@@ -2,7 +2,7 @@
 import dynamic from 'next/dynamic'
 import { useState, useEffect, useContext } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { MessageType } from '@/types/message-type'
@@ -20,7 +20,7 @@ const LineGraph = dynamic(() => import('@/components/happiness/line-graph'), {
 import { ourHappinessData } from '@/libs/graph'
 import { messageContext } from '@/contexts/message-context'
 import { fetchData } from '@/libs/fetch'
-import { PROFILE_TYPE } from '@/libs/constants'
+import { ERROR_TYPE, PROFILE_TYPE } from '@/libs/constants'
 import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 
@@ -66,10 +66,19 @@ const HappinessAll: React.FC = () => {
       setOurHappiness(ourHappinessData(data['graph_data']))
     } catch (error) {
       console.error('Error fetching data:', error)
-      noticeMessageContext.showMessage(
-        '幸福度の検索に失敗しました',
-        MessageType.Error
-      )
+      if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
+        noticeMessageContext.showMessage(
+          '再ログインしてください',
+          MessageType.Error
+        )
+        signOut({ redirect: false })
+        router.push('/login')
+      } else {
+        noticeMessageContext.showMessage(
+          '幸福度の検索に失敗しました',
+          MessageType.Error
+        )
+      }
     }
   }
 

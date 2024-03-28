@@ -1,3 +1,5 @@
+import { ERROR_TYPE } from './constants'
+
 interface HappinessParams {
   start: string
   end: string
@@ -39,9 +41,13 @@ export const fetchData = async (
     })
     const jsonData = await response.json()
 
-    if (response.status >= 400) {
-      throw Error(jsonData)
+    if (response.status === 401) {
+      throw Error(ERROR_TYPE.UNAUTHORIZED)
     }
+    if (response.status >= 400) {
+      throw Error(jsonData?.message)
+    }
+
     return jsonData
   } catch (error) {
     console.error('Error:', error)
@@ -65,9 +71,13 @@ export const postData = async (
     })
     const jsonData = await response.json()
 
-    if (response.status >= 400) {
-      throw Error(jsonData)
+    if (response.status === 401) {
+      throw Error(ERROR_TYPE.UNAUTHORIZED)
     }
+    if (response.status >= 400) {
+      throw Error(jsonData?.message)
+    }
+
     return jsonData
   } catch (error) {
     console.error('Error:', error)
@@ -84,9 +94,12 @@ export const download = async (url: string, token: string) => {
       },
     })
 
+    if (response.status === 401) {
+      throw Error(ERROR_TYPE.UNAUTHORIZED)
+    }
     if (response.status >= 400) {
       const jsonData = await response.json()
-      throw Error(jsonData)
+      throw Error(jsonData?.message)
     }
 
     const fileName = getFileName(response) || 'export.csv'
