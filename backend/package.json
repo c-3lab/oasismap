@@ -88,7 +88,8 @@
       "!**/coverage/**",
       "!**/src/**/mocks/**",
       "!**/src/**/expects/**",
-      "!**/test/**"
+      "!**/test/**",
+      "!**/src/main.ts"
     ],
     "coverageDirectory": "./coverage",
     "testEnvironment": "node",
