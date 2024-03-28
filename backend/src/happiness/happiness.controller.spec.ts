@@ -135,9 +135,18 @@ describe('HappinessController', () => {
       happinessAllService.findHappinessAll.mockResolvedValue(
         mockHappinesAllResponse,
       );
+      authService.verifyAuthorization.mockResolvedValue(
+        mockUserAttributesResponse,
+      );
 
-      const result = await happinessController.getHappinessAll(requestParam);
+      const result = await happinessController.getHappinessAll(
+        'authorization',
+        requestParam,
+      );
 
+      expect(authService.verifyAuthorization).toHaveBeenCalledWith(
+        'authorization',
+      );
       expect(happinessAllService.findHappinessAll).toHaveBeenCalledWith(
         requestParam.start,
         requestParam.end,
@@ -171,9 +180,13 @@ describe('HappinessController', () => {
       };
 
       const result = await happinessController.exportHappiness(
+        'authorization',
         response as Response,
       );
 
+      expect(authService.verifyAdminAuthorization).toHaveBeenCalledWith(
+        'authorization',
+      );
       expect(result).toBeInstanceOf(StreamableFile);
       expect(result.getStream().read()).toEqual(Buffer.from(mockExportCsv));
     });

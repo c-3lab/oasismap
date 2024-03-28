@@ -62,8 +62,10 @@ export class HappinessController {
 
   @Get('/all')
   async getHappinessAll(
+    @Headers('Authorization') authorization: string,
     @Query() getHappinessAllDto: GetHappinessAllDto,
   ): Promise<HappinessAllResponse> {
+    await this.authService.verifyAuthorization(authorization);
     return this.happinessAllService.findHappinessAll(
       getHappinessAllDto.start,
       getHappinessAllDto.end,
@@ -74,8 +76,10 @@ export class HappinessController {
 
   @Get('/export')
   async exportHappiness(
+    @Headers('Authorization') authorization: string,
     @Res({ passthrough: true }) res: Response,
   ): Promise<StreamableFile> {
+    await this.authService.verifyAdminAuthorization(authorization);
     const csvfile = await this.happinessExportService.exportCsv();
     const filename = DateTime.now()
       .setZone('Asia/Tokyo')
@@ -84,6 +88,7 @@ export class HappinessController {
     res.set({
       'Content-Type': 'text/csv',
       'Content-Disposition': `attachment; filename="${filename}.csv"`,
+      'Access-Control-Expose-Headers': 'Content-Disposition',
     });
 
     return new StreamableFile(csvfile);
