@@ -14,7 +14,10 @@ import {
   useDateTimeProps,
 } from '@/components/fields/date-time-textbox'
 
-import { LineGraph, ourHappinessData } from '@/components/happiness/graph'
+const LineGraph = dynamic(() => import('@/components/happiness/line-graph'), {
+  ssr: false,
+})
+import { ourHappinessData } from '@/libs/graph'
 import { messageContext } from '@/contexts/message-context'
 import fetchData from '@/libs/fetch'
 import { PROFILE_TYPE } from '@/libs/constants'
