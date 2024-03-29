@@ -25,14 +25,13 @@ services:
       - "ORION_FIWARE_SERVICE=Government"
       - "ORION_FIWARE_SERVICE_PATH=/Happiness"
       - "ADMIN_KEYCLOAK_CLIENT_ID=${ADMIN_KEYCLOAK_CLIENT_ID}"
-      - "POSTGRES_HOST=postgres"
-      - "POSTGRES_PORT=5432"
-      - "POSTGRES_USERNAME=${POSTGREUSER}"
-      - "POSTGRES_PASSWORD=${POSTGREPASSWORD}"
-      - "POSTGRES_DATABASE=postgres"
-      - "TYPEORM_SYNCHRONIZE=false"
       - "KEYCLOAK_CLIENT_ISSUER=${KEYCLOAK_CLIENT_ISSUER}"
       - "FRONTEND_URL=${NEXTAUTH_URL}"
+      - "POSTGRES_HOST=postgres"
+      - "POSTGRES_PORT=5432"
+      - "POSTGRES_USER=${POSTGREUSER}"
+      - "POSTGRES_PASSWORD=${POSTGREPASSWORD}"
+      - "POSTGRES_DATABASE=cygnus"
       - "REVERSE_GEOCODING_URL=${REVERSE_GEOCODING_URL}"
     volumes:
       - ./backend:/app/backend
@@ -57,8 +56,6 @@ services:
         condition: service_healthy
     command: >
       sh -c "
-      cd /app/frontend/externals/StarSeeker/StarSeeker/frontend &&
-      npm install --legacy-peer-deps &&
       cd /app/frontend/ &&
       npm ci && 
       npm run build && 
@@ -71,8 +68,11 @@ services:
       - "NEXT_PUBLIC_MAP_DEFAULT_LONGITUDE=${MAP_DEFAULT_LONGITUDE}"
       - "NEXT_PUBLIC_MAP_DEFAULT_ZOOM=${MAP_DEFAULT_ZOOM}"
       - "NEXT_PUBLIC_DATASET_LIST_BY=${DATASET_LIST_BY}"
+      - "NEXT_PUBLIC_BACKEND_URL=${BACKEND_URL}"
       - "GENERAL_USER_KEYCLOAK_CLIENT_ID=${GENERAL_USER_KEYCLOAK_CLIENT_ID}"
       - "GENERAL_USER_KEYCLOAK_CLIENT_SECRET=${GENERAL_USER_KEYCLOAK_CLIENT_SECRET}"
+      - "ADMIN_KEYCLOAK_CLIENT_ID=${ADMIN_KEYCLOAK_CLIENT_ID}"
+      - "ADMIN_KEYCLOAK_CLIENT_SECRET=${ADMIN_KEYCLOAK_CLIENT_SECRET}"
       - "KEYCLOAK_CLIENT_ISSUER=${KEYCLOAK_CLIENT_ISSUER}"
     volumes:
       - ./frontend/:/app/frontend/
@@ -110,6 +110,7 @@ services:
       - "PGDATABASE=postgres"
     volumes:
       - ./site/postgres/data:/var/lib/postgresql/data
+      - ./setup/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - backend-network
     healthcheck:
@@ -135,9 +136,13 @@ services:
       - "KC_DB_URL=jdbc:postgresql://postgres:5432/postgres"
       - "KC_DB_USERNAME=${POSTGREUSER}"
       - "KC_DB_PASSWORD=${POSTGREPASSWORD}"
+      - "KC_HOSTNAME_URL=${KC_HOSTNAME_URL}"
+      - "KC_HOSTNAME_ADMIN_URL=${KC_HOSTNAME_ADMIN_URL}"
       - "TZ=Asia/Tokyo"
-    command:
-      - start-dev
+    command: start-dev --features=declarative-user-profile
+    volumes:
+      - ./keycloak/themes:/opt/keycloak/themes
+      - ./keycloak/providers:/opt/keycloak/providers
     networks:
       - backend-network
     healthcheck:
