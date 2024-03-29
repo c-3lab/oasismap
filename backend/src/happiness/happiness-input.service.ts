@@ -18,10 +18,7 @@ export class HappinessInputService {
     body: CreateHappinessDto,
   ): Promise<HappinessResponse> {
     const id = uuidv4();
-    const address = await this.getAddress(
-      body.latitude,
-      body.longitude,
-    );
+    const address = await this.getAddress(body.latitude, body.longitude);
     const entity = this.toPostEntity(id, body, userAttribute, address);
     await this.postHappinessEntity(entity);
 
