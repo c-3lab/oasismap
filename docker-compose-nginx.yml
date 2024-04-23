@@ -22,15 +22,26 @@ services:
     image: node:20.10.0
     hostname: backend
     container_name: backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      orion:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
     working_dir: /app/backend
     ports:
       - "4000:4000"
-    command: sleep infinity
+    command: >
+      sh -c "
+      npm ci &&
+      npm run start"
     environment:
       - "API_PORT=4000"
       - "ORION_URI=http://orion:1026"
       - "ORION_FIWARE_SERVICE=Government"
       - "ORION_FIWARE_SERVICE_PATH=/Happiness"
+      - "ADMIN_KEYCLOAK_CLIENT_ID=${ADMIN_KEYCLOAK_CLIENT_ID}"
       - "KEYCLOAK_CLIENT_ISSUER=${KEYCLOAK_CLIENT_ISSUER}"
       - "FRONTEND_URL=${NEXTAUTH_URL}"
       - "POSTGRES_HOST=postgres"
@@ -43,6 +54,12 @@ services:
       - ./backend:/app/backend
     networks:
       - all-network
+    healthcheck:
+      test: "curl -f http://localhost:4000"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   frontend:
     image: node:20.10.0
@@ -51,7 +68,16 @@ services:
     working_dir: /app/frontend
     ports:
       - "3000:3000"
-    command: sleep infinity
+    depends_on:
+      backend:
+        condition: service_healthy
+    command: >
+      sh -c "
+      cd /app/frontend/ &&
+      npm ci && 
+      npm run build && 
+      npm run start &&
+      sleep 30"
     environment:
       - "NEXTAUTH_URL=${NEXTAUTH_URL}"
       - "NEXTAUTH_SECRET=${NEXTAUTH_SECRET}"
@@ -70,19 +96,6 @@ services:
     networks:
       - all-network
 
-  dummybackend:
-    build: "./dummyBackend"
-    container_name: dummybackend
-    working_dir: '/root/app'
-    ports:
-      - "8000:8000"
-    tty: true
-    volumes:
-      - ./dummyBackend:/root/app
-    command: uvicorn main:app --reload --host 0.0.0.0 --port 8000
-    networks:
-      - all-network
-
   mongo:
     image: mongo:6.0.14
     hostname: mongo
@@ -98,33 +111,6 @@ services:
       - ./site/mongo/configdb:/data/configdb
     networks:
       - all-network
-
-  orion:
-    image: fiware/orion:3.11.0
-    hostname: orion
-    container_name: orion
-    ports:
-      - "1026:1026"
-    expose:
-      - "1026"
-    depends_on:
-      - mongo
-    environment:
-      - "ORION_MONGO_HOST=mongo:27017"
-      - "ORION_MONGO_USER=${MONGOUSERNAME}"
-      - "ORION_MONGO_PASSWORD=${MONGOPASSWORD}"
-      - "ORION_MONGO_AUTH_SOURCE=admin"
-      - "ORION_MONGO_DB=oriondb"
-      - "ORION_PORT=1026"
-      - "ORION_MULTI_SERVICE=true"
-    networks:
-      - all-network
-    healthcheck:
-      test: "curl -f http://orion:1026/version"
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
 
   postgres:
     image: postgres:16.1
@@ -151,31 +137,6 @@ services:
       retries: 10
       start_period: 10s
 
-  cygnus:
-    image: fiware/cygnus-ngsi:3.5.0
-    hostname: cygnus
-    container_name: cygnus
-    depends_on:
-      - postgres
-    ports:
-        - "5055:5055"
-        - "5080:5080"
-    environment:
-      - "CYGNUS_POSTGRESQL_HOST=postgres"
-      - "CYGNUS_POSTGRESQL_PORT=5432"
-      - "CYGNUS_POSTGRESQL_USER=${POSTGREUSER}"
-      - "CYGNUS_POSTGRESQL_PASS=${POSTGREPASSWORD}"
-      - "CYGNUS_POSTGRESQL_ENABLE_CACHE=true"
-      - "CYGNUS_POSTGRESQL_SERVICE_PORT=5055"
-      - "CYGNUS_POSTGRESQL_DATABASE=cygnus"
-      - "CYGNUS_POSTGRESQL_DATA_MODEL=dm-by-service-path"
-      - "CYGNUS_POSTGRESQL_ATTR_PERSISTENCE=column"
-      - "CYGNUS_LOG_LEVEL=DEBUG"
-      - "CYGNUS_SERVICE_PORT=5055"
-      - "CYGNUS_API_PORT=5080"
-    networks:
-      - all-network
-
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.4
     hostname: keycloak
@@ -186,7 +147,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      - "KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}"
+      - "KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}" 
       - "KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}"
       - "KC_DB=postgres"
       - "KC_DB_URL=jdbc:postgresql://postgres:5432/postgres"
@@ -208,14 +169,54 @@ services:
       retries: 10
       start_period: 10s
 
-  keycloak-extension:
-    container_name: keycloak-extension
-    image: maven:latest
-    tty: true
-    volumes:
-      - ./keycloak-extension:/build
-    working_dir: /build
-    entrypoint: sleep infinity
+  orion:
+    image: fiware/orion:3.11.0
+    hostname: orion
+    container_name: orion
+    expose:
+      - "1026"
+    depends_on:
+      - mongo
+    environment:
+      - "ORION_MONGO_HOST=mongo:27017"
+      - "ORION_MONGO_USER=${MONGOUSERNAME}"
+      - "ORION_MONGO_PASSWORD=${MONGOPASSWORD}"
+      - "ORION_MONGO_AUTH_SOURCE=admin"
+      - "ORION_MONGO_DB=oriondb"
+      - "ORION_PORT=1026"
+      - "ORION_MULTI_SERVICE=true"
+    networks:
+      - all-network
+    healthcheck:
+      test: "curl -f http://orion:1026/version"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+
+  cygnus:
+    image: fiware/cygnus-ngsi:3.5.0
+    hostname: cygnus
+    container_name: cygnus
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - "CYGNUS_POSTGRESQL_HOST=postgres"
+      - "CYGNUS_POSTGRESQL_PORT=5432"
+      - "CYGNUS_POSTGRESQL_USER=${POSTGREUSER}"
+      - "CYGNUS_POSTGRESQL_PASS=${POSTGREPASSWORD}"
+      - "CYGNUS_POSTGRESQL_ENABLE_CACHE=true"
+      - "CYGNUS_POSTGRESQL_SERVICE_PORT=5055"
+      - "CYGNUS_POSTGRESQL_DATABASE=cygnus"
+      - "CYGNUS_POSTGRESQL_DATA_MODEL=dm-by-service-path"
+      - "CYGNUS_POSTGRESQL_ATTR_PERSISTENCE=column"
+      - "CYGNUS_LOG_LEVEL=DEBUG"
+      - "CYGNUS_SERVICE_PORT=5055"
+      - "CYGNUS_API_PORT=5080"
+    networks:
+      - all-network
 
 networks:
   all-network:
