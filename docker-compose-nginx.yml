@@ -13,7 +13,7 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt
       - /var/lib/letsencrypt:/var/lib/letsencrypt
     depends_on:
-      keycloak:
+      backend:
         condition: service_healthy
     networks:
       - all-network
