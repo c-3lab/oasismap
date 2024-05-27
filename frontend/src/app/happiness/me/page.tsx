@@ -8,7 +8,8 @@ import { PeriodType } from '@/types/period'
 import { MessageType } from '@/types/message-type'
 import { ResponsiveContainer } from 'recharts'
 const MapSet = dynamic(() => import('@/components/map/mapset'), { ssr: false })
-import { GetPin, COLORS } from '@/components/utils/pin'
+import { GetPin } from '@/components/utils/pin'
+import { graphColors } from '@/theme/color'
 import {
   DateTimeTextbox,
   useDateTimeProps,
@@ -134,7 +135,7 @@ const HappinessMe: React.FC = () => {
           <ResponsiveContainer width="100%" height={300}>
             <BarGraph
               plotdata={MyHappiness[period]}
-              color={COLORS}
+              color={graphColors}
               xTickFormatter={renderCustomDayTick}
             />
           </ResponsiveContainer>

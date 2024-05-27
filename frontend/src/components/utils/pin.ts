@@ -1,12 +1,3 @@
-export const COLORS = [
-  '#007fff',
-  '#4BA724',
-  '#7f00ff',
-  '#FF00D8',
-  '#ff7f00',
-  '#ff0000',
-]
-
 export function GetPin(arr: any[]): any[] {
   return arr
     .filter((data) => data.answers[data.type] !== 0)

@@ -1,22 +1,22 @@
-import { createColoredIcon } from './marker'
-import { colorSet } from '@/theme/color'
+import L, { DivIconOptions } from 'leaflet'
+import { mapColors } from '@/theme/color'
 
 export const getIconByType = (type: string, answer: number) => {
   switch (type) {
     case 'happiness1':
-      return getIconForHappiness(answer, colorSet["BLUE"])
+      return getIconForHappiness(answer, mapColors["BLUE"])
     case 'happiness2':
-      return getIconForHappiness(answer, colorSet["GREEN"])
+      return getIconForHappiness(answer, mapColors["GREEN"])
     case 'happiness3':
-      return getIconForHappiness(answer, colorSet["VIOLET"])
+      return getIconForHappiness(answer, mapColors["VIOLET"])
     case 'happiness4':
-      return getIconForHappiness(answer, colorSet["YELLOW"])
+      return getIconForHappiness(answer, mapColors["YELLOW"])
     case 'happiness5':
-      return getIconForHappiness(answer, colorSet["ORANGE"])
+      return getIconForHappiness(answer, mapColors["ORANGE"])
     case 'happiness6':
-      return getIconForHappiness(answer, colorSet["RED"])
+      return getIconForHappiness(answer, mapColors["RED"])
     default:
-      return getIconForHappiness(1, colorSet["RED"])
+      return getIconForHappiness(1, mapColors["RED"])
   }
 }
 
@@ -45,4 +45,29 @@ const getIconForHappiness = (answer: number, palette: string[]) => {
     default:
       return createColoredIcon(palette[0])
   }
+}
+
+const createColoredIcon = (color: string): L.DivIcon => {
+  const myCustomColour = color
+
+  const markerHtmlStyles = `
+    background-color: ${myCustomColour};
+    width: 3rem;
+    height: 3rem;
+    display: block;
+    left: -1.5rem;
+    top: -1.5rem;
+    position: relative;
+    border-radius: 3rem 3rem 0;
+    transform: rotate(45deg);
+    border: 1px solid #FFFFFF`
+
+  const divIconOptions: Omit<DivIconOptions, 'labelAnchor'> = {
+    className: 'my-custom-pin',
+    iconAnchor: [0, 24],
+    popupAnchor: [0, -36],
+    html: `<span style="${markerHtmlStyles}" />`,
+  }
+
+  return L.divIcon(divIconOptions)
 }
