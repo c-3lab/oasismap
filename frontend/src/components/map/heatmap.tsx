@@ -12,7 +12,7 @@ import {
 import { LatLngTuple } from 'leaflet'
 import React, { useState, useEffect, Dispatch, SetStateAction } from 'react'
 import 'leaflet/dist/leaflet.css'
-import { getIconByType } from '../utils/Pin'
+import { getIconByType } from '../utils/Heatmap'
 import { getCurrentPosition } from '../../libs/geolocation'
 
 const loadEnvAsNumber = (

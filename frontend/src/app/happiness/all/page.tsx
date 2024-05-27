@@ -7,7 +7,7 @@ import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { MessageType } from '@/types/message-type'
 import { ResponsiveContainer } from 'recharts'
-const MapSet = dynamic(() => import('@/components/map/mapset'), { ssr: false })
+const MapSet = dynamic(() => import('@/components/map/heatmap'), { ssr: false })
 import { GetPin } from '@/components/utils/pin'
 import { graphColors } from '@/theme/color'
 import {
