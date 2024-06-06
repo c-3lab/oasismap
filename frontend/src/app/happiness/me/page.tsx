@@ -98,6 +98,19 @@ const HappinessMe: React.FC = () => {
 
   return (
     <Grid container>
+      <Grid container item xs={12} justifyContent="center" sx={{ my: 2, px: 2 }}>
+        <Grid item xs={12} md={6} lg={4}>
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            fullWidth
+            onClick={() => router.push('/happiness/input?referral=me')}
+          >
+            幸福度を入力
+          </Button>
+        </Grid>
+      </Grid>
       <Grid
         container
         item
@@ -205,17 +218,6 @@ const HappinessMe: React.FC = () => {
                 検索
               </Button>
             </Grid>
-          </Grid>
-          <Grid item xs={12} md={12} lg={8}>
-            <Button
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-              onClick={() => router.push('/happiness/input?referral=me')}
-            >
-              幸福度を入力
-            </Button>
           </Grid>
         </Grid>
       </Grid>
