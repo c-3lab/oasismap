@@ -36,6 +36,7 @@ describe('HappinessAllService', () => {
           'Fiware-ServicePath': process.env.ORION_FIWARE_SERVICE_PATH,
         },
         params: {
+          limit: '1000',
           q: 'timestamp>=2024-03-14T15:00:00.000Z;timestamp<=2024-03-20T14:59:59.000Z',
         },
       });
