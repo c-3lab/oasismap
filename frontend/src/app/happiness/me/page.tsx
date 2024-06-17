@@ -97,7 +97,7 @@ const HappinessMe: React.FC = () => {
   }
 
   return (
-    <Grid container>
+    <Grid container sx={{ paddingBottom: { xs: '50px', md: '0px' } }}>
       <Grid
         container
         item
@@ -206,7 +206,17 @@ const HappinessMe: React.FC = () => {
               </Button>
             </Grid>
           </Grid>
-          <Grid item xs={12} md={12} lg={8}>
+          <Grid
+            item
+            md={12}
+            lg={8}
+            sx={{
+              position: { xs: 'fixed', md: 'static' },
+              bottom: { xs: '10px', md: 'auto' },
+              left: { xs: '10px', md: 'auto' },
+              right: { xs: '10px', md: 'auto' },
+            }}
+          >
             <Button
               variant="contained"
               color="primary"
