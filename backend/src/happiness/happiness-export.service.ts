@@ -40,7 +40,7 @@ export class HappinessExportService {
     });
 
     const header =
-      'ニックネーム,年代,住所,送信日時,送信緯度,送信経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6\n';
+      'ニックネーム,年代,住所,送信日時,緯度,経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6\n';
     const csvString = header + csvData.join('\n');
 
     // UTF-8 BOM

@@ -160,7 +160,7 @@ describe('HappinessController', () => {
   describe('exportHappiness', () => {
     it('should return csv data', async () => {
       const header =
-        'ニックネーム,年代,住所,送信日時,送信緯度,送信経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6';
+        'ニックネーム,年代,住所,送信日時,緯度,経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6';
       const csvData =
         'nickname,20代,東京都文京区,2024-03-16 14:02:38,35.629327,139.72382,東京都品川区,1,1,1,1,1,1';
       const csvString = header + '\n' + csvData;
