@@ -7,7 +7,7 @@ import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { MessageType } from '@/types/message-type'
 import { ResponsiveContainer } from 'recharts'
-const MapSet = dynamic(() => import('@/components/map/heatmap'), { ssr: false })
+const Map = dynamic(() => import('@/components/map/map'), { ssr: false })
 import { GetPin } from '@/components/utils/pin'
 import { graphColors } from '@/theme/color'
 import {
@@ -111,10 +111,11 @@ const HappinessAll: React.FC = () => {
         md={6}
         sx={{ height: { xs: '50vh', md: 'calc(100vh - 64px)' } }}
       >
-        <MapSet
+        <Map
           pointEntities={[]}
           surfaceEntities={[]}
           fiware={{ servicePath: '', tenant: '' }}
+          iconType="heatmap"
           pinData={pinData}
           setZoomLevel={setZoomLevel}
         />

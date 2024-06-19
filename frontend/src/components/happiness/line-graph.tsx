@@ -6,7 +6,7 @@ import {
   CartesianGrid,
 } from 'recharts'
 import { LineChart, Legend, Line } from 'recharts'
-import { questionTitles } from '../map/mapset'
+import { questionTitles } from '../map/map'
 
 const LineGraph = (props: any) => {
   const { title, plotdata, color, xTickFormatter } = props

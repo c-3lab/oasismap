@@ -6,7 +6,7 @@ import {
   CartesianGrid,
 } from 'recharts'
 import { BarChart, Bar, Legend } from 'recharts'
-import { questionTitles } from '../map/mapset'
+import { questionTitles } from '../map/map'
 
 const BarGraph = (props: any) => {
   const { title, plotdata, color, xTickFormatter } = props
