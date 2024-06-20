@@ -4,19 +4,19 @@ import { mapColors } from '@/theme/color'
 export const getIconByType = (type: string, answer: number) => {
   switch (type) {
     case 'happiness1':
-      return getIconForHappiness(answer, mapColors["BLUE"])
+      return getIconForHappiness(answer, mapColors['BLUE'])
     case 'happiness2':
-      return getIconForHappiness(answer, mapColors["GREEN"])
+      return getIconForHappiness(answer, mapColors['GREEN'])
     case 'happiness3':
-      return getIconForHappiness(answer, mapColors["VIOLET"])
+      return getIconForHappiness(answer, mapColors['VIOLET'])
     case 'happiness4':
-      return getIconForHappiness(answer, mapColors["YELLOW"])
+      return getIconForHappiness(answer, mapColors['YELLOW'])
     case 'happiness5':
-      return getIconForHappiness(answer, mapColors["ORANGE"])
+      return getIconForHappiness(answer, mapColors['ORANGE'])
     case 'happiness6':
-      return getIconForHappiness(answer, mapColors["RED"])
+      return getIconForHappiness(answer, mapColors['RED'])
     default:
-      return getIconForHappiness(1, mapColors["RED"])
+      return getIconForHappiness(1, mapColors['RED'])
   }
 }
 
