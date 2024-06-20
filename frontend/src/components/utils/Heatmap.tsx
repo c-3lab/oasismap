@@ -50,7 +50,7 @@ const createColoredIcon = (color: string): L.DivIcon => {
   const myCustomColour = color
 
   const markerHtmlStyles = `
-    background: radial-gradient(${myCustomColour}, #ffffff);
+    background: radial-gradient(closest-side, ${myCustomColour}, rgba(255, 255, 255, 0));
     width: 3rem;
     height: 3rem;
     display: block;
