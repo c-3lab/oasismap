@@ -103,6 +103,21 @@ const HappinessAll: React.FC = () => {
 
   return (
     <Grid container>
+      {session?.user?.type === PROFILE_TYPE.GENERAL && (
+        <Grid container item xs={12} justifyContent="center" sx={{ my: 2, px: 2 }}>
+          <Grid item xs={12} md={6} lg={4}>
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
+              fullWidth
+              onClick={() => router.push('/happiness/input?referral=all')}
+            >
+              幸福度を入力
+            </Button>
+          </Grid>
+        </Grid>
+      )}
       <Grid
         container
         item
@@ -212,19 +227,6 @@ const HappinessAll: React.FC = () => {
               </Button>
             </Grid>
           </Grid>
-          {session?.user?.type === PROFILE_TYPE.GENERAL && (
-            <Grid item xs={12} md={12} lg={8}>
-              <Button
-                variant="contained"
-                color="primary"
-                size="large"
-                fullWidth
-                onClick={() => router.push('/happiness/input?referral=all')}
-              >
-                幸福度を入力
-              </Button>
-            </Grid>
-          )}
         </Grid>
       </Grid>
     </Grid>
