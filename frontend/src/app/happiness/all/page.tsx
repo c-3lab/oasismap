@@ -35,9 +35,6 @@ const HappinessAll: React.FC = () => {
   const [OurHappiness, setOurHappiness] = useState<any>([])
   const { isTokenFetched } = useTokenFetchStatus()
   const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
-  const [zoomLevel, setZoomLevel] = useState<number>(
-    parseInt(process.env.NEXT_PUBLIC_MAP_DEFAULT_ZOOM!) || 13
-  )
   const { data: session, update } = useSession()
 
   const getData = async () => {
@@ -59,7 +56,7 @@ const HappinessAll: React.FC = () => {
           start: startDateTime,
           end: endDateTime,
           period: period,
-          zoomLevel: zoomLevel,
+          zoomLevel: 14,
         },
         updatedSession?.user?.accessToken!
       )
@@ -87,7 +84,7 @@ const HappinessAll: React.FC = () => {
     if (!isTokenFetched) return
     getData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTokenFetched, updatedPeriod, zoomLevel])
+  }, [isTokenFetched, updatedPeriod])
 
   const renderCustomDayTick = (tickProps: any) => {
     const { x, y, payload } = tickProps
@@ -117,7 +114,6 @@ const HappinessAll: React.FC = () => {
           fiware={{ servicePath: '', tenant: '' }}
           iconType="heatmap"
           pinData={pinData}
-          setZoomLevel={setZoomLevel}
         />
       </Grid>
       <Grid
