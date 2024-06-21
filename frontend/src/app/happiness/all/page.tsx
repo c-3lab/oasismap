@@ -103,7 +103,15 @@ const HappinessAll: React.FC = () => {
   }
 
   return (
-    <Grid container>
+    <Grid
+      container
+      sx={{
+        paddingBottom: {
+          xs: session?.user?.type === PROFILE_TYPE.GENERAL ? '50px' : '0px',
+          md: '0px',
+        },
+      }}
+    >
       <Grid
         container
         item
@@ -215,7 +223,17 @@ const HappinessAll: React.FC = () => {
             </Grid>
           </Grid>
           {session?.user?.type === PROFILE_TYPE.GENERAL && (
-            <Grid item xs={12} md={12} lg={8}>
+            <Grid
+              item
+              md={12}
+              lg={8}
+              sx={{
+                position: { xs: 'fixed', md: 'static' },
+                bottom: { xs: '10px', md: 'auto' },
+                left: { xs: '10px', md: 'auto' },
+                right: { xs: '10px', md: 'auto' },
+              }}
+            >
               <Button
                 variant="contained"
                 color="primary"
