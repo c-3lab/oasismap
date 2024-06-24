@@ -56,7 +56,10 @@ const HappinessAll: React.FC = () => {
           start: startDateTime,
           end: endDateTime,
           period: period,
-          zoomLevel: 14,
+          zoomLevel:
+            parseInt(
+              process.env.NEXT_PUBLIC_DEFAULT_ZOOM_FOR_COLLECTION_RANGE!
+            ) || 14,
         },
         updatedSession?.user?.accessToken!
       )
