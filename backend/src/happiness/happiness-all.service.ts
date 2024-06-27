@@ -54,8 +54,8 @@ export class HappinessAllService {
   ): Promise<HappinessEntity[]> {
     const response = await axios.get(`${process.env.ORION_URI}/v2/entities`, {
       headers: {
-        'Fiware-Service': `${process.env.ORION_FIWARE_SERVICE}`,
-        'Fiware-ServicePath': `${process.env.ORION_FIWARE_SERVICE_PATH}`,
+        'Fiware-Service': process.env.ORION_FIWARE_SERVICE,
+        'Fiware-ServicePath': process.env.ORION_FIWARE_SERVICE_PATH,
       },
       params: {
         q: query,

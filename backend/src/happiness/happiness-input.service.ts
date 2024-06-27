@@ -103,8 +103,8 @@ export class HappinessInputService {
       entity,
       {
         headers: {
-          'Fiware-Service': `${process.env.ORION_FIWARE_SERVICE}`,
-          'Fiware-ServicePath': `${process.env.ORION_FIWARE_SERVICE_PATH}`,
+          'Fiware-Service': process.env.ORION_FIWARE_SERVICE,
+          'Fiware-ServicePath': process.env.ORION_FIWARE_SERVICE_PATH,
           'Content-Type': 'application/json',
         },
       },
