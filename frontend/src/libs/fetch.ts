@@ -85,6 +85,35 @@ export const postData = async (
   }
 }
 
+export const upload = async (
+  url: string,
+  requestBody: FormData,
+  token: string
+): Promise<any> => {
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: requestBody,
+    })
+
+    if (response.status === 401) {
+      throw Error(ERROR_TYPE.UNAUTHORIZED)
+    }
+    if (response.status >= 400) {
+      const jsonData = await response.json()
+      throw Error(jsonData?.message)
+    }
+
+    return response
+  } catch (error) {
+    console.error('Error:', error)
+    throw error
+  }
+}
+
 export const download = async (url: string, token: string) => {
   try {
     const response = await fetch(`${url}`, {

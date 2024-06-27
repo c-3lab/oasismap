@@ -66,9 +66,19 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
         </IconButton>
         <Divider />
         <List>
+          <ListItem key="happiness-all" disablePadding>
+            <ListItemButton onClick={() => router.push('/happiness/all')}>
+              <ListItemText primary="全体の幸福度" />
+            </ListItemButton>
+          </ListItem>
           <ListItem key="happiness" disablePadding>
             <ListItemButton onClick={downloadCsv}>
               <ListItemText primary="データのエクスポート" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem key="happiness" disablePadding>
+            <ListItemButton onClick={() => router.push('/admin/import')}>
+              <ListItemText primary="データのインポート" />
             </ListItemButton>
           </ListItem>
           <ListItem key="logout" disablePadding>

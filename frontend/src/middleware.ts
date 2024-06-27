@@ -11,6 +11,7 @@ const paths: Record<string, Permission[]> = {
   '/happiness/all': ['general', 'admin'],
   '/happiness/input': ['general'],
   '/admin/login': ['pubilc'],
+  '/admin/import': ['admin'],
 }
 
 export default withAuth({
