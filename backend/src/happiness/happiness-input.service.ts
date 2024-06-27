@@ -1,11 +1,7 @@
 import axios from 'axios';
 import { HappinessEntity } from './interface/happiness-entity';
 import { v4 as uuidv4 } from 'uuid';
-import {
-  HttpStatus,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CreateHappinessDto } from './dto/create-happiness.dto';
 import { UserAttribute } from 'src/auth/interface/user-attribute';
 import { HappinessResponse } from './interface/happiness.response';
@@ -98,21 +94,13 @@ export class HappinessInputService {
   }
 
   private async postHappinessEntity(entity: HappinessEntity) {
-    const response = await axios.post(
-      `${process.env.ORION_URI}/v2/entities`,
-      entity,
-      {
-        headers: {
-          'Fiware-Service': process.env.ORION_FIWARE_SERVICE,
-          'Fiware-ServicePath': process.env.ORION_FIWARE_SERVICE_PATH,
-          'Content-Type': 'application/json',
-        },
+    await axios.post(`${process.env.ORION_URI}/v2/entities`, entity, {
+      headers: {
+        'Fiware-Service': process.env.ORION_FIWARE_SERVICE,
+        'Fiware-ServicePath': process.env.ORION_FIWARE_SERVICE_PATH,
+        'Content-Type': 'application/json',
       },
-    );
-
-    if (response.status !== HttpStatus.CREATED) {
-      throw new InternalServerErrorException();
-    }
+    });
   }
 
   private async getAddress(
