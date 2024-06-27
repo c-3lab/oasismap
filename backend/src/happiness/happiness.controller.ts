@@ -5,10 +5,13 @@ import {
   Controller,
   Get,
   Headers,
+  ParseBoolPipe,
   Post,
   Query,
   Res,
   StreamableFile,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { HappinessInputService } from './happiness-input.service';
 import { HappinessMeResponse } from './interface/happiness-me.response';
@@ -19,9 +22,11 @@ import { AuthService } from 'src/auth/auth';
 import { CreateHappinessDto } from './dto/create-happiness.dto';
 import { HappinessResponse } from './interface/happiness.response';
 import { HappinessExportService } from './happiness-export.service';
-import type { Response } from 'express';
+import type { Response, Express } from 'express';
 import { DateTime } from 'luxon';
-
+import { HappinessImportService } from './happiness-import.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { HappinessImportResponse } from './interface/happiness-import.response';
 @Controller('/api/happiness')
 export class HappinessController {
   constructor(
@@ -29,6 +34,7 @@ export class HappinessController {
     private readonly happinessMeService: HappinessMeService,
     private readonly happinessAllService: HappinessAllService,
     private readonly happinessExportService: HappinessExportService,
+    private readonly happinessImportService: HappinessImportService,
     private readonly authService: AuthService,
   ) {}
 
@@ -92,5 +98,16 @@ export class HappinessController {
     });
 
     return new StreamableFile(csvfile);
+  }
+
+  @Post('/import')
+  @UseInterceptors(FileInterceptor('csvFile'))
+  async importHappiness(
+    @Headers('Authorization') authorization: string,
+    @UploadedFile() csvFile: Express.Multer.File,
+    @Body('isRefresh', ParseBoolPipe) isRefresh: boolean,
+  ): Promise<HappinessImportResponse> {
+    await this.authService.verifyAdminAuthorization(authorization);
+    return await this.happinessImportService.importCsv(csvFile, isRefresh);
   }
 }
