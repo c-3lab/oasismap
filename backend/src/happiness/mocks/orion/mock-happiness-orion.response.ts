@@ -317,7 +317,3 @@ export const mockPostHappinessEntity = {
 export const mockPostUpdateHappinessEntity = {
   status: 204,
 };
-
-export const mockPostHappinessEntity500 = {
-  status: 500,
-};
