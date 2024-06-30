@@ -6,11 +6,13 @@ import { HappinessAllService } from './happiness-all.service';
 import { GetHappinessMeDto } from './dto/get-happiness-me.dto';
 import { HappinessInputService } from './happiness-input.service';
 import { HappinessExportService } from './happiness-export.service';
+import { HappinessImportService } from './happiness-import.service';
 import { CreateHappinessDto } from './dto/create-happiness.dto';
 import { GetHappinessAllDto } from './dto/get-happiness-all.dto';
 import { mockHappinessMeResponse } from './mocks/happiness/mock-happiness-me.response';
 import { mockHappinessInputResponse } from './mocks/happiness/mock-happiness-input.response';
 import { mockHappinesAllResponse } from './mocks/happiness/mock-happiness-all.response';
+import { mockHappinessImportResponse } from './mocks/happiness/mock-happiness-import.response';
 import { mockUserAttributesResponse } from './mocks/keycloak/mock-user-attribute.response';
 import { Response } from 'express';
 import { StreamableFile } from '@nestjs/common';
@@ -189,6 +191,40 @@ describe('HappinessController', () => {
       );
       expect(result).toBeInstanceOf(StreamableFile);
       expect(result.getStream().read()).toEqual(Buffer.from(mockExportCsv));
+    });
+  });
+
+  describe('importHappiness', () => {
+    it('should import happiness data', async () => {
+      const header =
+        'ニックネーム,年代,住所,送信日時,緯度,経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6';
+      const csvData =
+        'nickname,30代,東京都新宿区,2023-06-27 12:34:56,35.6895,139.6917,東京都渋谷区,1,0,1,1,1,0';
+      const csvString = header + '\n' + csvData;
+      const csvFile = { buffer: Buffer.from(csvString) } as Express.Multer.File;
+      const isRefresh = true;
+
+      const happinessImportService = module.get<
+        jest.Mocked<HappinessImportService>
+      >(HappinessImportService);
+      happinessImportService.importCsv.mockResolvedValue(
+        mockHappinessImportResponse,
+      );
+
+      const result = await happinessController.importHappiness(
+        'authorization',
+        csvFile,
+        isRefresh,
+      );
+
+      expect(authService.verifyAdminAuthorization).toHaveBeenCalledWith(
+        'authorization',
+      );
+      expect(happinessImportService.importCsv).toHaveBeenCalledWith(
+        csvFile,
+        isRefresh,
+      );
+      expect(result).toEqual(mockHappinessImportResponse);
     });
   });
 });
