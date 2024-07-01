@@ -1,41 +1,6 @@
 import { DateTime } from 'luxon'
-
-interface happinessObj {
-  timestamp: string
-  happiness1: number
-  happiness2: number
-  happiness3: number
-  happiness4: number
-  happiness5: number
-  happiness6: number
-}
-
-interface happinessSet {
-  month: happinessObj[]
-  day: happinessObj[]
-  time: happinessObj[]
-}
-
-interface dataObj {
-  id: string
-  type: string
-  timestamp: string
-  location: {
-    type: string
-    value: {
-      type: string
-      coordinates: number[]
-    }
-  }
-  answers: {
-    happiness1: number
-    happiness2: number
-    happiness3: number
-    happiness4: number
-    happiness5: number
-    happiness6: number
-  }
-}
+import { MapDataItem } from '@/types/happiness-me-response'
+import { happinessObj, happinessSet } from '@/types/happiness-set'
 
 function insertTimestamp(
   objects: happinessObj[],
@@ -130,7 +95,7 @@ function aveByTimestamp(objects: happinessObj[]): happinessObj[] {
   return result
 }
 
-function sumByTimestamp(objects: happinessObj[]): happinessObj[] {
+export function sumByTimestamp(objects: happinessObj[]): happinessObj[] {
   const result: happinessObj[] = []
 
   const timeList = new Set(objects.map((item) => item['timestamp']))
@@ -202,7 +167,7 @@ export function ourHappinessData(objects: happinessObj[]): happinessSet {
   return sumData
 }
 
-export function myHappinessData(objects: dataObj[]): happinessSet {
+export function myHappinessData(objects: MapDataItem[]): happinessSet {
   const now = DateTime.local()
 
   const formatObj: happinessObj[] = []

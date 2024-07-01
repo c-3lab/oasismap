@@ -17,14 +17,7 @@ import { MessageType } from '@/types/message-type'
 import { ERROR_TYPE } from '@/libs/constants'
 import { postData } from '@/libs/fetch'
 import { getCurrentPosition } from '@/libs/geolocation'
-
-type HappinessKey =
-  | 'happiness1'
-  | 'happiness2'
-  | 'happiness3'
-  | 'happiness4'
-  | 'happiness5'
-  | 'happiness6'
+import { HappinessKey } from '@/types/happiness-key'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 

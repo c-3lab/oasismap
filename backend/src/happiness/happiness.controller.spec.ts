@@ -90,6 +90,8 @@ describe('HappinessController', () => {
     it('should return array of happiness entities', async () => {
       // リクエストパラメータのダミーデータ
       const requestParam: GetHappinessMeDto = {
+        limit: '100',
+        offset: '0',
         start: '2024-03-01T00:00:00+09:00',
         end: '2024-03-31T23:59:59+09:00',
       };
@@ -115,6 +117,8 @@ describe('HappinessController', () => {
         mockUserAttributesResponse,
         requestParam.start,
         requestParam.end,
+        requestParam.limit,
+        requestParam.offset,
       );
       expect(result).toEqual(mockHappinessMeResponse);
     });

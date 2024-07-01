@@ -50,13 +50,15 @@ export class HappinessController {
   async getHappinessMe(
     @Headers('Authorization') authorization: string,
     @Query() getHappinessMeDto: GetHappinessMeDto,
-  ): Promise<HappinessMeResponse[]> {
+  ): Promise<HappinessMeResponse> {
     const userAttribute =
       await this.authService.getUserAttributeFromAuthorization(authorization);
     return this.happinessMeService.findHappinessMe(
       userAttribute,
       getHappinessMeDto.start,
       getHappinessMeDto.end,
+      getHappinessMeDto.limit,
+      getHappinessMeDto.offset,
     );
   }
 
