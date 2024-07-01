@@ -71,6 +71,8 @@ export class HappinessController {
     return this.happinessAllService.findHappinessAll(
       getHappinessAllDto.start,
       getHappinessAllDto.end,
+      getHappinessAllDto.limit,
+      getHappinessAllDto.offset,
       getHappinessAllDto.period,
       getHappinessAllDto.zoomLevel,
     );

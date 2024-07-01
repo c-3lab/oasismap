@@ -128,6 +128,8 @@ describe('HappinessController', () => {
     it('should return array of happinessAll entities', async () => {
       // リクエストパラメータのダミーデータ
       const requestParam: GetHappinessAllDto = {
+        limit: '100',
+        offset: '0',
         start: '2024-03-01T00:00:00+09:00',
         end: '2024-03-31T23:59:59+09:00',
         period: 'time',
@@ -154,6 +156,8 @@ describe('HappinessController', () => {
       expect(happinessAllService.findHappinessAll).toHaveBeenCalledWith(
         requestParam.start,
         requestParam.end,
+        requestParam.limit,
+        requestParam.offset,
         requestParam.period,
         requestParam.zoomLevel,
       );

@@ -26,6 +26,8 @@ describe('HappinessAllService', () => {
       const result = await happinessAllService.findHappinessAll(
         '2024-03-15T00:00:00+09:00',
         '2024-03-20T23:59:59+09:00',
+        '100',
+        '200',
         'day',
         13,
       );
@@ -36,8 +38,9 @@ describe('HappinessAllService', () => {
           'Fiware-ServicePath': process.env.ORION_FIWARE_SERVICE_PATH,
         },
         params: {
-          limit: '1000',
           q: 'timestamp>=2024-03-14T15:00:00.000Z;timestamp<=2024-03-20T14:59:59.000Z',
+          limit: '100',
+          offset: '200',
         },
       });
 
