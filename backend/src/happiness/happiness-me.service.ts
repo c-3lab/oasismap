@@ -1,9 +1,6 @@
 import axios from 'axios';
 import { HappinessEntity } from './interface/happiness-entity';
-import {
-  HappinessMeResponse,
-  MapDataItem,
-} from './interface/happiness-me.response';
+import { HappinessMeResponse, Data } from './interface/happiness-me.response';
 import { v4 as uuidv4 } from 'uuid';
 import { DateTime } from 'luxon';
 import { Injectable } from '@nestjs/common';
@@ -38,7 +35,7 @@ export class HappinessMeService {
 
     return {
       count: happinessEntities.length,
-      map_data: this.toHappinessMeResponse(happinessEntities),
+      data: this.toHappinessMeResponse(happinessEntities),
     };
   }
 
@@ -61,7 +58,7 @@ export class HappinessMeService {
     return response.data;
   }
 
-  private toHappinessMeResponse(entities: HappinessEntity[]): MapDataItem[] {
+  private toHappinessMeResponse(entities: HappinessEntity[]): Data[] {
     return entities.flatMap((entity) => {
       return HappinessMeService.keys.map((key) => ({
         id: uuidv4(),

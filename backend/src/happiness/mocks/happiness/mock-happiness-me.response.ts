@@ -2,7 +2,7 @@ import { HappinessMeResponse } from 'src/happiness/interface/happiness-me.respon
 
 export const mockHappinessMeResponse: HappinessMeResponse = {
   count: 30,
-  map_data: [
+  data: [
     {
       id: '42ec444a-1e9f-499b-9db2-581f49ceb1bd',
       type: 'happiness1',

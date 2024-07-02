@@ -1,5 +1,5 @@
 import { DateTime } from 'luxon'
-import { MapDataItem } from '@/types/happiness-me-response'
+import { Data } from '@/types/happiness-me-response'
 import { happinessObj, happinessSet } from '@/types/happiness-set'
 
 function insertTimestamp(
@@ -167,7 +167,7 @@ export function ourHappinessData(objects: happinessObj[]): happinessSet {
   return sumData
 }
 
-export function myHappinessData(objects: MapDataItem[]): happinessSet {
+export function myHappinessData(objects: Data[]): happinessSet {
   const now = DateTime.local()
 
   const formatObj: happinessObj[] = []

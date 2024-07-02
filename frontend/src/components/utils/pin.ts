@@ -1,10 +1,8 @@
 import { Pin } from '@/types/pin'
-import { MapDataItem as MapDataItemForMe } from '@/types/happiness-me-response'
-import { MapDataItem as MapDataItemForAll } from '@/types/happiness-all-response'
+import { Data } from '@/types/happiness-me-response'
+import { MapDataItem } from '@/types/happiness-all-response'
 
-type MapDataItem = MapDataItemForMe | MapDataItemForAll
-
-export function GetPin(arr: MapDataItem[]): Pin[] {
+export function GetPin(arr: (Data | MapDataItem)[]): Pin[] {
   return arr
     .filter((data: MapDataItem) => data.answers[data.type] !== 0)
     .map((data) => {

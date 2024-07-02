@@ -1,9 +1,9 @@
 export interface HappinessMeResponse {
   count: number;
-  map_data: MapDataItem[];
+  data: Data[];
 }
 
-export interface MapDataItem {
+export interface Data {
   id: string;
   type: string;
   location: {

@@ -4,7 +4,7 @@ const uuidv4Pattern =
   /([0-9a-f]{8})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{12})/;
 export const expectedHappinessMeResponse: HappinessMeResponse = {
   count: 2,
-  map_data: [
+  data: [
     {
       id: expect.stringMatching(uuidv4Pattern),
       type: 'happiness1',

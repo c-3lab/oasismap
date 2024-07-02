@@ -1,6 +1,6 @@
 import { HappinessKey } from '@/types/happiness-key'
 
-export interface MapDataItem {
+export interface Data {
   id: string
   type: HappinessKey
   location: {

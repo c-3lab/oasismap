@@ -77,10 +77,10 @@ const HappinessMe: React.FC = () => {
 
         setPinData((prevPinData: Pin[]) => [
           ...prevPinData,
-          ...GetPin(data['map_data']),
+          ...GetPin(data['data']),
         ])
         setMyHappiness((prevHappiness: happinessSet) => {
-          const nextHappiness = myHappinessData(data['map_data'])
+          const nextHappiness = myHappinessData(data['data'])
           if (Object.keys(prevHappiness).length === 0) return nextHappiness
           return {
             month: sumByTimestamp([
