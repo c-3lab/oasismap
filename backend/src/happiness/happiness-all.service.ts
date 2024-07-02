@@ -7,7 +7,7 @@ import {
   HappinessAllResponse,
   MapData,
 } from './interface/happiness-all.response';
-import { DateTime } from 'luxon';
+import { DateTime, DurationLikeObject } from 'luxon';
 
 @Injectable()
 export class HappinessAllService {
@@ -54,8 +54,8 @@ export class HappinessAllService {
   ): Promise<HappinessEntity[]> {
     const response = await axios.get(`${process.env.ORION_URI}/v2/entities`, {
       headers: {
-        'Fiware-Service': `${process.env.ORION_FIWARE_SERVICE}`,
-        'Fiware-ServicePath': `${process.env.ORION_FIWARE_SERVICE_PATH}`,
+        'Fiware-Service': process.env.ORION_FIWARE_SERVICE,
+        'Fiware-ServicePath': process.env.ORION_FIWARE_SERVICE_PATH,
       },
       params: {
         q: query,
@@ -217,7 +217,7 @@ export class HappinessAllService {
     const endDate = DateTime.fromISO(endAsUTC);
     const result: GraphData[] = [];
 
-    const periodMap = {
+    const periodMap: { [key: string]: keyof DurationLikeObject } = {
       time: 'hours',
       day: 'days',
       month: 'months',
