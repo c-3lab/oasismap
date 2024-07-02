@@ -293,10 +293,27 @@ export const mockHappinessAllEntities = {
   ],
 };
 
+export const mockGetHappinessEntity = {
+  data: [
+    {
+      id: 'c28dd82f-922d-437c-a9f9-1f24f97aee50',
+      type: 'happiness',
+    },
+    {
+      id: '174bce31-0a05-4ed4-96b2-afa80ef939bd',
+      type: 'happiness',
+    },
+    {
+      id: 'fd690c01-c9bc-48e7-a386-6654ae043fdc',
+      type: 'happiness',
+    },
+  ],
+};
+
 export const mockPostHappinessEntity = {
   status: 201,
 };
 
-export const mockPostHappinessEntity500 = {
-  status: 500,
+export const mockPostUpdateHappinessEntity = {
+  status: 204,
 };
