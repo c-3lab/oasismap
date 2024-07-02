@@ -1,6 +1,8 @@
 import { ERROR_TYPE } from './constants'
 
 interface HappinessParams {
+  limit: number
+  offset: number
   start: string
   end: string
   period?: string
@@ -29,6 +31,8 @@ export const fetchData = async (
     const query = new URLSearchParams({
       start: params.start,
       end: params.end,
+      limit: params.limit.toString(),
+      offset: params.offset.toString(),
       ...(params.period && { period: params.period }),
       ...(params.zoomLevel && { zoomLevel: params.zoomLevel.toString() }),
     })

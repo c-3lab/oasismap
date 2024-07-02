@@ -1,6 +1,6 @@
 'use client'
 import dynamic from 'next/dynamic'
-import { useState, useEffect, useContext } from 'react'
+import { useState, useEffect, useContext, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
@@ -21,9 +21,14 @@ const LineGraph = dynamic(() => import('@/components/happiness/line-graph'), {
 import { ourHappinessData } from '@/libs/graph'
 import { messageContext } from '@/contexts/message-context'
 import { fetchData } from '@/libs/fetch'
-import { ERROR_TYPE, PROFILE_TYPE } from '@/libs/constants'
+import { ERROR_TYPE, PROFILE_TYPE, HAPPINESS_KEYS } from '@/libs/constants'
 import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
+import {
+  HappinessAllResponse,
+  MapData,
+  MapDataItem,
+} from '@/types/happiness-all-response'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -32,6 +37,8 @@ const HappinessAll: React.FC = () => {
   const router = useRouter()
   const [period, setPeriod] = useState(PeriodType.Month)
   const [pinData, setPinData] = useState<any>([])
+  const [isFetching, setIsfetching] = useState(false)
+  const willStop = useRef(false)
   const [OurHappiness, setOurHappiness] = useState<any>([])
   const { isTokenFetched } = useTokenFetchStatus()
   const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
@@ -39,6 +46,9 @@ const HappinessAll: React.FC = () => {
 
   const getData = async () => {
     try {
+      willStop.current = false
+      setIsfetching(true)
+
       const url = backendUrl + '/api/happiness/all'
       const startDateTime = toDateTime(startProps.value).toISO()
       const endDateTime = toDateTime(endProps.value).endOf('minute').toISO()
@@ -47,24 +57,93 @@ const HappinessAll: React.FC = () => {
         console.error('Date conversion failed.')
         return
       }
-      // アクセストークンを再取得
-      const updatedSession = await update()
 
-      const data = await fetchData(
-        url,
-        {
-          start: startDateTime,
-          end: endDateTime,
-          period: period,
-          zoomLevel:
-            parseInt(
-              process.env.NEXT_PUBLIC_DEFAULT_ZOOM_FOR_COLLECTION_RANGE!
-            ) || 14,
-        },
-        updatedSession?.user?.accessToken!
-      )
-      setPinData(GetPin(data['map_data']))
-      setOurHappiness(ourHappinessData(data['graph_data']))
+      const limit = 1000
+      let offset = 0
+      const allMapData: HappinessAllResponse['map_data'] = {}
+      const allGraphData: HappinessAllResponse['graph_data'] = []
+      while (!willStop.current) {
+        // アクセストークンを再取得
+        const updatedSession = await update()
+
+        const data: HappinessAllResponse = await fetchData(
+          url,
+          {
+            start: startDateTime,
+            end: endDateTime,
+            limit: limit,
+            offset: offset,
+            period: period,
+            zoomLevel:
+              parseInt(
+                process.env.NEXT_PUBLIC_DEFAULT_ZOOM_FOR_COLLECTION_RANGE!
+              ) || 14,
+          },
+          updatedSession?.user?.accessToken!
+        )
+        if (data['count'] === 0) break
+
+        for (const [gridKey, fetchedMapData] of Object.entries(
+          data['map_data']
+        )) {
+          const existedMapData = allMapData[gridKey]
+          if (existedMapData) {
+            const existedAnswers = existedMapData['data'][0].answers
+            const fetchedAnswers = fetchedMapData['data'][0].answers
+            const newAnswers: MapDataItem['answers'] = {
+              happiness1: 0,
+              happiness2: 0,
+              happiness3: 0,
+              happiness4: 0,
+              happiness5: 0,
+              happiness6: 0,
+            }
+
+            HAPPINESS_KEYS.forEach((type) => {
+              const totalAnswerByType =
+                existedAnswers[type] * existedMapData['count'] +
+                fetchedAnswers[type] * fetchedMapData['count']
+              const totalCount =
+                existedMapData['count'] + fetchedMapData['count']
+              newAnswers[type] = totalAnswerByType / totalCount
+            })
+            allMapData[gridKey]['data'].forEach((data: MapDataItem) => {
+              data.answers = { ...newAnswers }
+            })
+            allMapData[gridKey]['count'] += fetchedMapData['count']
+          } else {
+            allMapData[gridKey] = fetchedMapData
+          }
+        }
+        setPinData(
+          GetPin(
+            Object.values(allMapData)
+              .map((mapData: MapData) => mapData.data)
+              .flat()
+          )
+        )
+
+        for (let i = 0; i < data['graph_data'].length; i++) {
+          const existedGraphData = allGraphData[i]
+          const fetchedGraphData = data['graph_data'][i]
+          if (existedGraphData) {
+            if (fetchedGraphData['count'] === 0) continue
+
+            HAPPINESS_KEYS.forEach((key) => {
+              allGraphData[i][key] =
+                (existedGraphData[key] * existedGraphData['count'] +
+                  fetchedGraphData[key] * fetchedGraphData['count']) /
+                (existedGraphData['count'] + fetchedGraphData['count'])
+            })
+            allGraphData[i]['count'] += fetchedGraphData['count']
+          } else {
+            allGraphData.push(fetchedGraphData)
+          }
+        }
+        setOurHappiness(ourHappinessData(allGraphData))
+
+        offset += data['count']
+      }
     } catch (error) {
       console.error('Error fetching data:', error)
       if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
@@ -80,6 +159,8 @@ const HappinessAll: React.FC = () => {
           MessageType.Error
         )
       }
+    } finally {
+      setIsfetching(false)
     }
   }
 
@@ -87,6 +168,10 @@ const HappinessAll: React.FC = () => {
     if (!isTokenFetched) return
     getData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    return () => {
+      willStop.current = true
+    }
   }, [isTokenFetched, updatedPeriod])
 
   const renderCustomDayTick = (tickProps: any) => {
@@ -169,6 +254,7 @@ const HappinessAll: React.FC = () => {
                 onClick={() => {
                   setPeriod(PeriodType.Month)
                 }}
+                disabled={isFetching}
               >
                 月
               </Button>
@@ -178,6 +264,7 @@ const HappinessAll: React.FC = () => {
                 onClick={() => {
                   setPeriod(PeriodType.Day)
                 }}
+                disabled={isFetching}
               >
                 日
               </Button>
@@ -187,6 +274,7 @@ const HappinessAll: React.FC = () => {
                 onClick={() => {
                   setPeriod(PeriodType.Time)
                 }}
+                disabled={isFetching}
               >
                 時間
               </Button>
@@ -197,6 +285,7 @@ const HappinessAll: React.FC = () => {
               dateLabel="開始日"
               timeLabel="時間"
               period={period}
+              disabled={isFetching}
               {...startProps}
             />
           </Grid>
@@ -205,6 +294,7 @@ const HappinessAll: React.FC = () => {
               dateLabel="終了日"
               timeLabel="時間"
               period={period}
+              disabled={isFetching}
               {...endProps}
             />
           </Grid>
@@ -216,6 +306,7 @@ const HappinessAll: React.FC = () => {
                 fullWidth
                 sx={{ borderColor: 'primary.light' }}
                 onClick={getData}
+                disabled={isFetching}
               >
                 検索
               </Button>
