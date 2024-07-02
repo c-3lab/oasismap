@@ -7,7 +7,7 @@ import {
   HappinessAllResponse,
   MapData,
 } from './interface/happiness-all.response';
-import { DateTime } from 'luxon';
+import { DateTime, DurationLikeObject } from 'luxon';
 
 @Injectable()
 export class HappinessAllService {
@@ -217,7 +217,7 @@ export class HappinessAllService {
     const endDate = DateTime.fromISO(endAsUTC);
     const result: GraphData[] = [];
 
-    const periodMap = {
+    const periodMap: { [key: string]: keyof DurationLikeObject } = {
       time: 'hours',
       day: 'days',
       month: 'months',
