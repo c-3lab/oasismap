@@ -70,6 +70,9 @@ const handler = NextAuth({
       if (token.userType) {
         session.user.type = token.userType as string
       }
+      if (token.error) {
+        session.error = token.error as string
+      }
 
       return session
     },
