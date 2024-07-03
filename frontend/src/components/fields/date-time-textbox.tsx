@@ -11,7 +11,6 @@ interface DateTimeTextboxProps {
   period: PeriodType
   value: OasismapDateTime
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
-  disabled?: boolean | undefined
 }
 
 export const DateTimeTextbox: React.FC<DateTimeTextboxProps> = (props) => {
@@ -28,7 +27,6 @@ export const DateTimeTextbox: React.FC<DateTimeTextboxProps> = (props) => {
             shrink: true,
           }}
           fullWidth
-          disabled={!!props.disabled}
         />
       </Grid>
       <Grid item xs={4}>
@@ -38,7 +36,7 @@ export const DateTimeTextbox: React.FC<DateTimeTextboxProps> = (props) => {
           type="time"
           value={props.value.time}
           onChange={props.onChange}
-          disabled={props.period !== PeriodType.Time || !!props.disabled}
+          disabled={props.period !== PeriodType.Time}
           fullWidth
         />
       </Grid>

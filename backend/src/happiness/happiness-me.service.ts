@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { HappinessEntity } from './interface/happiness-entity';
-import { HappinessMeResponse, Data } from './interface/happiness-me.response';
+import { HappinessMeResponse } from './interface/happiness-me.response';
 import { v4 as uuidv4 } from 'uuid';
 import { DateTime } from 'luxon';
 import { Injectable } from '@nestjs/common';
@@ -21,28 +21,17 @@ export class HappinessMeService {
     userAttribute: UserAttribute,
     start: string,
     end: string,
-    limit: string,
-    offset: string,
-  ): Promise<HappinessMeResponse> {
+  ): Promise<HappinessMeResponse[]> {
     const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
     const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
     const query = `nickname==${userAttribute.nickname};timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;
-    const happinessEntities = await this.getHappinessEntities(
-      query,
-      limit,
-      offset,
-    );
+    const happinessEntities = await this.getHappinessEntities(query);
 
-    return {
-      count: happinessEntities.length,
-      data: this.toHappinessMeResponse(happinessEntities),
-    };
+    return this.toHappinessMeResponse(happinessEntities);
   }
 
   private async getHappinessEntities(
     query: string,
-    limit: string,
-    offset: string,
   ): Promise<HappinessEntity[]> {
     const response = await axios.get(`${process.env.ORION_URI}/v2/entities`, {
       headers: {
@@ -51,14 +40,15 @@ export class HappinessMeService {
       },
       params: {
         q: query,
-        limit: limit,
-        offset: offset,
+        limit: '1000',
       },
     });
     return response.data;
   }
 
-  private toHappinessMeResponse(entities: HappinessEntity[]): Data[] {
+  private toHappinessMeResponse(
+    entities: HappinessEntity[],
+  ): HappinessMeResponse[] {
     return entities.flatMap((entity) => {
       return HappinessMeService.keys.map((key) => ({
         id: uuidv4(),

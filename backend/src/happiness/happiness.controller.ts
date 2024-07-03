@@ -56,15 +56,13 @@ export class HappinessController {
   async getHappinessMe(
     @Headers('Authorization') authorization: string,
     @Query() getHappinessMeDto: GetHappinessMeDto,
-  ): Promise<HappinessMeResponse> {
+  ): Promise<HappinessMeResponse[]> {
     const userAttribute =
       await this.authService.getUserAttributeFromAuthorization(authorization);
     return this.happinessMeService.findHappinessMe(
       userAttribute,
       getHappinessMeDto.start,
       getHappinessMeDto.end,
-      getHappinessMeDto.limit,
-      getHappinessMeDto.offset,
     );
   }
 
@@ -77,8 +75,6 @@ export class HappinessController {
     return this.happinessAllService.findHappinessAll(
       getHappinessAllDto.start,
       getHappinessAllDto.end,
-      getHappinessAllDto.limit,
-      getHappinessAllDto.offset,
       getHappinessAllDto.period,
       getHappinessAllDto.zoomLevel,
     );

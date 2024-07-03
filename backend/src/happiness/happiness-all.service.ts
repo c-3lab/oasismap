@@ -6,7 +6,6 @@ import {
   GraphData,
   HappinessAllResponse,
   MapData,
-  MapDataItem,
 } from './interface/happiness-all.response';
 import { DateTime, DurationLikeObject } from 'luxon';
 
@@ -26,8 +25,6 @@ export class HappinessAllService {
   async findHappinessAll(
     start: string,
     end: string,
-    limit: string,
-    offset: string,
     period: 'time' | 'day' | 'month',
     zoomLevel: number,
   ): Promise<HappinessAllResponse> {
@@ -35,18 +32,13 @@ export class HappinessAllService {
     const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
 
     const query = `timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;
-    const happinessEntities = await this.getHappinessEntities(
-      query,
-      limit,
-      offset,
-    );
+    const happinessEntities = await this.getHappinessEntities(query);
     const gridEntities = this.generateGridEntities(
       zoomLevel,
       happinessEntities,
     );
 
     return {
-      count: happinessEntities.length,
       map_data: this.toHappinessAllMapData(gridEntities),
       graph_data: this.calculateGraphData(
         happinessEntities,
@@ -59,8 +51,6 @@ export class HappinessAllService {
 
   private async getHappinessEntities(
     query: string,
-    limit: string,
-    offset: string,
   ): Promise<HappinessEntity[]> {
     const response = await axios.get(`${process.env.ORION_URI}/v2/entities`, {
       headers: {
@@ -69,8 +59,7 @@ export class HappinessAllService {
       },
       params: {
         q: query,
-        limit: limit,
-        offset: offset,
+        limit: '1000',
       },
     });
     return response.data;
@@ -81,7 +70,8 @@ export class HappinessAllService {
     zoomLevel: number,
     happinessEntities: HappinessEntity[],
   ): {
-    gridKey: string;
+    latitude: number;
+    longitude: number;
     happinessEntities: HappinessEntity[];
   }[] {
     const mapSize = this.tileSize * Math.pow(2, zoomLevel);
@@ -109,7 +99,8 @@ export class HappinessAllService {
 
     // データを整形して返す
     return Object.entries(result).map(([gridKey, happinessEntities]) => ({
-      gridKey,
+      latitude: Number(gridKey.split(',')[0]),
+      longitude: Number(gridKey.split(',')[1]),
       happinessEntities,
     }));
   }
@@ -166,24 +157,21 @@ export class HappinessAllService {
 
   private toHappinessAllMapData(
     gridEntities: {
-      gridKey: string;
+      latitude: number;
+      longitude: number;
       happinessEntities: HappinessEntity[];
     }[],
-  ): { [key: string]: MapData } {
-    const map_data = {};
-    gridEntities.forEach((entity) => {
-      const response: MapDataItem[] = HappinessAllService.keys.map((key) => {
-        return {
+  ): MapData[] {
+    return gridEntities.flatMap((entity) => {
+      return HappinessAllService.keys.map((key) => {
+        const response: MapData = {
           id: uuidv4(),
           type: key,
           location: {
             type: 'geo:json',
             value: {
               type: 'Point',
-              coordinates: [
-                Number(entity.gridKey.split(',')[0]),
-                Number(entity.gridKey.split(',')[1]),
-              ],
+              coordinates: [entity.latitude, entity.longitude],
             },
           },
           answers: {
@@ -213,13 +201,10 @@ export class HappinessAllService {
             ),
           },
         };
+
+        return response;
       });
-      map_data[entity.gridKey] = {
-        count: entity.happinessEntities.length,
-        data: response,
-      };
     });
-    return map_data;
   }
 
   private calculateGraphData(
@@ -249,7 +234,6 @@ export class HappinessAllService {
       });
 
       const graphData: GraphData = {
-        count: filteredEntities.length,
         timestamp: spanStart.setZone('Asia/Tokyo').toISO(),
         happiness1: this.averageHappiness(
           filteredEntities,

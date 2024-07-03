@@ -1,9 +1,4 @@
 export interface HappinessMeResponse {
-  count: number;
-  data: Data[];
-}
-
-export interface Data {
   id: string;
   type: string;
   location: {

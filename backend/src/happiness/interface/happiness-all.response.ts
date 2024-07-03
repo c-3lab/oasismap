@@ -1,15 +1,9 @@
 export interface HappinessAllResponse {
-  count: number;
-  map_data: { [key: string]: MapData };
+  map_data: MapData[];
   graph_data: GraphData[];
 }
 
 export interface MapData {
-  count: number;
-  data: MapDataItem[];
-}
-
-export interface MapDataItem {
   id: string;
   type: string;
   location: {
@@ -30,7 +24,6 @@ export interface MapDataItem {
 }
 
 export interface GraphData {
-  count: number;
   timestamp: string;
   happiness1: number;
   happiness2: number;
