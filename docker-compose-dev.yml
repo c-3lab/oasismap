@@ -90,6 +90,7 @@ services:
       - ./site/mongo/configdb:/data/configdb
     networks:
       - backend-network
+    restart: always
 
   postgres:
     image: postgres:16.1
@@ -115,6 +116,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    restart: always
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.4
@@ -147,6 +149,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    restart: always
 
   keycloak-extension:
     container_name: keycloak-extension
@@ -183,6 +186,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    restart: always
 
   cygnus:
     image: fiware/cygnus-ngsi:3.5.0
@@ -206,6 +210,7 @@ services:
       - "CYGNUS_API_PORT=5080"
     networks:
       - backend-network
+    restart: always
 
 networks:
   backend-network:
