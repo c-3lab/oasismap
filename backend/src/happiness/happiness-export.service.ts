@@ -12,7 +12,11 @@ export class HappinessExportService {
   ) {}
 
   async exportCsv(): Promise<Uint8Array> {
-    const records = await this.happinessRepository.find();
+    const records = await this.happinessRepository.find({
+      order: {
+        timestamp: 'ASC',
+      },
+    });
 
     const csvData = records.map((record) => {
       const jsonLocation = JSON.parse(record.location);
