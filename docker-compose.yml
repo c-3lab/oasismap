@@ -43,6 +43,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    restart: always
 
   frontend:
     image: node:20.10.0
@@ -79,6 +80,7 @@ services:
       - ./frontend/:/app/frontend/
     networks:
       - frontend-network
+    restart: always
 
   mongo:
     image: mongo:6.0.14
@@ -95,6 +97,7 @@ services:
       - ./site/mongo/configdb:/data/configdb
     networks:
       - backend-network
+    restart: always
 
   postgres:
     image: postgres:16.1
@@ -120,6 +123,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    restart: always
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.4
@@ -152,6 +156,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    restart: always
 
   orion:
     image: fiware/orion:3.11.0
@@ -177,6 +182,7 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    restart: always
 
   cygnus:
     image: fiware/cygnus-ngsi:3.5.0
@@ -200,6 +206,7 @@ services:
       - "CYGNUS_API_PORT=5080"
     networks:
       - backend-network
+    restart: always
 
 networks:
   backend-network:
