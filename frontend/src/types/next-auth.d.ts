@@ -7,5 +7,6 @@ declare module 'next-auth' {
       nickname?: string
       type?: string
     } & DefaultSession['user']
+    error?: string
   }
 }

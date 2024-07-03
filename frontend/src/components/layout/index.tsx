@@ -34,7 +34,7 @@ const Layout: React.FC<LayoutProps> = ({ simple = false, children }) => {
           </Box>
         </Box>
       ) : (
-        <SessionProvider>
+        <SessionProvider refetchOnWindowFocus={false}>
           <Box sx={{ display: 'flex' }}>
             <CssBaseline />
             <Header

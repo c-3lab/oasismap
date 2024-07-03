@@ -3,6 +3,7 @@ import KeycloakProvider from 'next-auth/providers/keycloak'
 import { JWT } from 'next-auth/jwt'
 import jwt, { JwtHeader, JwtPayload, SigningKeyCallback } from 'jsonwebtoken'
 import jwksClient, { SigningKey } from 'jwks-rsa'
+import { ERROR_TYPE } from '@/libs/constants'
 
 const handler = NextAuth({
   providers: [
@@ -70,6 +71,9 @@ const handler = NextAuth({
       if (token.userType) {
         session.user.type = token.userType as string
       }
+      if (token.error) {
+        session.error = token.error as string
+      }
 
       return session
     },
@@ -126,12 +130,10 @@ const refreshAccessToken = async (token: JWT): Promise<JWT> => {
       accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
       refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
     }
-  } catch (error) {
-    console.log(error)
-
+  } catch {
     return {
       ...token,
-      error: 'RefreshAccessTokenError',
+      error: ERROR_TYPE.REFRESH_ACCESS_TOKEN_ERROR,
     }
   }
 }

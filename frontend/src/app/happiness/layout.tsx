@@ -1,6 +1,9 @@
+'use client'
 import React, { Suspense } from 'react'
 import { Grid, CircularProgress } from '@mui/material'
 import Layout from '@/components/layout'
+import { SessionProvider } from 'next-auth/react'
+import TokenChecker from '@/components/utils/token-checker'
 
 export default function HappinessLayout({
   children,
@@ -23,6 +26,9 @@ export default function HappinessLayout({
       }
     >
       <Layout>{children}</Layout>
+      <SessionProvider refetchOnWindowFocus={false}>
+        <TokenChecker />
+      </SessionProvider>
     </Suspense>
   )
 }
