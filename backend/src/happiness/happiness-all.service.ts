@@ -71,6 +71,7 @@ export class HappinessAllService {
         q: query,
         limit: limit,
         offset: offset,
+        orderBy: '!timestamp',
       },
     });
     return response.data;
