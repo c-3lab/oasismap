@@ -24,9 +24,16 @@ export class HappinessMeService {
     limit: string,
     offset: string,
   ): Promise<HappinessMeResponse> {
-    const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
-    const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
-    const query = `nickname==${userAttribute.nickname};timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;
+    let query: string;
+    if (!start && !end) {
+      query = `nickname==${userAttribute.nickname};`;
+    } else {
+      const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
+      const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
+
+      query = `nickname==${userAttribute.nickname};timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;
+    }
+
     const happinessEntities = await this.getHappinessEntities(
       query,
       limit,
@@ -53,6 +60,7 @@ export class HappinessMeService {
         q: query,
         limit: limit,
         offset: offset,
+        orderBy: '!timestamp',
       },
     });
     return response.data;
