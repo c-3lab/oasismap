@@ -51,6 +51,43 @@ describe('HappinessMeService', () => {
           q: 'nickname==nickname;timestamp>=2024-01-01T05:30:00.000Z;timestamp<=2024-03-31T14:59:59.000Z',
           limit: '100',
           offset: '200',
+          orderBy: '!timestamp',
+        },
+      });
+      expect(result).toEqual(expectedHappinessMeResponse);
+    });
+
+    it('should return happiness entities for No date range', async () => {
+      const spy = mockedAxios.get.mockResolvedValue(mockHappinessMeEntities);
+
+      const requestUserAttributes: UserAttribute = {
+        nickname: 'nickname',
+        age: '20代',
+        prefecture: '東京都',
+        city: '文京区',
+      };
+      const start = '';
+      const end = '';
+      const limit = '100';
+      const offset = '200';
+      const result = await happinessMeService.findHappinessMe(
+        requestUserAttributes,
+        start,
+        end,
+        limit,
+        offset,
+      );
+
+      expect(spy).toHaveBeenCalledWith(`${process.env.ORION_URI}/v2/entities`, {
+        headers: {
+          'Fiware-Service': process.env.ORION_FIWARE_SERVICE,
+          'Fiware-ServicePath': process.env.ORION_FIWARE_SERVICE_PATH,
+        },
+        params: {
+          q: 'nickname==nickname;',
+          limit: '100',
+          offset: '200',
+          orderBy: '!timestamp',
         },
       });
       expect(result).toEqual(expectedHappinessMeResponse);
