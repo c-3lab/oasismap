@@ -130,7 +130,28 @@ const refreshAccessToken = async (token: JWT): Promise<JWT> => {
       accessTokenExpires: Date.now() + refreshedTokens.expires_in * 1000,
       refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
     }
-  } catch {
+  } catch (error) {
+    if (typeof error === 'object' && error !== null) {
+      if ('error' in error && 'error_description' in error) {
+        const keycloakError = error as {
+          error: string
+          error_description: string
+        }
+        if (
+          !(
+            keycloakError.error === 'invalid_grant' &&
+            keycloakError.error_description === 'Token is not active'
+          )
+        ) {
+          console.log(keycloakError)
+        }
+      } else {
+        console.log(error)
+      }
+    } else {
+      console.log(error)
+    }
+
     return {
       ...token,
       error: ERROR_TYPE.REFRESH_ACCESS_TOKEN_ERROR,
