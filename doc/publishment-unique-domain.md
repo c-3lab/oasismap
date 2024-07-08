@@ -1,7 +1,7 @@
 # 独自ドメインを使用したOASISmapの公開手順
 
 ## SSL証明書の発行
-1. nginx/oasismap-ssl.confに記載されているexample.comを公開する独自ドメインに修正
+1. [nginx/oasismap-ssl.conf](../nginx/oasismap-ssl.conf)に記載されているexample.comを公開する独自ドメインに修正
 
 2. nginxとcertbotを起動
 
@@ -40,7 +40,7 @@ docker compose -f docker-compose-ssl.yml down
       - `GENERAL_USER_KEYCLOAK_CLIENT_SECRET`
       - `ADMIN_KEYCLOAK_CLIENT_SECRET`
 
-2. nginx/oasismap-https.confに記載されているexample.comを公開する独自ドメインに修正
+2. [nginx/oasismap-https.conf](../nginx/oasismap-https.conf)に記載されているexample.comを公開する独自ドメインに修正
 
 3. Dockerコンテナを展開
 ```sh
