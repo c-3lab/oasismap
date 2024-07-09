@@ -88,6 +88,10 @@ export class HappinessInputService {
         type: 'Text',
         value: userAttribute.prefecture + userAttribute.city,
       },
+      memo: {
+        type: 'Text',
+        value: body.memo,
+      },
     };
 
     return formattedData;

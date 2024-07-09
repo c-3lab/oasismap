@@ -78,6 +78,7 @@ export class HappinessMeService {
         timestamp: DateTime.fromISO(entity.timestamp.value)
           .setZone('Asia/Tokyo')
           .toISO(),
+        memo: entity.memo?.value ?? '',
         answers: {
           happiness1: entity.happiness1.value,
           happiness2: entity.happiness2.value,

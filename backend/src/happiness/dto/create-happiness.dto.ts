@@ -25,6 +25,7 @@ class Answer {
 export class CreateHappinessDto {
   readonly latitude: number;
   readonly longitude: number;
+  readonly memo: string;
 
   @ValidateNested()
   @Type(() => Answer)
