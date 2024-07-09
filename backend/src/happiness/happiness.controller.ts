@@ -42,6 +42,20 @@ export class HappinessController {
     private readonly authService: AuthService,
   ) {}
 
+  @Get()
+  async getHappinessList(
+    @Headers('Authorization') authorization: string,
+    @Query() getHappinessListDto: GetHappinessListDto,
+  ): Promise<HappinessListResponse> {
+    const userAttribute =
+      await this.authService.getUserAttributeFromAuthorization(authorization);
+    return this.happinessListService.findHappinessList(
+      userAttribute,
+      getHappinessListDto.limit,
+      getHappinessListDto.offset,
+    );
+  }
+
   @Post()
   async createHappiness(
     @Headers('Authorization') authorization: string,
@@ -85,20 +99,6 @@ export class HappinessController {
       getHappinessAllDto.offset,
       getHappinessAllDto.period,
       getHappinessAllDto.zoomLevel,
-    );
-  }
-
-  @Get('/list')
-  async getHappinessList(
-    @Headers('Authorization') authorization: string,
-    @Query() getHappinessListDto: GetHappinessListDto,
-  ): Promise<HappinessListResponse> {
-    const userAttribute =
-      await this.authService.getUserAttributeFromAuthorization(authorization);
-    return this.happinessListService.findHappinessList(
-      userAttribute,
-      getHappinessListDto.limit,
-      getHappinessListDto.offset,
     );
   }
 
