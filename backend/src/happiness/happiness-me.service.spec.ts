@@ -51,6 +51,7 @@ describe('HappinessMeService', () => {
           q: 'nickname==nickname;timestamp>=2024-01-01T05:30:00.000Z;timestamp<=2024-03-31T14:59:59.000Z',
           limit: '100',
           offset: '200',
+          orderBy: '!timestamp',
         },
       });
       expect(result).toEqual(expectedHappinessMeResponse);
