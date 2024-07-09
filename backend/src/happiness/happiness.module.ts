@@ -3,6 +3,7 @@ import { HappinessController } from './happiness.controller';
 import { HappinessInputService } from './happiness-input.service';
 import { HappinessMeService } from './happiness-me.service';
 import { HappinessAllService } from './happiness-all.service';
+import { HappinessListService } from './happiness-list.service';
 import { AuthService } from 'src/auth/auth';
 import { HappinessExportService } from './happiness-export.service';
 import { HappinessImportService } from './happiness-import.service';
@@ -16,6 +17,7 @@ import { Happiness } from './happiness.entity';
     HappinessInputService,
     HappinessMeService,
     HappinessAllService,
+    HappinessListService,
     HappinessExportService,
     HappinessImportService,
     AuthService,

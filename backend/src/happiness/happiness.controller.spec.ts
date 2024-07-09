@@ -1,15 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HappinessController } from './happiness.controller';
 import { HappinessMeService } from './happiness-me.service';
+import { HappinessListService } from './happiness-list.service';
 import { AuthService } from 'src/auth/auth';
 import { HappinessAllService } from './happiness-all.service';
 import { GetHappinessMeDto } from './dto/get-happiness-me.dto';
+import { GetHappinessListDto } from './dto/get-happiness-list.dto';
 import { HappinessInputService } from './happiness-input.service';
 import { HappinessExportService } from './happiness-export.service';
 import { HappinessImportService } from './happiness-import.service';
 import { CreateHappinessDto } from './dto/create-happiness.dto';
 import { GetHappinessAllDto } from './dto/get-happiness-all.dto';
 import { mockHappinessMeResponse } from './mocks/happiness/mock-happiness-me.response';
+import { mockHappinessListResponse } from './mocks/happiness/mock-happiness-list.response';
 import { mockHappinessInputResponse } from './mocks/happiness/mock-happiness-input.response';
 import { mockHappinesAllResponse } from './mocks/happiness/mock-happiness-all.response';
 import { mockHappinessImportResponse } from './mocks/happiness/mock-happiness-import.response';
@@ -164,6 +167,40 @@ describe('HappinessController', () => {
         requestParam.zoomLevel,
       );
       expect(result).toEqual(mockHappinesAllResponse);
+    });
+  });
+
+  describe('getHappinessList', () => {
+    it('should return array of happiness entities', async () => {
+      // リクエストパラメータのダミーデータ
+      const requestParam: GetHappinessListDto = {
+        limit: '200',
+        offset: '100',
+      };
+
+      const happinessListService =
+        module.get<jest.Mocked<HappinessListService>>(HappinessListService);
+      happinessListService.findHappinessList.mockResolvedValue(
+        mockHappinessListResponse,
+      );
+      authService.getUserAttributeFromAuthorization.mockResolvedValue(
+        mockUserAttributesResponse,
+      );
+
+      const result = await happinessController.getHappinessList(
+        'authorization',
+        requestParam,
+      );
+
+      expect(
+        authService.getUserAttributeFromAuthorization,
+      ).toHaveBeenCalledWith('authorization');
+      expect(happinessListService.findHappinessList).toHaveBeenCalledWith(
+        mockUserAttributesResponse,
+        requestParam.limit,
+        requestParam.offset,
+      );
+      expect(result).toEqual(mockHappinessListResponse);
     });
   });
 

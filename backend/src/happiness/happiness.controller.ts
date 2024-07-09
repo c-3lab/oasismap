@@ -1,5 +1,6 @@
 import { HappinessMeService } from './happiness-me.service';
 import { HappinessAllService } from './happiness-all.service';
+import { HappinessListService } from './happiness-list.service';
 import {
   Body,
   Controller,
@@ -14,7 +15,9 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { HappinessInputService } from './happiness-input.service';
+import { HappinessListResponse } from './interface/happiness-list.response';
 import { HappinessMeResponse } from './interface/happiness-me.response';
+import { GetHappinessListDto } from './dto/get-happiness-list.dto';
 import { GetHappinessMeDto } from './dto/get-happiness-me.dto';
 import { HappinessAllResponse } from './interface/happiness-all.response';
 import { GetHappinessAllDto } from './dto/get-happiness-all.dto';
@@ -32,6 +35,7 @@ export class HappinessController {
   constructor(
     private readonly happinessInputService: HappinessInputService,
     private readonly happinessMeService: HappinessMeService,
+    private readonly happinessListService: HappinessListService,
     private readonly happinessAllService: HappinessAllService,
     private readonly happinessExportService: HappinessExportService,
     private readonly happinessImportService: HappinessImportService,
@@ -81,6 +85,20 @@ export class HappinessController {
       getHappinessAllDto.offset,
       getHappinessAllDto.period,
       getHappinessAllDto.zoomLevel,
+    );
+  }
+
+  @Get('/list')
+  async getHappinessList(
+    @Headers('Authorization') authorization: string,
+    @Query() getHappinessListDto: GetHappinessListDto,
+  ): Promise<HappinessListResponse> {
+    const userAttribute =
+      await this.authService.getUserAttributeFromAuthorization(authorization);
+    return this.happinessListService.findHappinessList(
+      userAttribute,
+      getHappinessListDto.limit,
+      getHappinessListDto.offset,
     );
   }
 
