@@ -23,6 +23,7 @@ const expectedHeaders = [
   'happiness4',
   'happiness5',
   'happiness6',
+  'メモ',
 ] as const;
 
 type HappinessCSVHeaderKey = (typeof expectedHeaders)[number];
@@ -118,7 +119,10 @@ export class HappinessImportService {
   }
 
   private correctHeaders(headers: string[]): boolean {
-    return expectedHeaders.every((header) => headers.includes(header));
+    const requiredHeaders = expectedHeaders.filter(
+      (header) => header !== 'メモ',
+    );
+    return requiredHeaders.every((header) => headers.includes(header));
   }
 
   private toPostEntities(rows: HappinessCsvRow[]): HappinessEntity[] {
@@ -190,6 +194,10 @@ export class HappinessImportService {
       address: {
         type: 'Text',
         value: happinessCsvRow['住所'],
+      },
+      memo: {
+        type: 'Text',
+        value: happinessCsvRow['メモ'] ?? '',
       },
     };
 

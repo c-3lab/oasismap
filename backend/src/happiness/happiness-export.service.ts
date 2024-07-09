@@ -39,12 +39,13 @@ export class HappinessExportService {
         record.happiness4,
         record.happiness5,
         record.happiness6,
+        record.memo,
       ];
       return row.join(',');
     });
 
     const header =
-      'ニックネーム,年代,住所,送信日時,緯度,経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6\n';
+      'ニックネーム,年代,住所,送信日時,緯度,経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6,メモ\n';
     const csvString = header + csvData.join('\n');
 
     // UTF-8 BOM

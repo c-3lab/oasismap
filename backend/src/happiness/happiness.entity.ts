@@ -40,4 +40,7 @@ export class Happiness {
 
   @Column()
   address: string;
+
+  @Column()
+  memo: string;
 }

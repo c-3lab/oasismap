@@ -57,4 +57,8 @@ export interface HappinessEntity extends OrionEntity {
     type: string;
     value: string;
   };
+  memo: {
+    type: string;
+    value: string;
+  };
 }
