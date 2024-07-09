@@ -118,12 +118,29 @@ services:
     networks:
       - backend-network
     healthcheck:
-      test: "psql -U ${POSTGREUSER}"
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGREUSER}"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 10s
     restart: always
+
+  postgres-cli:
+    image: postgres:16.1
+    hostname: postgres-cli
+    container_name: postgres-cli
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - "POSTGRES_USER=${POSTGREUSER}"
+      - "POSTGRES_PASSWORD=${POSTGREPASSWORD}"
+      - "POSTGRES_DB=postgres"
+    volumes:
+      - ./scripts:/home/postgrescli/scripts
+    networks:
+      - backend-network
+    entrypoint: ["sh", "/home/postgrescli/scripts/add-column.sh"]
 
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.4
