@@ -32,5 +32,7 @@ CREATE TABLE IF NOT EXISTS government.happiness (
     age varchar(10) NOT NULL,
     age_md text,
     address varchar(50) NOT NULL,
-    address_md text
+    address_md text,
+    memo varchar(30),
+    memo_md text
 );
