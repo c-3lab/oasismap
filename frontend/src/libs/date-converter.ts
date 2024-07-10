@@ -8,3 +8,8 @@ export const toDateTime = (value: OasismapDateTime) => {
   )
   return datetime
 }
+
+export const timestampToDateTime = (timestamp: string): string => {
+  const datetime = DateTime.fromISO(timestamp)
+  return datetime.toFormat('yyyy-MM-dd HH:mm')
+}

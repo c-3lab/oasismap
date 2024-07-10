@@ -10,6 +10,7 @@ const paths: Record<string, Permission[]> = {
   '/happiness/me': ['general'],
   '/happiness/all': ['general', 'admin'],
   '/happiness/input': ['general'],
+  '/happiness/list': ['general'],
   '/admin/login': ['pubilc'],
   '/admin/import': ['admin'],
 }

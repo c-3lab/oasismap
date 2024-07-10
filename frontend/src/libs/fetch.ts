@@ -22,6 +22,11 @@ interface HappinessRequestBody {
   }
 }
 
+interface HappinessListParams {
+  limit: number
+  offset: number
+}
+
 export const fetchData = async (
   url: string,
   params: HappinessParams,
@@ -36,6 +41,41 @@ export const fetchData = async (
       ...(params.period && { period: params.period }),
       ...(params.zoomLevel && { zoomLevel: params.zoomLevel.toString() }),
     })
+
+    const response = await fetch(`${url}?${query}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+    const jsonData = await response.json()
+
+    if (response.status === 401) {
+      throw Error(ERROR_TYPE.UNAUTHORIZED)
+    }
+    if (response.status >= 400) {
+      throw Error(jsonData?.message)
+    }
+
+    return jsonData
+  } catch (error) {
+    console.error('Error:', error)
+    throw error
+  }
+}
+
+export const fetchListData = async (
+  url: string,
+  params: HappinessListParams,
+  token: string
+): Promise<any> => {
+  try {
+    const query = new URLSearchParams({
+      limit: params.limit.toString(),
+      offset: params.offset.toString(),
+    })
+
     const response = await fetch(`${url}?${query}`, {
       method: 'GET',
       headers: {

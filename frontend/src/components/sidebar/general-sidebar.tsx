@@ -43,6 +43,11 @@ const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
               <ListItemText primary="全体の幸福度" />
             </ListItemButton>
           </ListItem>
+          <ListItem key="happiness-list" disablePadding>
+            <ListItemButton onClick={() => router.push('/happiness/list')}>
+              <ListItemText primary="一覧表示" />
+            </ListItemButton>
+          </ListItem>
           <ListItem key="logout" disablePadding>
             <ListItemButton onClick={() => signOut({ callbackUrl: '/login' })}>
               <ListItemText primary="ログアウト" />
