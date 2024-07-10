@@ -56,6 +56,10 @@ export const mockHappinessMeEntities = {
         type: 'DateTime',
         value: '2024-03-16T05:02:38.150Z',
       },
+      memo: {
+        type: 'Text',
+        value: 'ダミーメモ',
+      },
     },
     {
       id: '50521f0b-2567-4c2d-b9d3-1550254587e5',
@@ -175,6 +179,10 @@ export const mockHappinessAllEntities = {
         type: 'DateTime',
         value: '2024-03-16T05:02:38.150Z',
       },
+      memo: {
+        type: 'Text',
+        value: 'ダミーメモ',
+      },
     },
     {
       id: '50521f0b-2567-4c2d-b9d3-1550254587e5',
@@ -232,6 +240,10 @@ export const mockHappinessAllEntities = {
         type: 'DateTime',
         value: '2024-03-18T05:02:38.150Z',
       },
+      memo: {
+        type: 'Text',
+        value: 'ダミーメモ',
+      },
     },
     {
       id: '6354de3f-e40a-4e8f-9a59-d0ffec608c3e',
@@ -288,6 +300,10 @@ export const mockHappinessAllEntities = {
       timestamp: {
         type: 'DateTime',
         value: '2024-03-16T05:02:38.150Z',
+      },
+      memo: {
+        type: 'Text',
+        value: 'ダミーメモ',
       },
     },
   ],

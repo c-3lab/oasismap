@@ -36,6 +36,7 @@ describe('HappinessInputService', () => {
     const requestParam: CreateHappinessDto = {
       latitude: 35.629327,
       longitude: 139.72382,
+      memo: 'ダミーメモ',
       answers: {
         happiness1: 1,
         happiness2: 1,
@@ -104,6 +105,7 @@ describe('HappinessInputService', () => {
             type: 'Text',
             value: '東京都文京区',
           },
+          memo: { type: 'Text', value: 'ダミーメモ' },
         },
         {
           headers: {

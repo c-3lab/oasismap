@@ -15,6 +15,6 @@ export const mockHappinessRecord: Happiness[] = [
     locationMd: '[{"name":"place","type":"Text","value":"東京都品川区"}]',
     age: '20代',
     address: '東京都文京区',
-    memo: 'memo',
+    memo: 'ダミーメモ',
   },
 ];
