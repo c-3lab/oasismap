@@ -38,9 +38,9 @@ describe('HappinessExportService', () => {
       const result = await happinessExportService.exportCsv();
 
       const header =
-        'ニックネーム,年代,住所,送信日時,緯度,経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6';
+        'ニックネーム,年代,住所,送信日時,緯度,経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6,メモ';
       const csvData =
-        'nickname,20代,東京都文京区,2024-03-16 14:02:38,35.629327,139.72382,東京都品川区,1,1,1,1,1,1';
+        'nickname,20代,東京都文京区,2024-03-16 14:02:38,35.629327,139.72382,東京都品川区,1,1,1,1,1,1,ダミーメモ';
       const csvString = header + '\n' + csvData;
       const bom = new Uint8Array([0xef, 0xbb, 0xbf]);
       const expected = new Uint8Array([
