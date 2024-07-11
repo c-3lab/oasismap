@@ -6,7 +6,7 @@ services:
     hostname: nginx
     container_name: nginx
     ports:
-      - "80:80"
+      - "443:443"
     restart: always
     healthcheck:
       test: "curl --fail http://localhost:80 || exit 1"
@@ -22,7 +22,9 @@ services:
       keycloak:
         condition: service_healthy
     volumes:
-      - ./nginx/oasismap-local.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/oasismap-https.conf:/etc/nginx/conf.d/default.conf
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/lib/letsencrypt:/var/lib/letsencrypt
     networks:
       - backend-network
       - frontend-network
@@ -110,7 +112,7 @@ services:
       test: "curl -f http://localhost:3000"
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 20
       start_period: 10s
     restart: always
 
