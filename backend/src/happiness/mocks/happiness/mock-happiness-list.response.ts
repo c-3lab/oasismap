@@ -12,6 +12,7 @@ export const mockHappinessListResponse: HappinessListResponse = {
         place: '東京都品川区',
       },
       timestamp: '2024-03-16T14:02:38.150+09:00',
+      memo: 'ダミーメモ',
       answers: {
         happiness1: 1,
         happiness2: 1,
@@ -30,6 +31,7 @@ export const mockHappinessListResponse: HappinessListResponse = {
         place: '東京都渋谷区',
       },
       timestamp: '2024-03-18T14:02:38.150+09:00',
+      memo: 'ダミーメモ',
       answers: {
         happiness1: 1,
         happiness2: 1,

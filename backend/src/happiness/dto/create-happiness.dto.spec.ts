@@ -7,6 +7,7 @@ describe('CreateHappinessDto', () => {
     const requestParam: CreateHappinessDto = {
       latitude: 35.629327,
       longitude: 139.72382,
+      memo: 'ダミーメモ',
       answers: {
         happiness1: 1,
         happiness2: 0,
@@ -29,6 +30,7 @@ describe('CreateHappinessDto', () => {
     const requestParam: CreateHappinessDto = {
       latitude: 35.629327,
       longitude: 139.72382,
+      memo: 'ダミーメモ',
       answers: {
         happiness1: 0,
         happiness2: 0,

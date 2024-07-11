@@ -367,6 +367,10 @@ export const mockHappinessListEntities = {
         type: 'DateTime',
         value: '2024-03-16T05:02:38.150Z',
       },
+      memo: {
+        type: 'Text',
+        value: 'ダミーメモ',
+      },
     },
     {
       id: '50521f0b-2567-4c2d-b9d3-1550254587e5',
