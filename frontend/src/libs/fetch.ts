@@ -12,6 +12,7 @@ interface HappinessParams {
 interface HappinessRequestBody {
   latitude: number
   longitude: number
+  memo: string
   answers: {
     happiness1: number
     happiness2: number
