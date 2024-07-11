@@ -9,12 +9,14 @@ import { HappinessExportService } from './happiness-export.service';
 import { HappinessImportService } from './happiness-import.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Happiness } from './happiness.entity';
+import { HappinessDeleteService } from './happiness-delete.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Happiness])],
   controllers: [HappinessController],
   providers: [
     HappinessInputService,
+    HappinessDeleteService,
     HappinessMeService,
     HappinessAllService,
     HappinessListService,

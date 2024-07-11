@@ -4,8 +4,10 @@ import { HappinessListService } from './happiness-list.service';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Headers,
+  Param,
   ParseBoolPipe,
   Post,
   Query,
@@ -30,10 +32,12 @@ import { DateTime } from 'luxon';
 import { HappinessImportService } from './happiness-import.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { HappinessImportResponse } from './interface/happiness-import.response';
+import { HappinessDeleteService } from './happiness-delete.service';
 @Controller('/api/happiness')
 export class HappinessController {
   constructor(
     private readonly happinessInputService: HappinessInputService,
+    private readonly happinessDeleteService: HappinessDeleteService,
     private readonly happinessMeService: HappinessMeService,
     private readonly happinessListService: HappinessListService,
     private readonly happinessAllService: HappinessAllService,
@@ -68,6 +72,16 @@ export class HappinessController {
       userAttribute,
       createHappinessDto,
     );
+  }
+
+  @Delete(':id')
+  async deleteHappiness(
+    @Headers('Authorization') authorization: string,
+    @Param('id') id: string,
+  ): Promise<HappinessResponse> {
+    await this.authService.getUserAttributeFromAuthorization(authorization);
+
+    return this.happinessDeleteService.deleteHappiness(id);
   }
 
   @Get('/me')
