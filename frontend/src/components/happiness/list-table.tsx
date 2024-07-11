@@ -84,6 +84,9 @@ const Row = (props: { row: Data }) => {
               <Typography variant="body2" gutterBottom>
                 送信住所: {row.location?.place}
               </Typography>
+              <Typography variant="body2" gutterBottom>
+                メモ: {row.memo}
+              </Typography>
             </Box>
           </Collapse>
         </TableCell>
