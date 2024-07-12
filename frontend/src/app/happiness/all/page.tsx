@@ -167,11 +167,11 @@ const HappinessAll: React.FC = () => {
   useEffect(() => {
     if (!isTokenFetched) return
     getData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
 
     return () => {
       willStop.current = true
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTokenFetched, updatedPeriod])
 
   const renderCustomDayTick = (tickProps: any) => {
