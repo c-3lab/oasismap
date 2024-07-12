@@ -132,7 +132,6 @@ const HappinessInput: React.FC = () => {
           size="small"
           margin="normal"
           fullWidth
-          color="text"
           sx={{
             '& .MuiInputBase-input': { color: 'text.primary' },
             '& label': { color: 'text.primary' },
