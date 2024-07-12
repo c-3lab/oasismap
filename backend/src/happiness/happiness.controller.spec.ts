@@ -21,6 +21,8 @@ import { Response } from 'express';
 import { StreamableFile } from '@nestjs/common';
 import { HappinessModule } from './happiness.module';
 import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';
+import { HappinessDeleteService } from './happiness-delete.service';
+import { mockHappinessDeleteResponse } from './mocks/happiness/mock-happiness-delete.response';
 
 const moduleMocker = new ModuleMocker(global);
 
@@ -89,6 +91,32 @@ describe('HappinessController', () => {
         requestParam,
       );
       expect(result).toEqual(mockHappinessInputResponse);
+    });
+  });
+
+  describe('deleteHappiness', () => {
+    it('should return happiness response', async () => {
+      const id = '425e5728-038d-4f74-9cd4-121f88c38f9b';
+      const happinessDeleteService = module.get<
+        jest.Mocked<HappinessDeleteService>
+      >(HappinessDeleteService);
+      happinessDeleteService.deleteHappiness.mockResolvedValue(
+        mockHappinessDeleteResponse,
+      );
+      authService.getUserAttributeFromAuthorization.mockResolvedValue(
+        mockUserAttributesResponse,
+      );
+
+      const result = await happinessController.deleteHappiness(
+        'authorization',
+        id,
+      );
+
+      expect(
+        authService.getUserAttributeFromAuthorization,
+      ).toHaveBeenCalledWith('authorization');
+      expect(happinessDeleteService.deleteHappiness).toHaveBeenCalledWith(id);
+      expect(result).toEqual(mockHappinessDeleteResponse);
     });
   });
 

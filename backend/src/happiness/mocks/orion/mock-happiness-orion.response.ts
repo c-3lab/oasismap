@@ -453,6 +453,22 @@ export const mockPostHappinessEntity = {
   status: 201,
 };
 
+export const mockDeleteHappinessEntity = {
+  status: 204,
+};
+
 export const mockPostUpdateHappinessEntity = {
   status: 204,
+};
+
+export const mockNotFoundFromOrion = {
+  response: {
+    status: 404,
+  },
+};
+
+export const mockBadRequestFromOrion = {
+  response: {
+    status: 400,
+  },
 };
