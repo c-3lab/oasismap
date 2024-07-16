@@ -205,3 +205,25 @@ const getFileName = (response: Response) => {
     }
   }
 }
+
+export const deleteData = async (url: string, token: string): Promise<any> => {
+  try {
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+
+    if (response.status === 401) {
+      throw Error(ERROR_TYPE.UNAUTHORIZED)
+    }
+    if (response.status >= 400) {
+      const jsonData = await response.json()
+      throw Error(jsonData?.message)
+    }
+  } catch (error) {
+    console.error('Error:', error)
+    throw error
+  }
+}

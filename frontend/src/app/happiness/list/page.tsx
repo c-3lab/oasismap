@@ -8,7 +8,7 @@ import { MessageType } from '@/types/message-type'
 import { ERROR_TYPE } from '@/libs/constants'
 import ListTable from '@/components/happiness/list-table'
 import { HappinessListResponse, Data } from '@/types/happiness-list-response'
-import { fetchListData } from '@/libs/fetch'
+import { fetchListData, deleteData } from '@/libs/fetch'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
@@ -64,6 +64,37 @@ const HappinessList: React.FC = () => {
     }
   }
 
+  const deleteListData = async (id: string) => {
+    try {
+      const url = `${backendUrl}/api/happiness/${id}`
+      const updatedSession = await update()
+
+      await deleteData(url, updatedSession?.user?.accessToken!)
+      noticeMessageContext.showMessage(
+        '幸福度の削除が完了しました',
+        MessageType.Success
+      )
+      setListData((prevListData) =>
+        prevListData.filter((data) => data.id !== id)
+      )
+    } catch (error) {
+      console.error('Error:', error)
+      if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
+        noticeMessageContext.showMessage(
+          '再ログインしてください',
+          MessageType.Error
+        )
+        signOut({ redirect: false })
+        router.push('/login')
+      } else {
+        noticeMessageContext.showMessage(
+          '幸福度の削除に失敗しました',
+          MessageType.Error
+        )
+      }
+    }
+  }
+
   useEffect(() => {
     if (!isTokenFetched) return
     getData()
@@ -76,7 +107,9 @@ const HappinessList: React.FC = () => {
 
   return (
     <Grid sx={{ p: '16px' }}>
-      {listData.length >= 1 && <ListTable listData={listData} />}
+      {listData.length >= 1 && (
+        <ListTable listData={listData} deleteListData={deleteListData} />
+      )}
     </Grid>
   )
 }

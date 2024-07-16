@@ -16,17 +16,24 @@ import {
   CheckCircle,
   KeyboardArrowDown,
   KeyboardArrowUp,
+  DeleteForever,
 } from '@mui/icons-material'
 import { Data } from '@/types/happiness-list-response'
 import { timestampToDateTime } from '@/libs/date-converter'
+import DeleteConfirmationDialog from '@/components/happiness/delete-confirmation-dialog'
 
 interface ListTableProps {
   listData: Data[]
+  deleteListData: (id: string) => void
 }
 
-const Row = (props: { row: Data }) => {
-  const { row } = props
-  const [isOpen, setIsOpen] = useState(false)
+interface RowProps {
+  row: Data
+  openDialog: (row: Data) => void
+}
+
+const Row: React.FC<RowProps> = ({ row, openDialog }) => {
+  const [isCollapseOpen, setIsCollapseOpen] = useState(false)
 
   return (
     <>
@@ -41,12 +48,12 @@ const Row = (props: { row: Data }) => {
       >
         <TableCell sx={{ pl: '8px', width: '28px' }}>
           <IconButton
-            aria-label={isOpen ? 'collapse row' : 'expand row'}
+            aria-label={isCollapseOpen ? 'collapse row' : 'expand row'}
             size="small"
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={() => setIsCollapseOpen(!isCollapseOpen)}
             sx={{ px: '0px' }}
           >
-            {isOpen ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+            {isCollapseOpen ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
           </IconButton>
         </TableCell>
         <TableCell>
@@ -67,10 +74,15 @@ const Row = (props: { row: Data }) => {
         <TableCell>
           {row.answers?.happiness6 ? <CheckCircle /> : null}
         </TableCell>
+        <TableCell>
+          <IconButton onClick={() => openDialog(row)}>
+            <DeleteForever sx={{ color: 'black' }} />
+          </IconButton>
+        </TableCell>
       </TableRow>
       <TableRow>
-        <TableCell sx={{ py: 0 }} colSpan={7}>
-          <Collapse in={isOpen} timeout="auto" unmountOnExit>
+        <TableCell sx={{ py: 0 }} colSpan={8}>
+          <Collapse in={isCollapseOpen} timeout="auto" unmountOnExit>
             <Box sx={{ m: 1 }}>
               <Typography variant="body2" gutterBottom>
                 送信日時: {timestampToDateTime(row.timestamp)}
@@ -95,7 +107,16 @@ const Row = (props: { row: Data }) => {
   )
 }
 
-const ListTable: React.FC<ListTableProps> = ({ listData }) => {
+const ListTable: React.FC<ListTableProps> = ({ listData, deleteListData }) => {
+  const [selectedData, setSelectedData] = useState<Data | null>(null)
+
+  const deleteRowData = () => {
+    if (selectedData) {
+      deleteListData(selectedData.id)
+      setSelectedData(null)
+    }
+  }
+
   return (
     <TableContainer
       component={Paper}
@@ -126,14 +147,24 @@ const ListTable: React.FC<ListTableProps> = ({ listData }) => {
             <TableCell>自分を取り戻せる</TableCell>
             <TableCell>自慢</TableCell>
             <TableCell>思い出</TableCell>
+            <TableCell sx={{ width: '28px' }} />
           </TableRow>
         </TableHead>
         <TableBody>
           {listData.map((row) => (
-            <Row key={row.id} row={row} />
+            <Row
+              key={row.id}
+              row={row}
+              openDialog={() => setSelectedData(row)}
+            />
           ))}
         </TableBody>
       </Table>
+      <DeleteConfirmationDialog
+        data={selectedData}
+        onClose={() => setSelectedData(null)}
+        deleteRowData={deleteRowData}
+      />
     </TableContainer>
   )
 }
