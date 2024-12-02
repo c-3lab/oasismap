@@ -113,6 +113,12 @@ const MapOverlay = ({
                   <th>{questionTitles.happiness6}</th>
                   <th>{pin.answer6}</th>
                 </tr>
+                {pin.memo !== undefined && (
+                  <tr>
+                    <th>メモ</th>
+                    <th>{pin.memo}</th>
+                  </tr>
+                )}
               </tbody>
             </table>
           </Popup>
