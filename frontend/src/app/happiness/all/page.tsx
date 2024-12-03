@@ -48,6 +48,8 @@ const HappinessAll: React.FC = () => {
     try {
       willStop.current = false
       setIsfetching(true)
+      setPinData([])
+      setOurHappiness([])
 
       const url = backendUrl + '/api/happiness/all'
       const startDateTime = toDateTime(startProps.value).toISO()
