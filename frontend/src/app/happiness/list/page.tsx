@@ -107,9 +107,7 @@ const HappinessList: React.FC = () => {
 
   return (
     <Grid sx={{ p: '16px' }}>
-      {listData.length >= 1 && (
-        <ListTable listData={listData} deleteListData={deleteListData} />
-      )}
+      <ListTable listData={listData} deleteListData={deleteListData} />
     </Grid>
   )
 }
