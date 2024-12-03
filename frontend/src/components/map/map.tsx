@@ -91,27 +91,27 @@ const MapOverlay = ({
               <tbody>
                 <tr>
                   <th>{questionTitles.happiness1}</th>
-                  <th>{pin.answer1}</th>
+                  <th>{Math.round(pin.answer1 * 10) / 10}</th>
                 </tr>
                 <tr>
                   <th>{questionTitles.happiness2}</th>
-                  <th>{pin.answer2}</th>
+                  <th>{Math.round(pin.answer2 * 10) / 10}</th>
                 </tr>
                 <tr>
                   <th>{questionTitles.happiness3}</th>
-                  <th>{pin.answer3}</th>
+                  <th>{Math.round(pin.answer3 * 10) / 10}</th>
                 </tr>
                 <tr>
                   <th>{questionTitles.happiness4}</th>
-                  <th>{pin.answer4}</th>
+                  <th>{Math.round(pin.answer4 * 10) / 10}</th>
                 </tr>
                 <tr>
                   <th>{questionTitles.happiness5}</th>
-                  <th>{pin.answer5}</th>
+                  <th>{Math.round(pin.answer5 * 10) / 10}</th>
                 </tr>
                 <tr>
                   <th>{questionTitles.happiness6}</th>
-                  <th>{pin.answer6}</th>
+                  <th>{Math.round(pin.answer6 * 10) / 10}</th>
                 </tr>
                 {pin.memo !== undefined && (
                   <tr>
