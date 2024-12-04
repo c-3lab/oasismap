@@ -23,7 +23,14 @@ const BarGraph = (props: any) => {
         >
           <CartesianGrid stroke="#a9a9a9" />
           <XAxis dataKey="timestamp" tick={xTickFormatter} interval={0} />
-          <YAxis />
+          <YAxis
+            {...(plotdata === undefined
+              ? {
+                  domain: [0, 1],
+                  ticks: [0, 0.25, 0.5, 0.75, 1],
+                }
+              : {})}
+          />
           <Tooltip />
           <Legend verticalAlign="bottom" />
           <Bar
