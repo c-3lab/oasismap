@@ -26,6 +26,7 @@ import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 import { happinessSet } from '@/types/happiness-set'
 import { Pin } from '@/types/pin'
+import { LoadingContext } from '@/components/spinner'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -40,9 +41,11 @@ const HappinessMe: React.FC = () => {
   const { isTokenFetched } = useTokenFetchStatus()
   const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
   const { update } = useSession()
+  const { setIsLoading, unsetLoading } = useContext(LoadingContext)
 
   const getData = async () => {
     try {
+      setIsLoading(true)
       willStop.current = false
       setIsfetching(true)
       setPinData([])
@@ -116,6 +119,7 @@ const HappinessMe: React.FC = () => {
         )
       }
     } finally {
+      unsetLoading()
       setIsfetching(false)
     }
   }

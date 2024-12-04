@@ -29,6 +29,7 @@ import {
   MapData,
   MapDataItem,
 } from '@/types/happiness-all-response'
+import { LoadingContext } from '@/components/spinner'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -43,9 +44,11 @@ const HappinessAll: React.FC = () => {
   const { isTokenFetched } = useTokenFetchStatus()
   const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
   const { data: session, update } = useSession()
+  const { setIsLoading, unsetLoading } = useContext(LoadingContext)
 
   const getData = async () => {
     try {
+      setIsLoading(true)
       willStop.current = false
       setIsfetching(true)
       setPinData([])
@@ -162,6 +165,7 @@ const HappinessAll: React.FC = () => {
         )
       }
     } finally {
+      unsetLoading()
       setIsfetching(false)
     }
   }
