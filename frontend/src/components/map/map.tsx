@@ -9,7 +9,7 @@ import {
   LayerGroup,
 } from 'react-leaflet'
 import { LatLngTuple, divIcon } from 'leaflet'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import 'leaflet/dist/leaflet.css'
 import { getIconByType } from '../utils/icon'
 import { getCurrentPosition } from '../../libs/geolocation'
@@ -18,6 +18,8 @@ import { IconButton } from '@mui/material'
 import MyLocationIcon from '@mui/icons-material/MyLocation'
 import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked'
 import ReactDOMServer from 'react-dom/server'
+import { messageContext } from '@/contexts/message-context'
+import { MessageType } from '@/types/message-type'
 
 const loadEnvAsNumber = (
   variable: string | undefined,
@@ -138,6 +140,7 @@ const Map: React.FC<Props> = ({ iconType, pinData }) => {
   )
   const [error, setError] = useState<Error | null>(null)
   const [isOverridden] = useState<boolean>(false)
+  const noticeMessageContext = useContext(messageContext)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -178,6 +181,17 @@ const Map: React.FC<Props> = ({ iconType, pinData }) => {
       (err) => {
         console.error(err)
         setError(error)
+        if (err.code === err.PERMISSION_DENIED) {
+          noticeMessageContext.showMessage(
+            '位置情報の取得権限がありません',
+            MessageType.Error
+          )
+        } else {
+          noticeMessageContext.showMessage(
+            '位置情報の取得に失敗しました',
+            MessageType.Error
+          )
+        }
         setCurrentPosition(null)
       },
       { enableHighAccuracy: true }
@@ -189,7 +203,7 @@ const Map: React.FC<Props> = ({ iconType, pinData }) => {
     return () => {
       navigator.geolocation.clearWatch(watchID)
     }
-  }, [isOverridden, error])
+  }, [isOverridden, error, noticeMessageContext])
 
   const filteredPinsByType = (type: string) =>
     pinData.filter((pin) => pin.type === type)
@@ -226,13 +240,13 @@ const Map: React.FC<Props> = ({ iconType, pinData }) => {
         }}
         onClick={moveToCurrentLocation}
       >
-        <MyLocationIcon style={{ color: 'black' }} />
+        <MyLocationIcon style={{ color: currentPosition ? 'blue' : 'gray' }} />
       </IconButton>
     )
   }
   return (
     <MapContainer
-      center={currentPosition || [35.6895, 139.6917]} //現在地が取得できない場合は東京の緯度経度を中心に表示
+      center={currentPosition ? currentPosition : [35.6895, 139.6917]} //現在地が取得できない場合は東京の緯度経度を中心に表示
       zoom={defaultZoom}
       scrollWheelZoom={true}
       zoomControl={false}
