@@ -8,12 +8,16 @@ import {
   LayersControl,
   LayerGroup,
 } from 'react-leaflet'
-import { LatLngTuple } from 'leaflet'
+import { LatLngTuple, divIcon } from 'leaflet'
 import React, { useState, useEffect } from 'react'
 import 'leaflet/dist/leaflet.css'
 import { getIconByType } from '../utils/icon'
 import { getCurrentPosition } from '../../libs/geolocation'
 import { IconType } from '@/types/icon-type'
+import { IconButton } from '@mui/material'
+import MyLocationIcon from '@mui/icons-material/MyLocation'
+import RadioButtonCheckedIcon from '@mui/icons-material/RadioButtonChecked'
+import ReactDOMServer from 'react-dom/server'
 
 const loadEnvAsNumber = (
   variable: string | undefined,
@@ -133,6 +137,7 @@ const Map: React.FC<Props> = ({ iconType, pinData }) => {
     null
   )
   const [error, setError] = useState<Error | null>(null)
+  const [isOverridden] = useState<boolean>(false)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -160,27 +165,79 @@ const Map: React.FC<Props> = ({ iconType, pinData }) => {
     }
 
     fetchData()
-  }, [])
 
-  if (error) {
-    console.error('Error: Unable to get current position.', error)
-    return null
-  }
+    const watchID = navigator.geolocation.watchPosition(
+      (position) => {
+        const newPosition: LatLngTuple = [
+          position.coords.latitude,
+          position.coords.longitude,
+        ]
+        setCurrentPosition(newPosition)
+        setError(null)
+      },
+      (err) => {
+        console.error(err)
+        setError(error)
+        setCurrentPosition(null)
+      },
+      { enableHighAccuracy: true }
+    )
+    if (isOverridden) {
+      setCurrentPosition(null)
+    }
 
-  if (currentPosition === null) {
-    return <p>Loading...</p>
-  }
+    return () => {
+      navigator.geolocation.clearWatch(watchID)
+    }
+  }, [isOverridden, error])
 
   const filteredPinsByType = (type: string) =>
     pinData.filter((pin) => pin.type === type)
 
+  const currentPositionIcon = ReactDOMServer.renderToString(
+    <RadioButtonCheckedIcon style={{ fill: 'blue' }} />
+  )
+  const myCurrentPositionIcon = divIcon({
+    html: currentPositionIcon,
+    className: '',
+    iconSize: [20, 20],
+    iconAnchor: [10, 20],
+  })
+
+  const MoveToCurrentLocationButton = () => {
+    const map = useMap()
+    const moveToCurrentLocation = () => {
+      if (currentPosition) {
+        map.flyTo(currentPosition, defaultZoom)
+      }
+    }
+    return (
+      <IconButton
+        style={{
+          top: '2%',
+          left: '2%',
+          width: '35px',
+          height: '35px',
+          backgroundColor: '#f7f7f7',
+          border: '1px solid #ccc',
+          zIndex: 10000,
+          borderRadius: 2,
+          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
+        }}
+        onClick={moveToCurrentLocation}
+      >
+        <MyLocationIcon style={{ color: 'black' }} />
+      </IconButton>
+    )
+  }
   return (
     <MapContainer
-      center={currentPosition}
+      center={currentPosition || [35.6895, 139.6917]} //現在地が取得できない場合は東京の緯度経度を中心に表示
       zoom={defaultZoom}
       scrollWheelZoom={true}
       zoomControl={false}
     >
+      <MoveToCurrentLocationButton />
       <ZoomControl position={'bottomleft'} />
       <TileLayer
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -198,6 +255,11 @@ const Map: React.FC<Props> = ({ iconType, pinData }) => {
           />
         ))}
       </LayersControl>
+      {currentPosition && !error && (
+        <Marker position={currentPosition} icon={myCurrentPositionIcon}>
+          <Popup>現在地</Popup>
+        </Marker>
+      )}
       <ClosePopup />
     </MapContainer>
   )
