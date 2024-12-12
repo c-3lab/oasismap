@@ -58,8 +58,17 @@ const getIconForHappiness = (
 
 const createColoredIcon = (iconType: IconType, color: string): L.DivIcon => {
   const myCustomColour = color
-
+  console.log(color)
   let markerHtmlStyles
+  const zIndexMapping: { [key: string]: number } = {
+    [mapColors['RED'][0]]: 10000,
+    [mapColors['ORANGE'][0]]: 9,
+    [mapColors['YELLOW'][0]]: 8,
+    [mapColors['VIOLET'][0]]: 7,
+    [mapColors['GREEN'][0]]: 6,
+    [mapColors['BLUE'][0]]: 50000,
+  }
+  const zIndex = zIndexMapping[myCustomColour] || 0
   switch (iconType) {
     case 'pin':
       markerHtmlStyles = `
@@ -72,7 +81,8 @@ const createColoredIcon = (iconType: IconType, color: string): L.DivIcon => {
         position: relative;
         border-radius: 3rem 3rem 0;
         transform: rotate(45deg);
-        border: 1px solid #FFFFFF`
+        border: 1px solid #FFFFFF;
+        z-index: ${zIndex}`
       break
     case 'heatmap':
       markerHtmlStyles = `
@@ -87,6 +97,7 @@ const createColoredIcon = (iconType: IconType, color: string): L.DivIcon => {
         opacity: 0.4`
       break
   }
+  // console.log(markerHtmlStyles)
 
   const divIconOptions: Omit<DivIconOptions, 'labelAnchor'> = {
     className: 'my-custom-pin',
@@ -94,6 +105,7 @@ const createColoredIcon = (iconType: IconType, color: string): L.DivIcon => {
     popupAnchor: [0, -36],
     html: `<span style="${markerHtmlStyles}" />`,
   }
+  console.log(divIconOptions)
 
   return L.divIcon(divIconOptions)
 }
