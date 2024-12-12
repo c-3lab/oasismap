@@ -85,7 +85,7 @@ const MapOverlay = ({
           icon={getIconByType(iconType, pin.type, pin.answer)}
         >
           <Popup>
-            <table border={1}>
+            <table border={1} style={{ borderCollapse: 'collapse' }}>
               {pin.basetime && (
                 <thead>
                   <tr>
