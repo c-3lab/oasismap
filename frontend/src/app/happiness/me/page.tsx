@@ -21,7 +21,7 @@ const BarGraph = dynamic(() => import('@/components/happiness/bar-graph'), {
 import { myHappinessData, sumByTimestamp } from '@/libs/graph'
 import { messageContext } from '@/contexts/message-context'
 import { ERROR_TYPE } from '@/libs/constants'
-import { fetchData } from '@/libs/fetch'
+import { useFetchData } from '@/libs/fetch'
 import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 import { happinessSet } from '@/types/happiness-set'
@@ -42,6 +42,7 @@ const HappinessMe: React.FC = () => {
   const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
   const { update } = useSession()
   const { setIsLoading, unsetLoading } = useContext(LoadingContext)
+  const { fetchData } = useFetchData()
 
   const getData = async () => {
     try {

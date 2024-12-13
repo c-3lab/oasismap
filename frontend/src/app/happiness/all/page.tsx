@@ -20,7 +20,7 @@ const LineGraph = dynamic(() => import('@/components/happiness/line-graph'), {
 })
 import { ourHappinessData } from '@/libs/graph'
 import { messageContext } from '@/contexts/message-context'
-import { fetchData } from '@/libs/fetch'
+import { useFetchData } from '@/libs/fetch'
 import { ERROR_TYPE, PROFILE_TYPE, HAPPINESS_KEYS } from '@/libs/constants'
 import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
@@ -45,6 +45,7 @@ const HappinessAll: React.FC = () => {
   const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
   const { data: session, update } = useSession()
   const { setIsLoading, unsetLoading } = useContext(LoadingContext)
+  const { fetchData } = useFetchData()
 
   const getData = async () => {
     try {

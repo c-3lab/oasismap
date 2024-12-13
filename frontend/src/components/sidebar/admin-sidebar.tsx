@@ -11,7 +11,7 @@ import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
 import { messageContext } from '@/contexts/message-context'
 import { MessageType } from '@/types/message-type'
-import { download } from '@/libs/fetch'
+import { useFetchData } from '@/libs/fetch'
 import { signOut, useSession } from 'next-auth/react'
 import { ERROR_TYPE } from '@/libs/constants'
 
@@ -26,6 +26,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
   const { update } = useSession()
+  const { download } = useFetchData()
 
   const downloadCsv = async () => {
     try {

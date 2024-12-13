@@ -8,7 +8,7 @@ import { MessageType } from '@/types/message-type'
 import { ERROR_TYPE } from '@/libs/constants'
 import ListTable from '@/components/happiness/list-table'
 import { HappinessListResponse, Data } from '@/types/happiness-list-response'
-import { fetchListData, deleteData } from '@/libs/fetch'
+import { useFetchData } from '@/libs/fetch'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 import { LoadingContext } from '@/components/spinner'
 
@@ -22,6 +22,7 @@ const HappinessList: React.FC = () => {
   const [listData, setListData] = useState<Data[]>([])
   const willStop = useRef(false)
   const { setIsLoading, unsetLoading } = useContext(LoadingContext)
+  const { fetchListData, deleteData } = useFetchData()
 
   const getData = async () => {
     try {
