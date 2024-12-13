@@ -16,7 +16,7 @@ import {
 import { messageContext } from '@/contexts/message-context'
 import { MessageType } from '@/types/message-type'
 import { ERROR_TYPE } from '@/libs/constants'
-import { postData } from '@/libs/fetch'
+import { useFetchData } from '@/libs/fetch'
 import { getCurrentPosition } from '@/libs/geolocation'
 import { HappinessKey } from '@/types/happiness-key'
 
@@ -28,6 +28,7 @@ const HappinessInput: React.FC = () => {
   const searchParams = useSearchParams()
   const referral = searchParams.get('referral') || 'me'
   const { update } = useSession()
+  const { postData } = useFetchData()
 
   const [checkboxValues, setCheckboxValues] = useState<{
     [key in HappinessKey]: number

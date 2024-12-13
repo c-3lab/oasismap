@@ -11,7 +11,7 @@ import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
 import { messageContext } from '@/contexts/message-context'
 import { MessageType } from '@/types/message-type'
-import { download } from '@/libs/fetch'
+import { useFetchData } from '@/libs/fetch'
 import { signOut, useSession } from 'next-auth/react'
 import { ERROR_TYPE } from '@/libs/constants'
 
@@ -26,6 +26,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
   const { update } = useSession()
+  const { download } = useFetchData()
 
   const downloadCsv = async () => {
     try {
@@ -71,12 +72,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
               <ListItemText primary="全体の幸福度" />
             </ListItemButton>
           </ListItem>
-          <ListItem key="happiness" disablePadding>
+          <ListItem key="happiness-export" disablePadding>
             <ListItemButton onClick={downloadCsv}>
               <ListItemText primary="データのエクスポート" />
             </ListItemButton>
           </ListItem>
-          <ListItem key="happiness" disablePadding>
+          <ListItem key="happiness-import" disablePadding>
             <ListItemButton onClick={() => router.push('/admin/import')}>
               <ListItemText primary="データのインポート" />
             </ListItemButton>

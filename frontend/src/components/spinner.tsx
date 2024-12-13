@@ -1,24 +1,28 @@
-import { createContext, useContext, useState, ReactNode } from 'react'
+'use client'
+import { createContext, useState, ReactNode } from 'react'
 import CircularProgress from '@mui/material/CircularProgress'
 
 export const LoadingContext = createContext({
+  isFetching: false,
+  setIsFetching: (_: boolean) => {},
   isLoading: false,
   setIsLoading: (_: boolean) => {},
-  unsetLoading: () => {},
 })
 
 export const LoadingProvider = ({ children }: { children: ReactNode }) => {
+  const [isFetching, setIsFetching] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const unsetLoading = () => setIsLoading(false)
+  console.log(isLoading)
+  console.log(isFetching)
 
   return (
     <>
       <LoadingContext.Provider
-        value={{ isLoading, setIsLoading, unsetLoading }}
+        value={{ isFetching, setIsFetching, isLoading, setIsLoading }}
       >
         {children}
       </LoadingContext.Provider>
-      {isLoading && (
+      {(isFetching || isLoading) && (
         <div
           style={{
             position: 'fixed',
@@ -30,14 +34,12 @@ export const LoadingProvider = ({ children }: { children: ReactNode }) => {
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            zIndex: 450,
+            zIndex: 9999,
           }}
         >
-          <CircularProgress size={40} />
+          <CircularProgress size={80} />
         </div>
       )}
     </>
   )
 }
-
-export const useLoading = () => useContext(LoadingContext)

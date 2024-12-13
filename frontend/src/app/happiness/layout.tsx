@@ -4,7 +4,6 @@ import { Grid, CircularProgress } from '@mui/material'
 import Layout from '@/components/layout'
 import { SessionProvider } from 'next-auth/react'
 import TokenChecker from '@/components/utils/token-checker'
-import { LoadingProvider } from '@/components/spinner'
 
 export default function HappinessLayout({
   children,
@@ -26,9 +25,7 @@ export default function HappinessLayout({
         </Grid>
       }
     >
-      <Layout>
-        <LoadingProvider>{children}</LoadingProvider>
-      </Layout>
+      <Layout>{children}</Layout>
       <SessionProvider refetchOnWindowFocus={false}>
         <TokenChecker />
       </SessionProvider>
