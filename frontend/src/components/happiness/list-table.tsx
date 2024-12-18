@@ -11,6 +11,7 @@ import {
   TableRow,
   Typography,
   Paper,
+  TableSortLabel,
 } from '@mui/material'
 import {
   CheckCircle,
@@ -109,6 +110,39 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
 
 const ListTable: React.FC<ListTableProps> = ({ listData, deleteListData }) => {
   const [selectedData, setSelectedData] = useState<Data | null>(null)
+  const [order, setOrder] = useState<Order>('desc')
+  const [orderBy, setOrderBy] = useState<Key | null>(null)
+  type Key =
+    | 'happiness1'
+    | 'happiness2'
+    | 'happiness3'
+    | 'happiness4'
+    | 'happiness5'
+    | 'happiness6'
+  function sortedRows(
+    order: Order,
+    orderBy: Key | null
+  ): (a: Data, b: Data) => number {
+    return order === 'asc'
+      ? (a, b) => descendinComparator(a, b, orderBy)
+      : (a, b) => -descendinComparator(a, b, orderBy)
+  }
+  type Order = 'asc' | 'desc'
+  function descendinComparator(a: Data, b: Data, orderBy: Key | null) {
+    if (orderBy !== null && b.answers[orderBy] < a.answers[orderBy]) {
+      return 1
+    }
+    if (orderBy !== null && b.answers[orderBy] > a.answers[orderBy]) {
+      return -1
+    }
+    return 0
+  }
+  const handleRequestSort = (property: Key) => {
+    const isAsc = orderBy === property && order === 'desc'
+    setOrder(isAsc ? 'asc' : 'desc')
+    setOrderBy(property)
+  }
+  const visibleRows = [...listData].sort(sortedRows(order, orderBy))
 
   const deleteRowData = () => {
     if (selectedData) {
@@ -141,17 +175,65 @@ const ListTable: React.FC<ListTableProps> = ({ listData, deleteListData }) => {
             }}
           >
             <TableCell sx={{ pl: '8px', width: '28px' }} />
-            <TableCell>ワクワク</TableCell>
-            <TableCell>学び</TableCell>
-            <TableCell>ホッとする</TableCell>
-            <TableCell>自分を取り戻せる</TableCell>
-            <TableCell>自慢</TableCell>
-            <TableCell>思い出</TableCell>
+            <TableCell>
+              <TableSortLabel
+                onClick={() => handleRequestSort('happiness1')}
+                active={orderBy === 'happiness1'}
+                direction={order}
+              >
+                ワクワク
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                onClick={() => handleRequestSort('happiness2')}
+                active={orderBy === 'happiness2'}
+                direction={order}
+              >
+                学び
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                onClick={() => handleRequestSort('happiness3')}
+                active={orderBy === 'happiness3'}
+                direction={order}
+              >
+                ホッとする
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                onClick={() => handleRequestSort('happiness4')}
+                active={orderBy === 'happiness4'}
+                direction={order}
+              >
+                自分を取り戻せる
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                onClick={() => handleRequestSort('happiness5')}
+                active={orderBy === 'happiness5'}
+                direction={order}
+              >
+                自慢
+              </TableSortLabel>
+            </TableCell>
+            <TableCell>
+              <TableSortLabel
+                onClick={() => handleRequestSort('happiness6')}
+                active={orderBy === 'happiness6'}
+                direction={order}
+              >
+                思い出
+              </TableSortLabel>
+            </TableCell>
             <TableCell sx={{ width: '28px' }} />
           </TableRow>
         </TableHead>
         <TableBody>
-          {listData.map((row) => (
+          {visibleRows.map((row: any) => (
             <Row
               key={row.id}
               row={row}
