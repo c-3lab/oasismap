@@ -56,6 +56,8 @@ export class CreateHappinessDto {
   @IsNotSurrogatePair()
   memo: string;
 
+  timestamp?: string;
+
   @ValidateNested()
   @Type(() => Answer)
   @IsNotAllHappinessZero()
