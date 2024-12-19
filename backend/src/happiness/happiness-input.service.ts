@@ -61,7 +61,9 @@ export class HappinessInputService {
       },
       timestamp: {
         type: 'DateTime',
-        value: new Date().toISOString(),
+        value: body.timestamp
+          ? new Date(body.timestamp).toISOString()
+          : new Date().toISOString(),
       },
       nickname: {
         type: 'Text',
