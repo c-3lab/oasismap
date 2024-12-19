@@ -11,7 +11,7 @@ interface HappinessParams {
   zoomLevel?: number
 }
 
-interface HappinessRequestBody {
+export interface HappinessRequestBody {
   latitude: number
   longitude: number
   memo: string
@@ -23,6 +23,7 @@ interface HappinessRequestBody {
     happiness5: number
     happiness6: number
   }
+  timestamp?: string
 }
 
 interface HappinessListParams {
