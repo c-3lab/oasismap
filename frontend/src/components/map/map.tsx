@@ -170,18 +170,68 @@ const Map: React.FC<Props> = ({ iconType, pinData }) => {
 
   return (
     <MapContainer
-      center={currentPosition}
+      center={[35.681236, 139.767125]}
       zoom={defaultZoom}
       scrollWheelZoom={true}
       zoomControl={false}
     >
       <ZoomControl position={'bottomleft'} />
-      <TileLayer
-        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        maxZoom={18}
-        minZoom={5}
-      />
+      <LayersControl position="topleft" collapsed={true}>
+        <LayersControl.BaseLayer name="OpenTopoMap">
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png"
+            maxZoom={18}
+            minZoom={5}
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.BaseLayer
+          checked
+          name="OpenStreetMap's Standard tile layer"
+        >
+          <TileLayer
+            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maxZoom={18}
+            minZoom={5}
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.BaseLayer name="CyclOSM">
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
+            maxZoom={18}
+            minZoom={5}
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.BaseLayer name="German fork of the Standard tile layer">
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://tile.openstreetmap.de/{z}/{x}/{y}.png"
+            maxZoom={18}
+            minZoom={5}
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.BaseLayer name="Humanitarian map style">
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png"
+            maxZoom={18}
+            minZoom={5}
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.BaseLayer name="OSM France">
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://a.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png"
+            maxZoom={18}
+            minZoom={5}
+          />
+        </LayersControl.BaseLayer>
+        <LayersControl.BaseLayer name="NONE">
+          <TileLayer attribution="" url="" />
+        </LayersControl.BaseLayer>
+      </LayersControl>
       <LayersControl position="topright">
         {Object.keys(questionTitles).map((type) => (
           <MapOverlay
