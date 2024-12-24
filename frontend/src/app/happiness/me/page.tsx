@@ -29,6 +29,28 @@ import { Pin } from '@/types/pin'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
+const highlight = (pin:any, period:PeriodType) => {
+  if (pin === null) return null
+  const timestamp = pin.timestamp
+  const date = new Date(timestamp)
+  if (period === PeriodType.Month) {
+    // 直近1年以内なら
+    if (date > new Date(new Date().getTime() - 365 * 24 * 60 * 60 * 1000)) {
+      return date.getMonth() + 1
+    }
+  } else if (period === PeriodType.Day) {
+    // 直近1ヶ月以内なら
+    if (date > new Date(new Date().getTime() - 30 * 24 * 60 * 60 * 1000)) {
+      return date.getDate()
+    }
+  } else if (period === PeriodType.Time) {
+    // 直近24時間以内なら
+    if (date > new Date(new Date().getTime() - 24 * 60 * 60 * 1000)) {
+      return date.getHours()
+    }
+  }
+}
+
 const HappinessMe: React.FC = () => {
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
@@ -40,6 +62,7 @@ const HappinessMe: React.FC = () => {
   const { isTokenFetched } = useTokenFetchStatus()
   const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
   const { update } = useSession()
+  const [ clickedPin, setClickedPin ] = useState<Pin | null>(null)
 
   const getData = async () => {
     try {
@@ -47,6 +70,7 @@ const HappinessMe: React.FC = () => {
       setIsfetching(true)
       setPinData([])
       setMyHappiness([])
+      setClickedPin(null)
 
       const url = backendUrl + '/api/happiness/me'
       const startDateTime = toDateTime(startProps.value).toISO()
@@ -158,6 +182,7 @@ const HappinessMe: React.FC = () => {
           fiware={{ servicePath: '', tenant: '' }}
           iconType="pin"
           pinData={pinData}
+          setClickedPin={setClickedPin}
         />
       </Grid>
       <Grid
@@ -184,6 +209,9 @@ const HappinessMe: React.FC = () => {
               plotdata={MyHappiness[period]}
               color={graphColors}
               xTickFormatter={renderCustomDayTick}
+              highlight={
+                clickedPin !== null ? highlight(clickedPin, period) : null
+              }
             />
           </ResponsiveContainer>
         </Grid>

@@ -39,6 +39,7 @@ type Props = {
   }
   iconType: IconType
   pinData: any[]
+  setClickedPin?: (pin: any) => void
 }
 
 const ClosePopup = () => {
@@ -65,10 +66,12 @@ const MapOverlay = ({
   iconType,
   type,
   filteredPins,
+  setClickedPin,
 }: {
   iconType: IconType
   type: string
   filteredPins: any[]
+  setClickedPin?: (pin: any) => void
 }) => (
   <LayersControl.Overlay checked name={type}>
     <LayerGroup>
@@ -77,6 +80,14 @@ const MapOverlay = ({
           key={index}
           position={[pin.latitude, pin.longitude]}
           icon={getIconByType(iconType, pin.type, pin.answer)}
+          eventHandlers={{
+            popupclose: () => {
+              setClickedPin && setClickedPin(null)
+            },
+            popupopen: () => {
+              setClickedPin && setClickedPin(pin)
+            },
+          }}
         >
           <Popup>
             <table border={1}>
@@ -122,7 +133,7 @@ const MapOverlay = ({
   </LayersControl.Overlay>
 )
 
-const Map: React.FC<Props> = ({ iconType, pinData }) => {
+const Map: React.FC<Props> = ({ iconType, pinData, setClickedPin }) => {
   const [currentPosition, setCurrentPosition] = useState<LatLngTuple | null>(
     null
   )
@@ -189,10 +200,10 @@ const Map: React.FC<Props> = ({ iconType, pinData }) => {
             iconType={iconType}
             type={questionTitles[type]}
             filteredPins={filteredPinsByType(type)}
+            setClickedPin={setClickedPin}
           />
         ))}
       </LayersControl>
-      <ClosePopup />
     </MapContainer>
   )
 }
