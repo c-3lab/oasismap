@@ -43,6 +43,7 @@ const HappinessAll: React.FC = () => {
   const { isTokenFetched } = useTokenFetchStatus()
   const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
   const { data: session, update } = useSession()
+  const [bounds, setBounds] = useState<any>(null)
 
   const getData = async () => {
     try {
@@ -65,6 +66,10 @@ const HappinessAll: React.FC = () => {
       while (!willStop.current) {
         // アクセストークンを再取得
         const updatedSession = await update()
+        if (!updatedSession) {
+          console.error('Failed to update session.')
+          return
+        }
 
         const data: HappinessAllResponse = await fetchData(
           url,
@@ -78,6 +83,11 @@ const HappinessAll: React.FC = () => {
               parseInt(
                 process.env.NEXT_PUBLIC_DEFAULT_ZOOM_FOR_COLLECTION_RANGE!
               ) || 14,
+            // todo 一般ユーザーの場合はsetBoundsを実行しないという処理の方が良い
+            bounds:
+              bounds && session?.user?.type === PROFILE_TYPE.ADMIN
+                ? `${bounds._southWest.lat},${bounds._southWest.lng};${bounds._northEast.lat},${bounds._northEast.lng}`
+                : undefined,
           },
           updatedSession?.user?.accessToken!
         )
@@ -165,14 +175,14 @@ const HappinessAll: React.FC = () => {
   }
 
   useEffect(() => {
-    if (!isTokenFetched) return
+    if (!isTokenFetched || !bounds) return
     getData()
 
     return () => {
       willStop.current = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTokenFetched, updatedPeriod])
+  }, [isTokenFetched, updatedPeriod, bounds])
 
   const renderCustomDayTick = (tickProps: any) => {
     const { x, y, payload } = tickProps
@@ -210,6 +220,7 @@ const HappinessAll: React.FC = () => {
           fiware={{ servicePath: '', tenant: '' }}
           iconType="heatmap"
           pinData={pinData}
+          setBounds={setBounds}
         />
       </Grid>
       <Grid

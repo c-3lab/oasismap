@@ -7,6 +7,7 @@ import {
   Popup,
   LayersControl,
   LayerGroup,
+  useMapEvents,
 } from 'react-leaflet'
 import { LatLngTuple } from 'leaflet'
 import React, { useState, useEffect } from 'react'
@@ -39,6 +40,7 @@ type Props = {
   }
   iconType: IconType
   pinData: any[]
+  setBounds: any
 }
 
 const ClosePopup = () => {
@@ -122,7 +124,22 @@ const MapOverlay = ({
   </LayersControl.Overlay>
 )
 
-const Map: React.FC<Props> = ({ iconType, pinData }) => {
+const Bounds = ({ setBounds }: { setBounds: any }) => {
+  const map = useMap()
+
+  useEffect(() => {
+    setBounds(map.getBounds())
+  }, [setBounds, map])
+
+  useMapEvents({
+    moveend: () => {
+      setBounds(map.getBounds())
+    },
+  })
+  return null
+}
+
+const Map: React.FC<Props> = ({ iconType, pinData, setBounds }) => {
   const [currentPosition, setCurrentPosition] = useState<LatLngTuple | null>(
     null
   )
@@ -175,6 +192,7 @@ const Map: React.FC<Props> = ({ iconType, pinData }) => {
       scrollWheelZoom={true}
       zoomControl={false}
     >
+      {setBounds && <Bounds setBounds={setBounds} />}
       <ZoomControl position={'bottomleft'} />
       <TileLayer
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
