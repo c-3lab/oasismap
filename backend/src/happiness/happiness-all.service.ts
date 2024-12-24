@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { HappinessEntity } from './interface/happiness-entity';
 import { v4 as uuidv4 } from 'uuid';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   GraphData,
   HappinessAllResponse,
@@ -30,16 +30,34 @@ export class HappinessAllService {
     offset: string,
     period: 'time' | 'day' | 'month',
     zoomLevel: number,
+    bounds?: string,
   ): Promise<HappinessAllResponse> {
     const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
     const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
 
+    let coords: string | undefined = undefined;
+    if (bounds) {
+      coords = await this.getCoords(bounds);
+    }
     const query = `timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;
     const happinessEntities = await this.getHappinessEntities(
       query,
       limit,
       offset,
     );
+
+    let happinessEntitiesByBounds: HappinessEntity[] | undefined = undefined;
+    if (coords) {
+      happinessEntitiesByBounds = await this.getHappinessEntities(
+        query,
+        limit,
+        offset,
+        'coveredBy',
+        'polygon',
+        coords,
+      );
+    }
+
     const gridEntities = this.generateGridEntities(
       zoomLevel,
       happinessEntities,
@@ -49,7 +67,7 @@ export class HappinessAllService {
       count: happinessEntities.length,
       map_data: this.toHappinessAllMapData(gridEntities),
       graph_data: this.calculateGraphData(
-        happinessEntities,
+        happinessEntitiesByBounds || happinessEntities,
         startAsUTC,
         endAsUTC,
         period,
@@ -57,10 +75,40 @@ export class HappinessAllService {
     };
   }
 
+  private async getCoords(bounds: string): Promise<string> {
+    const boundsArray = bounds.split(';');
+    if (boundsArray.length !== 2) {
+      throw new BadRequestException('Invalid bounds');
+    }
+    const [point1, point2] = boundsArray.map((bound) => {
+      const [lat, lng] = bound.split(',');
+      return { lat: Number(lat), lng: Number(lng) };
+    });
+
+    // 緯度の最小値と最大値を判定
+    const minLat = Math.min(point1.lat, point2.lat);
+    const maxLat = Math.max(point1.lat, point2.lat);
+
+    // 経度の最小値と最大値を判定
+    const minLng = Math.min(point1.lng, point2.lng);
+    const maxLng = Math.max(point1.lng, point2.lng);
+
+    // 北東端と南西端を自動判定
+    const northWest = `${maxLat},${minLng}`; // 北西端
+    const northEast = `${maxLat},${maxLng}`; // 北東端
+    const southEast = `${minLat},${maxLng}`; // 南東端
+    const southWest = `${minLat},${minLng}`; // 南西端
+
+    return `${northWest};${northEast};${southEast};${southWest};${northWest}`;
+  }
+
   private async getHappinessEntities(
     query: string,
     limit: string,
     offset: string,
+    georel?: string,
+    geometry?: string,
+    coords?: string,
   ): Promise<HappinessEntity[]> {
     const response = await axios.get(`${process.env.ORION_URI}/v2/entities`, {
       headers: {
@@ -72,6 +120,9 @@ export class HappinessAllService {
         limit: limit,
         offset: offset,
         orderBy: '!timestamp',
+        georel: georel,
+        geometry: geometry,
+        coords: coords,
       },
     });
     return response.data;
