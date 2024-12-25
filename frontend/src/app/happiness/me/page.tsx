@@ -51,6 +51,56 @@ const highlight = (pin:any, period:PeriodType) => {
   }
 }
 
+const getActiveTimestamp = (activeMonthDayHour: number | null, period:PeriodType) => {
+  if (activeMonthDayHour === null) return null
+  const nowYear = new Date().getFullYear()
+  const nowMonth = new Date().getMonth() + 1
+  const nowMonthIndex = nowMonth - 1
+  const nowDate = new Date().getDate()
+  const nowHour = new Date().getHours()
+  if (period === PeriodType.Month) {
+    const activeMonth = activeMonthDayHour
+    const activeMonthIndex = activeMonth - 1
+    if (activeMonth <= nowMonth) {
+      return {
+        start: new Date(nowYear, activeMonthIndex, 1),
+        end: new Date(nowYear, activeMonthIndex + 1, 0, 23, 59, 59),
+      }
+    } else {
+      return {
+        start: new Date(nowYear - 1, activeMonthIndex, 1),
+        end: new Date(nowYear - 1, activeMonthIndex + 1, 0, 23, 59, 59),
+      }
+    }
+  } else if (period === PeriodType.Day) {
+    const activeDay = activeMonthDayHour
+    if (activeDay <= nowDate) {
+      return {
+        start: new Date(nowYear, nowMonthIndex, activeDay, 0, 0, 0),
+        end: new Date(nowYear, nowMonthIndex, activeDay, 23, 59, 59),
+      }
+    } else {
+      return {
+        start: new Date(nowYear, nowMonthIndex - 1, activeDay, 0, 0, 0),
+        end: new Date(nowYear, nowMonthIndex - 1, activeDay, 23, 59, 59),
+      }
+    }
+  } else if (period === PeriodType.Time) {
+    const activeHour = activeMonthDayHour
+    if (activeHour <= nowHour) {
+      return {
+        start: new Date(nowYear, nowMonthIndex, nowDate, activeHour, 0, 0),
+        end: new Date(nowYear, nowMonthIndex, nowDate, activeHour, 59, 59),
+      }
+    } else {
+      return {
+        start: new Date(nowYear, nowMonthIndex, nowDate - 1, activeHour, 0, 0),
+        end: new Date(nowYear, nowMonthIndex, nowDate - 1, activeHour, 59, 59),
+      }
+    }
+  }
+}
+
 const HappinessMe: React.FC = () => {
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
@@ -63,6 +113,7 @@ const HappinessMe: React.FC = () => {
   const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
   const { update } = useSession()
   const [ clickedPin, setClickedPin ] = useState<Pin | null>(null)
+  const [activeMonthDayHour, setActiveMonthDayHour] = useState<number | null>(null)
 
   const getData = async () => {
     try {
@@ -71,6 +122,7 @@ const HappinessMe: React.FC = () => {
       setPinData([])
       setMyHappiness([])
       setClickedPin(null)
+      setActiveMonthDayHour(null)
 
       const url = backendUrl + '/api/happiness/me'
       const startDateTime = toDateTime(startProps.value).toISO()
@@ -183,6 +235,7 @@ const HappinessMe: React.FC = () => {
           iconType="pin"
           pinData={pinData}
           setClickedPin={setClickedPin}
+          activeTimestamp={getActiveTimestamp(activeMonthDayHour, period)}
         />
       </Grid>
       <Grid
@@ -212,6 +265,8 @@ const HappinessMe: React.FC = () => {
               highlight={
                 clickedPin !== null ? highlight(clickedPin, period) : null
               }
+              activeMonthDayHour={activeMonthDayHour}
+              setActiveMonthDayHour={setActiveMonthDayHour}
             />
           </ResponsiveContainer>
         </Grid>

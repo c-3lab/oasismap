@@ -40,6 +40,7 @@ type Props = {
   iconType: IconType
   pinData: any[]
   setClickedPin?: (pin: any) => void
+  activeTimestamp?: any
 }
 
 const ClosePopup = () => {
@@ -62,16 +63,28 @@ const questionTitles: QuestionTitles = {
 
 export { questionTitles }
 
+const getActive = (timestamp: Date, activeTimestamp: any) => {
+  if (!activeTimestamp) return true
+  if (timestamp === undefined) return true
+  return (
+    timestamp >= activeTimestamp.start &&
+    timestamp <= activeTimestamp.end
+  )
+}
+
+
 const MapOverlay = ({
   iconType,
   type,
   filteredPins,
   setClickedPin,
+  activeTimestamp,
 }: {
   iconType: IconType
   type: string
   filteredPins: any[]
   setClickedPin?: (pin: any) => void
+  activeTimestamp?: any
 }) => (
   <LayersControl.Overlay checked name={type}>
     <LayerGroup>
@@ -79,7 +92,7 @@ const MapOverlay = ({
         <Marker
           key={index}
           position={[pin.latitude, pin.longitude]}
-          icon={getIconByType(iconType, pin.type, pin.answer)}
+          icon={getIconByType(iconType, pin.type, pin.answer, !getActive(new Date(pin.timestamp), activeTimestamp))}
           eventHandlers={{
             popupclose: () => {
               setClickedPin && setClickedPin(null)
@@ -133,7 +146,7 @@ const MapOverlay = ({
   </LayersControl.Overlay>
 )
 
-const Map: React.FC<Props> = ({ iconType, pinData, setClickedPin }) => {
+const Map: React.FC<Props> = ({ iconType, pinData, setClickedPin, activeTimestamp }) => {
   const [currentPosition, setCurrentPosition] = useState<LatLngTuple | null>(
     null
   )
@@ -201,6 +214,7 @@ const Map: React.FC<Props> = ({ iconType, pinData, setClickedPin }) => {
             type={questionTitles[type]}
             filteredPins={filteredPinsByType(type)}
             setClickedPin={setClickedPin}
+            activeTimestamp={activeTimestamp}
           />
         ))}
       </LayersControl>
