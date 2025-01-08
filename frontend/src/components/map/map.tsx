@@ -7,6 +7,7 @@ import {
   LayersControl,
   LayerGroup,
   useMapEvents,
+  Popup
 } from 'react-leaflet'
 import { LatLngTuple } from 'leaflet'
 import React, { useState, useEffect } from 'react'
@@ -16,6 +17,9 @@ import { getCurrentPosition } from '../../libs/geolocation'
 import { IconType } from '@/types/icon-type'
 import { ControllablePopup } from './controllablePopup'
 import { EntityByEntityId } from '@/types/entityByEntityId'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import { Data } from '@/types/happiness-list-response'
+import { OpenModal } from '../happiness/modal'
 
 const loadEnvAsNumber = (
   variable: string | undefined,
@@ -81,68 +85,232 @@ const MapOverlay = ({
   filteredPins,
   layerIndex,
   selectedPin,
+  setSelectedPin,
 }: {
   iconType: IconType
   type: string
   filteredPins: any[]
   layerIndex: number
   selectedPin: any
-}) => (
-  <LayersControl.Overlay checked name={type}>
-    <LayerGroup>
-      {filteredPins.map((pin, index) => (
-        <Marker
-          key={index}
-          position={[pin.latitude, pin.longitude]}
-          icon={getIconByType(iconType, pin.type, pin.answer)}
-          zIndexOffset={-layerIndex}
-        >
-          <ControllablePopup
-            isOpened={pin.id === selectedPin?.id}
+  setSelectedPin: any
+}) => {
+  return (
+    <LayersControl.Overlay checked name={type}>
+      <LayerGroup>
+        {filteredPins.map((pin, index) => (
+          <Marker
+            key={index}
             position={[pin.latitude, pin.longitude]}
+            icon={getIconByType(iconType, pin.type, pin.answer)}
           >
-            <table border={1}>
-              {pin.basetime && (
-                <thead>
-                  <tr>
-                    <th>回答日時</th>
-                    <th>{pin.timestamp}</th>
-                  </tr>
-                </thead>
+            <Popup>
+              {iconType === 'pin' && (
+                <>
+                  {pin.answer1 === 1 && (
+                    <h3 style={{ display: 'flex' }}>
+                      <CheckCircleIcon
+                        sx={{
+                          fontSize: 'large',
+                          color: '#007fff',
+                        }}
+                      />
+                      <a style={{ color: '#007fff' }}>
+                        {questionTitles.happiness1}
+                      </a>
+                    </h3>
+                  )}
+                  {pin.answer1 === 0 && (
+                    <h3 style={{ display: 'flex' }}>
+                      <a
+                        style={{
+                          color: '#007fff',
+                          opacity: 0.3,
+                          marginLeft: '18px',
+                        }}
+                      >
+                        {questionTitles.happiness1}
+                      </a>
+                    </h3>
+                  )}
+                  {pin.answer2 === 1 && (
+                    <h3 style={{ display: 'flex' }}>
+                      <CheckCircleIcon
+                        sx={{
+                          fontSize: 'large',
+                          color: '#4BA724',
+                        }}
+                      />
+                      <a style={{ color: '#4BA724' }}>
+                        {questionTitles.happiness2}
+                      </a>
+                    </h3>
+                  )}
+                  {pin.answer2 === 0 && (
+                    <h3 style={{ display: 'flex' }}>
+                      <a
+                        style={{
+                          color: '#4BA724',
+                          opacity: 0.3,
+                          marginLeft: '18px',
+                        }}
+                      >
+                        {questionTitles.happiness2}
+                      </a>
+                    </h3>
+                  )}
+                  {pin.answer3 === 1 && (
+                    <h3 style={{ display: 'flex' }}>
+                      <CheckCircleIcon
+                        sx={{
+                          fontSize: 'large',
+                          color: '#7f00ff',
+                        }}
+                      />
+                      <a style={{ color: '#7f00ff' }}>
+                        {questionTitles.happiness3}
+                      </a>
+                    </h3>
+                  )}
+                  {pin.answer3 === 0 && (
+                    <h3 style={{ display: 'flex' }}>
+                      <a
+                        style={{
+                          color: '#7f00ff',
+                          opacity: 0.3,
+                          marginLeft: '18px',
+                        }}
+                      >
+                        {questionTitles.happiness3}
+                      </a>
+                    </h3>
+                  )}
+                  {pin.answer4 === 1 && (
+                    <h3 style={{ display: 'flex' }}>
+                      <CheckCircleIcon
+                        sx={{
+                          fontSize: 'large',
+                          color: '#FF00D8',
+                        }}
+                      />
+                      <a style={{ color: '#FF00D8' }}>
+                        {questionTitles.happiness4}
+                      </a>
+                    </h3>
+                  )}
+                  {pin.answer4 === 0 && (
+                    <h3 style={{ display: 'flex' }}>
+                      <a
+                        style={{
+                          color: '#FF00D8',
+                          opacity: 0.3,
+                          marginLeft: '18px',
+                        }}
+                      >
+                        {questionTitles.happiness4}
+                      </a>
+                    </h3>
+                  )}
+                  {pin.answer5 === 1 && (
+                    <h3 style={{ display: 'flex' }}>
+                      <CheckCircleIcon
+                        sx={{
+                          fontSize: 'large',
+                          color: '#ff7f00',
+                        }}
+                      />
+                      <a style={{ color: '#ff7f00' }}>
+                        {questionTitles.happiness5}
+                      </a>
+                    </h3>
+                  )}
+                  {pin.answer5 === 0 && (
+                    <h3 style={{ display: 'flex' }}>
+                      <a
+                        style={{
+                          color: '#ff7f00',
+                          opacity: 0.3,
+                          marginLeft: '18px',
+                        }}
+                      >
+                        {questionTitles.happiness5}
+                      </a>
+                    </h3>
+                  )}
+                  {pin.answer6 === 1 && (
+                    <h3 style={{ display: 'flex' }}>
+                      <CheckCircleIcon
+                        sx={{
+                          fontSize: 'large',
+                          color: '#ff0000',
+                        }}
+                      />
+                      <a style={{ color: '#ff0000' }}>
+                        {questionTitles.happiness6}
+                      </a>
+                    </h3>
+                  )}
+                  {pin.answer6 === 0 && (
+                    <h3 style={{ display: 'flex' }}>
+                      <a
+                        style={{
+                          color: '#ff0000',
+                          opacity: 0.3,
+                          marginLeft: '18px',
+                        }}
+                      >
+                        {questionTitles.happiness6}
+                      </a>
+                    </h3>
+                  )}
+                  {pin.memo !== undefined && (
+                    <div
+                      style={{
+                        marginTop: '4px',
+                      }}
+                    >
+                      <h4>
+                        {pin.memo.length > 10 ? (
+                          <>
+                            {pin.memo.slice(0, 10)}…
+                            <button
+                              style={{
+                                backgroundColor: 'transparent',
+                                color: 'blue',
+                                border: 'solid 0px',
+                              }}
+                              onClick={() => setSelectedPin(pin)}
+                            >
+                              もっと見る
+                            </button>
+                          </>
+                        ) : (
+                          pin.memo
+                        )}
+                      </h4>
+                    </div>
+                  )}
+                  {pin.basetime && (
+                    <div
+                      style={{
+                        marginTop: '4px',
+                        marginLeft: '30%',
+                      }}
+                    >
+                      <h5>
+                        回答日時：
+                        {pin.timestamp}
+                      </h5>
+                    </div>
+                  )}
+                </>
               )}
-              <tbody>
-                <tr>
-                  <th>{questionTitles.happiness1}</th>
-                  <th>{Math.round(pin.answer1 * 10) / 10}</th>
-                </tr>
-                <tr>
-                  <th>{questionTitles.happiness2}</th>
-                  <th>{Math.round(pin.answer2 * 10) / 10}</th>
-                </tr>
-                <tr>
-                  <th>{questionTitles.happiness3}</th>
-                  <th>{Math.round(pin.answer3 * 10) / 10}</th>
-                </tr>
-                <tr>
-                  <th>{questionTitles.happiness4}</th>
-                  <th>{Math.round(pin.answer4 * 10) / 10}</th>
-                </tr>
-                <tr>
-                  <th>{questionTitles.happiness5}</th>
-                  <th>{Math.round(pin.answer5 * 10) / 10}</th>
-                </tr>
-                <tr>
-                  <th>{questionTitles.happiness6}</th>
-                  <th>{Math.round(pin.answer6 * 10) / 10}</th>
-                </tr>
-              </tbody>
-            </table>
-          </ControllablePopup>
-        </Marker>
-      ))}
-    </LayerGroup>
-  </LayersControl.Overlay>
-)
+            </Popup>
+          </Marker>
+        ))}
+      </LayerGroup>
+    </LayersControl.Overlay>
+  )
+}
 
 const Map: React.FC<Props> = ({
   iconType,
@@ -155,6 +323,7 @@ const Map: React.FC<Props> = ({
     null
   )
   const [error, setError] = useState<Error | null>(null)
+  const [selectedPin, setSelectedPin] = useState<Data | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -223,6 +392,7 @@ const Map: React.FC<Props> = ({
               key={type}
               iconType={iconType}
               type={questionTitles[type]}
+              setSelectedPin={setSelectedPin}
               layerIndex={index}
               filteredPins={filteredPins}
               selectedPin={filteredPins.find(
@@ -234,6 +404,7 @@ const Map: React.FC<Props> = ({
       </LayersControl>
       {!selectedEntityId && <ClosePopup />}
       {onPopupClose && <OnPopupClose onPopupClose={onPopupClose} />}
+      <OpenModal data={selectedPin} onClose={() => setSelectedPin(null)} />
     </MapContainer>
   )
 }

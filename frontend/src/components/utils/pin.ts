@@ -8,6 +8,7 @@ export function GetPin(arr: (Data | MapDataItem)[]): Pin[] {
     .map((data) => {
       let basetime
       let timestamp
+      let memo
       if ('timestamp' in data && data.timestamp) {
         const date = new Date(data.timestamp)
         const year = date.getFullYear()
@@ -17,9 +18,11 @@ export function GetPin(arr: (Data | MapDataItem)[]): Pin[] {
         const minutes = String(date.getMinutes()).padStart(2, '0')
         basetime = data.timestamp
         timestamp = `${year}/${month}/${day} ${hours}:${minutes}`
+        memo = data.memo
       } else {
         basetime = undefined
         timestamp = undefined
+        memo = undefined
       }
 
       return {
@@ -35,6 +38,7 @@ export function GetPin(arr: (Data | MapDataItem)[]): Pin[] {
         answer5: data.answers['happiness5'],
         answer6: data.answers['happiness6'],
         basetime: basetime,
+        memo: memo,
         timestamp: timestamp,
       }
     })
