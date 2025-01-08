@@ -18,6 +18,7 @@ import { IconType } from '@/types/icon-type'
 import { ControllablePopup } from './controllablePopup'
 import { EntityByEntityId } from '@/types/entityByEntityId'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import { BarChart, XAxis, YAxis, Bar } from 'recharts'
 import { Data } from '@/types/happiness-list-response'
 import { OpenModal } from '../happiness/modal'
 
@@ -94,6 +95,13 @@ const MapOverlay = ({
   selectedPin: any
   setSelectedPin: any
 }) => {
+  const transformedData = Object.entries(questionTitles).map(([key, title]) => {
+    const pinKey = `answer${key.charAt(key.length - 1)}`
+    const value = filteredPins.reduce((sum, pin) => sum + (pin[pinKey] || 0), 0)
+    const percentage = Math.floor(value * 100)
+    return { questionTitles: title, value, percentage }
+  })
+
   return (
     <LayersControl.Overlay checked name={type}>
       <LayerGroup>
@@ -302,6 +310,78 @@ const MapOverlay = ({
                       </h5>
                     </div>
                   )}
+                </>
+              )}
+              {iconType === 'heatmap' && (
+                <>
+                  <BarChart
+                    data={transformedData}
+                    layout="vertical"
+                    barCategoryGap={1}
+                    margin={{ top: 0, right: 50, left: 0, bottom: 0 }}
+                    width={300}
+                    height={200}
+                  >
+                    <XAxis type="number" domain={[0, 100]} hide />
+                    <YAxis
+                      type="category"
+                      width={70}
+                      axisLine={false}
+                      tickLine={false}
+                      dataKey="questionTitles"
+                      tick={({ x, y, payload, index }) => {
+                        const colors = [
+                          '#007fff',
+                          '#4BA724',
+                          '#7f00ff',
+                          '#FF00D8',
+                          '#ff7f00',
+                          '#ff0000',
+                        ]
+                        const color = colors[index % colors.length]
+                        return (
+                          <text
+                            x={x}
+                            y={y}
+                            fill={color}
+                            fontSize={12}
+                            textAnchor="middle"
+                          >
+                            {payload.value}
+                          </text>
+                        )
+                      }}
+                    />
+                    <Bar
+                      dataKey="percentage"
+                      label={({ x, y, index }) => (
+                        <text x={x + 57} y={y + 19} fill="black" fontSize={12}>
+                          {transformedData[index].percentage}%
+                        </text>
+                      )}
+                      barSize={30}
+                      shape={(props: any) => {
+                        const { index } = props
+                        const offset = 125
+                        const colors = [
+                          '#007fff',
+                          '#4BA724',
+                          '#7f00ff',
+                          '#FF00D8',
+                          '#ff7f00',
+                          '#ff0000',
+                        ]
+                        return (
+                          <rect
+                            {...props}
+                            x={offset}
+                            fill={colors[index % colors.length]}
+                            fillOpacity={0.5}
+                          />
+                        )
+                      }}
+                    />
+                  </BarChart>
                 </>
               )}
             </Popup>
