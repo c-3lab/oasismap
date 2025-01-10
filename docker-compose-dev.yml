@@ -42,6 +42,9 @@ services:
     working_dir: /app/frontend
     ports:
       - "3000:3000"
+      # 書いてはみたが、結局ホストマシンで起動するのであまり使えなかった
+      # Dockerコンテナ内でX Windowが動かせればワンチャン？
+      - "9323:9323"
     command: sleep infinity
     environment:
       - "NEXTAUTH_URL=${NEXTAUTH_URL}"
