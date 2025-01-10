@@ -194,6 +194,51 @@ describe('HappinessController', () => {
         requestParam.offset,
         requestParam.period,
         requestParam.zoomLevel,
+        undefined,
+      );
+      expect(result).toEqual(mockHappinesAllResponse);
+    });
+  });
+
+  describe('getHappinessAll', () => {
+    it('should return array of happinessAll entities By Bounds', async () => {
+      // リクエストパラメータのダミーデータ
+      const requestParam: GetHappinessAllDto = {
+        limit: '100',
+        offset: '0',
+        start: '2024-03-01T00:00:00+09:00',
+        end: '2024-03-31T23:59:59+09:00',
+        period: 'time',
+        zoomLevel: 13,
+        boundsNESW:
+          '35.25795517382968,135.70603693528884,34.30260622622907,134.82713068528884',
+      };
+
+      const happinessAllService =
+        module.get<jest.Mocked<HappinessAllService>>(HappinessAllService);
+      happinessAllService.findHappinessAll.mockResolvedValue(
+        mockHappinesAllResponse,
+      );
+      authService.verifyAuthorization.mockResolvedValue(
+        mockUserAttributesResponse,
+      );
+
+      const result = await happinessController.getHappinessAll(
+        'authorization',
+        requestParam,
+      );
+
+      expect(authService.verifyAuthorization).toHaveBeenCalledWith(
+        'authorization',
+      );
+      expect(happinessAllService.findHappinessAll).toHaveBeenCalledWith(
+        requestParam.start,
+        requestParam.end,
+        requestParam.limit,
+        requestParam.offset,
+        requestParam.period,
+        requestParam.zoomLevel,
+        requestParam.boundsNESW,
       );
       expect(result).toEqual(mockHappinesAllResponse);
     });
