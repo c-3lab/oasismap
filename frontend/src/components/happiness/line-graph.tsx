@@ -5,11 +5,13 @@ import {
   ResponsiveContainer,
   CartesianGrid,
 } from 'recharts'
+import { HappinessKey } from '@/types/happiness-key'
+import { HAPPINESS_KEYS } from '@/libs/constants'
 import { LineChart, Legend, Line } from 'recharts'
 import { questionTitles } from '../map/map'
 
 const LineGraph = (props: any) => {
-  const { title, plotdata, color, xTickFormatter } = props
+  const { title, plotdata, color, xTickFormatter, selectedLayers } = props
 
   return (
     <>
@@ -31,48 +33,19 @@ const LineGraph = (props: any) => {
           />
           <Tooltip />
           <Legend verticalAlign="bottom" />
-          <Line
-            type="monotone"
-            dataKey="happiness1"
-            stroke={color[0]}
-            dot={true}
-            name={questionTitles.happiness1}
-          />
-          <Line
-            type="monotone"
-            dataKey="happiness2"
-            stroke={color[1]}
-            dot={true}
-            name={questionTitles.happiness2}
-          />
-          <Line
-            type="monotone"
-            dataKey="happiness3"
-            stroke={color[2]}
-            dot={true}
-            name={questionTitles.happiness3}
-          />
-          <Line
-            type="monotone"
-            dataKey="happiness4"
-            stroke={color[3]}
-            dot={true}
-            name={questionTitles.happiness4}
-          />
-          <Line
-            type="monotone"
-            dataKey="happiness5"
-            stroke={color[4]}
-            dot={true}
-            name={questionTitles.happiness5}
-          />
-          <Line
-            type="monotone"
-            dataKey="happiness6"
-            stroke={color[5]}
-            dot={true}
-            name={questionTitles.happiness6}
-          />
+          {HAPPINESS_KEYS.map((dataKey: HappinessKey, i: number) => {
+            if (!selectedLayers.includes(dataKey)) return
+            return (
+              <Line
+                key={dataKey}
+                type="monotone"
+                dataKey={dataKey}
+                stroke={color[i]}
+                dot={true}
+                name={questionTitles[dataKey]}
+              />
+            )
+          })}
         </LineChart>
       </ResponsiveContainer>
     </>
