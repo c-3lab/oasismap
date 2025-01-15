@@ -8,7 +8,7 @@ import {
   LayerGroup,
   useMapEvents,
 } from 'react-leaflet'
-import { LatLngTuple } from 'leaflet'
+import { LatLngTuple, LatLngBounds } from 'leaflet'
 import React, { useState, useEffect } from 'react'
 import 'leaflet/dist/leaflet.css'
 import { getIconByType } from '../utils/icon'
@@ -41,6 +41,7 @@ type Props = {
   }
   iconType: IconType
   pinData: any[]
+  setBounds?: React.Dispatch<LatLngBounds | undefined>
   selectedEntityId?: string | null
   entityByEntityId?: EntityByEntityId
   onPopupClose?: () => void
@@ -144,9 +145,29 @@ const MapOverlay = ({
   </LayersControl.Overlay>
 )
 
+const Bounds = ({
+  setBounds,
+}: {
+  setBounds: React.Dispatch<LatLngBounds | undefined>
+}) => {
+  const map = useMap()
+
+  useEffect(() => {
+    setBounds(map.getBounds())
+  }, [setBounds, map])
+
+  useMapEvents({
+    moveend: () => {
+      setBounds(map.getBounds())
+    },
+  })
+  return null
+}
+
 const Map: React.FC<Props> = ({
   iconType,
   pinData,
+  setBounds,
   selectedEntityId,
   entityByEntityId,
   onPopupClose,
@@ -208,6 +229,7 @@ const Map: React.FC<Props> = ({
       scrollWheelZoom={true}
       zoomControl={false}
     >
+      {setBounds && <Bounds setBounds={setBounds} />}
       <ZoomControl position={'bottomleft'} />
       <TileLayer
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'

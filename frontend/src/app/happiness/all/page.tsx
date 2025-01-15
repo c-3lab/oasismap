@@ -1,6 +1,7 @@
 'use client'
 import dynamic from 'next/dynamic'
 import { useState, useEffect, useContext, useRef } from 'react'
+import { LatLngBounds } from 'leaflet'
 import { useRouter } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
@@ -43,6 +44,7 @@ const HappinessAll: React.FC = () => {
   const { isTokenFetched } = useTokenFetchStatus()
   const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
   const { data: session, update } = useSession()
+  const [bounds, setBounds] = useState<LatLngBounds | undefined>(undefined)
   const { isLoading, setIsLoading } = useContext(LoadingContext)
   const { fetchData } = useFetchData()
 
@@ -66,9 +68,36 @@ const HappinessAll: React.FC = () => {
       let offset = 0
       const allMapData: HappinessAllResponse['map_data'] = {}
       const allGraphData: HappinessAllResponse['graph_data'] = []
+
+      const getBoundsNESW = (): string | undefined => {
+        if (session?.user?.type !== PROFILE_TYPE.ADMIN) return undefined
+
+        if (!bounds) {
+          console.error(
+            'Map bounds retrieval failed: bounds object is invalid.'
+          )
+          return undefined
+        }
+
+        const boundsNESW = `${bounds.getNorth()},${bounds.getEast()},${bounds.getSouth()},${bounds.getWest()}`
+
+        // 画面上部・画面下部の緯度、左端・右端の経度が全て取得できている事を確認する
+        if (!/^[\d.-]+,[\d.-]+,[\d.-]+,[\d.-]+$/.test(boundsNESW)) {
+          console.error('Invalid boundsNESW format:', boundsNESW)
+          return undefined
+        }
+
+        return boundsNESW
+      }
+      const boundsNESW: string | undefined = getBoundsNESW()
+
       while (!willStop.current) {
         // アクセストークンを再取得
         const updatedSession = await update()
+        if (!updatedSession) {
+          console.error('Failed to update session.')
+          return
+        }
 
         const data: HappinessAllResponse = await fetchData(
           url,
@@ -82,6 +111,7 @@ const HappinessAll: React.FC = () => {
               parseInt(
                 process.env.NEXT_PUBLIC_DEFAULT_ZOOM_FOR_COLLECTION_RANGE!
               ) || 14,
+            boundsNESW: boundsNESW,
           },
           updatedSession?.user?.accessToken!
         )
@@ -176,7 +206,7 @@ const HappinessAll: React.FC = () => {
       willStop.current = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTokenFetched, updatedPeriod])
+  }, [isTokenFetched, updatedPeriod, bounds])
 
   const renderCustomDayTick = (tickProps: any) => {
     const { x, y, payload } = tickProps
@@ -214,6 +244,9 @@ const HappinessAll: React.FC = () => {
           fiware={{ servicePath: '', tenant: '' }}
           iconType="heatmap"
           pinData={pinData}
+          setBounds={
+            session?.user?.type === PROFILE_TYPE.ADMIN ? setBounds : undefined
+          }
         />
       </Grid>
       <Grid
