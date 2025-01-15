@@ -4,7 +4,6 @@ import {
   ZoomControl,
   useMap,
   Marker,
-  Popup,
   LayersControl,
   LayerGroup,
 } from 'react-leaflet'
@@ -14,6 +13,11 @@ import 'leaflet/dist/leaflet.css'
 import { getIconByType } from '../utils/icon'
 import { getCurrentPosition } from '../../libs/geolocation'
 import { IconType } from '@/types/icon-type'
+import { DetailModal } from '../happiness/detailModal'
+import { Pin } from '@/types/pin'
+import { questionTitles } from '@/libs/constants'
+import { MePopup } from './mePopup'
+import { AllPopup } from './allPopup'
 
 const loadEnvAsNumber = (
   variable: string | undefined,
@@ -47,86 +51,46 @@ const ClosePopup = () => {
   return null
 }
 
-interface QuestionTitles {
-  [key: string]: string
-}
-const questionTitles: QuestionTitles = {
-  happiness1: 'ワクワクする場所',
-  happiness2: '発見の学びの場所',
-  happiness3: 'ホッとする場所',
-  happiness4: '自分を取り戻せる場所',
-  happiness5: '自慢の場所',
-  happiness6: '思い出の場所',
-}
-
 export { questionTitles }
 
 const MapOverlay = ({
   iconType,
   type,
   filteredPins,
+  setSelectedPin,
 }: {
   iconType: IconType
   type: string
-  filteredPins: any[]
-}) => (
-  <LayersControl.Overlay checked name={type}>
-    <LayerGroup>
-      {filteredPins.map((pin, index) => (
-        <Marker
-          key={index}
-          position={[pin.latitude, pin.longitude]}
-          icon={getIconByType(iconType, pin.type, pin.answer)}
-        >
-          <Popup>
-            <table border={1}>
-              {pin.basetime && (
-                <thead>
-                  <tr>
-                    <th>回答日時</th>
-                    <th>{pin.timestamp}</th>
-                  </tr>
-                </thead>
-              )}
-              <tbody>
-                <tr>
-                  <th>{questionTitles.happiness1}</th>
-                  <th>{pin.answer1}</th>
-                </tr>
-                <tr>
-                  <th>{questionTitles.happiness2}</th>
-                  <th>{pin.answer2}</th>
-                </tr>
-                <tr>
-                  <th>{questionTitles.happiness3}</th>
-                  <th>{pin.answer3}</th>
-                </tr>
-                <tr>
-                  <th>{questionTitles.happiness4}</th>
-                  <th>{pin.answer4}</th>
-                </tr>
-                <tr>
-                  <th>{questionTitles.happiness5}</th>
-                  <th>{pin.answer5}</th>
-                </tr>
-                <tr>
-                  <th>{questionTitles.happiness6}</th>
-                  <th>{pin.answer6}</th>
-                </tr>
-              </tbody>
-            </table>
-          </Popup>
-        </Marker>
-      ))}
-    </LayerGroup>
-  </LayersControl.Overlay>
-)
+  filteredPins: Pin[]
+  setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
+}) => {
+  return (
+    <LayersControl.Overlay checked name={type}>
+      <LayerGroup>
+        {filteredPins.map((pin, index) => (
+          <Marker
+            key={index}
+            position={[pin.latitude, pin.longitude]}
+            icon={getIconByType(iconType, pin.type, pin.answer)}
+          >
+            {iconType === 'pin' ? (
+              <MePopup pin={pin} setSelectedPin={setSelectedPin} />
+            ) : (
+              <AllPopup pin={pin} />
+            )}
+          </Marker>
+        ))}
+      </LayerGroup>
+    </LayersControl.Overlay>
+  )
+}
 
 const Map: React.FC<Props> = ({ iconType, pinData }) => {
   const [currentPosition, setCurrentPosition] = useState<LatLngTuple | null>(
     null
   )
   const [error, setError] = useState<Error | null>(null)
+  const [selectedPin, setSelectedPin] = useState<Pin | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -169,31 +133,35 @@ const Map: React.FC<Props> = ({ iconType, pinData }) => {
     pinData.filter((pin) => pin.type === type)
 
   return (
-    <MapContainer
-      center={currentPosition}
-      zoom={defaultZoom}
-      scrollWheelZoom={true}
-      zoomControl={false}
-    >
-      <ZoomControl position={'bottomleft'} />
-      <TileLayer
-        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        maxZoom={18}
-        minZoom={5}
-      />
-      <LayersControl position="topright">
-        {Object.keys(questionTitles).map((type) => (
-          <MapOverlay
-            key={type}
-            iconType={iconType}
-            type={questionTitles[type]}
-            filteredPins={filteredPinsByType(type)}
-          />
-        ))}
-      </LayersControl>
-      <ClosePopup />
-    </MapContainer>
+    <>
+      <MapContainer
+        center={currentPosition}
+        zoom={defaultZoom}
+        scrollWheelZoom={true}
+        zoomControl={false}
+      >
+        <ZoomControl position={'bottomleft'} />
+        <TileLayer
+          attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={18}
+          minZoom={5}
+        />
+        <LayersControl position="topright">
+          {Object.keys(questionTitles).map((type) => (
+            <MapOverlay
+              key={type}
+              iconType={iconType}
+              type={questionTitles[type]}
+              filteredPins={filteredPinsByType(type)}
+              setSelectedPin={setSelectedPin}
+            />
+          ))}
+        </LayersControl>
+        {!selectedPin && <ClosePopup />}
+      </MapContainer>
+      <DetailModal data={selectedPin} onClose={() => setSelectedPin(null)} />
+    </>
   )
 }
 
