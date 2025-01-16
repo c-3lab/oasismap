@@ -8,7 +8,7 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Well-Being可視化アプリ',
+  title: '地域幸福度可視化アプリ',
   description:
     'ウェルビーイングを実現する地域共同ウェルビーイングのための可視化プラットフォーム',
 }

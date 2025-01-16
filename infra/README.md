@@ -50,6 +50,7 @@
     |VM_ADMIN_PUBLIC_KEY_PATH|Azure VMの管理者アカウントでSSH接続するための公開鍵の絶対パス||
     |VM_SKU|Azure VMのサイズ|Standard_D4s_v3|
     |VM_OSDISK_SKU|Azure VMのディスクのSKU|Standard_LRS|
+    |PARENT_DOMAIN_NAME|親DNSゾーン名||
     |ROOT_DOMAIN_NAME|oasismapを起動するルートドメイン名||
     |LEGO_EMAIL|Let's EncryptでSSL証明書を取得するために必要なEmailアドレス||
     |PFX_PASSWORD|Let's Encryptから発行されたサーバ証明書と秘密鍵をPKCS#12(pfx)へ変換するためのパスワード||
@@ -251,6 +252,12 @@
     /etc/newman/keycloak/postman-collection.json
     ```
 
+1. （Azure VM）oasismapのディレクトリに戻る
+
+    ```sh
+    VM$ cd ..
+    ```
+
 ### Azure VM上のkeycloakをGUIから設定
 #### keycloakにログイン
 
@@ -297,8 +304,6 @@
     VM$ sudo journalctl -f -u oasismap
     ```
 
-    * 初回はコンテナビルドが実行されるため、起動に時間がかかることに注意する
-
 1. （Azure VM）oasismapアプリケーションが起動したことを確認する
 
     ```sh
@@ -323,7 +328,7 @@
 2. (backendコンテナ)コンテナ上で以下コマンドを実行してorionにサブスクリプションの設定を行う
 
     ```sh
-    root@backend:/app/backend$ curl -iX POST \
+    node@backend:/app/backend$ curl -iX POST \
       --url 'http://orion:1026/v2/subscriptions' \
       --header 'content-type: application/json' \
       --header 'Fiware-Service: Government' \
@@ -349,8 +354,31 @@
     }'
     ```
 
+3. (backendコンテナ)`201 Created`が返されたことを確認する
+
+4. (backendコンテナ)コンテナとの接続を解除する
+
+    ```sh
+    node@backend:/app/backend$ exit
+    ```
+
+### 自治体管理者アカウントの準備
+
+1. ブラウザから `https://keycloak.<設定したルートドメイン>`でAzure VM上のkeycloakに接続する
+2. 「Administration Console」をクリック
+3. 環境変数 `KEYCLOAK_ADMIN` `KEYCLOAK_ADMIN_PASSWORD` に指定した認証情報でログイン
+4. `realm` から `oasismap` を選択
+5. 左のメニューバーから `Users` を選択
+6. `Add User` を選択
+7. `Username`,`profile.attribute.nickname` を入力して `Create` を選択
+    ※ `Username` と `profile.attribute.nickname` は同じ値を入れてください
+8. `Credentials` を選択して `Set password` からパスワードを入力してください
+9. パスワード入力後, `Temporary` のチェックを外して `Save`
+10. `Save password` から保存
+
 ### 動作確認
 1. スマートフォンから **https://<設定したルートドメイン>** にアクセスし、oasismapが動作していることを確認する
+2. スマートフォンから **https://<設定したルートドメイン>/admin/login** にアクセスし、oasismapの管理者画面が動作していることを確認する
 
 ### Azureリソースの構築（監視系）
 1. （作業用PC）Azure Monitorワークスペース(Log Analytics　ワークスペース)を作成し、CosmosDB、PostgreSQL、Application　Gateway、VMから収集するメトリクスとログを設定する

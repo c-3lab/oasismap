@@ -3,6 +3,15 @@
 source .env
 source 99_common.bash
 
+az network dns zone create \
+  --resource-group "${DNS_RESOURCE_GROUP_NAME}" \
+  --name "${ROOT_DOMAIN_NAME}"
+
+az network dns zone create \
+  --resource-group "${DNS_RESOURCE_GROUP_NAME}" \
+  --name "${ROOT_DOMAIN_NAME}" \
+  --parent-name "${PARENT_DOMAIN_NAME}"
+
 public_ip=$(az network public-ip show \
   --resource-group "${RESOURCE_GROUP_NAME}" \
   --name "${PREFIX}-AGWIP" \

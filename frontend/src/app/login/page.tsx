@@ -18,7 +18,7 @@ const Login: React.FC = () => {
     <Grid container justifyContent="center" alignItems="center" sx={{ px: 2 }}>
       <Grid item xs={12} md={8}>
         <Typography variant="h5" align="center" sx={{ my: 6 }}>
-          Well-Being可視化アプリ
+          地域幸福度可視化アプリ
         </Typography>
         {isValidBrowser ? (
           <>

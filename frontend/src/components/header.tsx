@@ -26,7 +26,7 @@ const Header: React.FC<HeaderProps> = ({
     <AppBar sx={{ color: '#FFF', backgroundColor: '#459586' }}>
       <Toolbar>
         <Typography variant="h6" noWrap sx={{ flexGrow: 1 }} component="div">
-          Well-Being可視化アプリ
+          地域幸福度可視化アプリ
         </Typography>
         {!simple && (
           <>
