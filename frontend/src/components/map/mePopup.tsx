@@ -1,19 +1,23 @@
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import { Popup } from 'react-leaflet'
-import { graphColors } from '@/theme/color'
+import { mapColors } from '@/theme/color'
 import { questionTitles } from './map'
 import { Pin } from '@/types/pin'
 
-type PinProps = {
+type HappinessTitleProps = {
   title: string
   color: string
   selected: boolean
 }
 
-const HappinessTitle: React.FC<PinProps> = ({ title, color, selected }) => {
+const HappinessTitle: React.FC<HappinessTitleProps> = ({
+  title,
+  color,
+  selected,
+}) => {
   return (
     <div style={{ display: 'flex' }}>
-      {selected === true && (
+      {selected && (
         <CheckCircleIcon
           sx={{
             fontSize: 'large',
@@ -24,7 +28,8 @@ const HappinessTitle: React.FC<PinProps> = ({ title, color, selected }) => {
       <a
         style={{
           fontSize: '15px',
-          color: color,
+          fontWeight: 'bolder',
+          color: selected ? color : 'black',
           opacity: selected ? 1 : 0.3,
           marginLeft: selected ? '0px' : '18px',
         }}
@@ -46,72 +51,66 @@ export const MePopup = ({
     <Popup>
       <HappinessTitle
         title={questionTitles.happiness1}
-        color={graphColors[0]}
+        color={mapColors.BLUE[0]}
         selected={pin.answer1 === 1}
       />
       <HappinessTitle
         title={questionTitles.happiness2}
-        color={graphColors[1]}
+        color={mapColors.GREEN[0]}
         selected={pin.answer2 === 1}
       />
       <HappinessTitle
         title={questionTitles.happiness3}
-        color={graphColors[2]}
+        color={mapColors.VIOLET[0]}
         selected={pin.answer3 === 1}
       />
       <HappinessTitle
         title={questionTitles.happiness4}
-        color={graphColors[3]}
+        color={mapColors.YELLOW[0]}
         selected={pin.answer4 === 1}
       />
       <HappinessTitle
         title={questionTitles.happiness5}
-        color={graphColors[4]}
+        color={mapColors.ORANGE[0]}
         selected={pin.answer5 === 1}
       />
       <HappinessTitle
         title={questionTitles.happiness6}
-        color={graphColors[5]}
+        color={mapColors.RED[0]}
         selected={pin.answer6 === 1}
       />
       {pin.memo !== undefined && (
         <div
           style={{
             marginTop: '4px',
+            fontWeight: 'bolder',
           }}
         >
-          <h4>
-            {pin.memo.length > 10 ? (
-              <>
-                {pin.memo.slice(0, 10)}…
-                <button
-                  style={{
-                    backgroundColor: 'transparent',
-                    color: 'blue',
-                    border: 'solid 0px',
-                  }}
-                  onClick={() => setSelectedPin(pin)}
-                >
-                  もっと見る
-                </button>
-              </>
-            ) : (
-              pin.memo
-            )}
-          </h4>
+          {pin.memo.length > 10 ? (
+            <>
+              {pin.memo.slice(0, 10)}…
+              <button
+                style={{
+                  backgroundColor: 'transparent',
+                  color: 'blue',
+                  border: 'solid 0px',
+                }}
+                onClick={() => setSelectedPin(pin)}
+              >
+                もっと見る
+              </button>
+            </>
+          ) : (
+            pin.memo
+          )}
         </div>
       )}
       {pin.basetime && (
         <div
-          style={{
-            marginTop: '4px',
-            marginLeft: '30%',
-          }}
+          style={{ textAlign: 'right', fontWeight: 'normal', marginTop: '5px' }}
         >
-          <h5>
-            回答日時：
-            {pin.timestamp}
-          </h5>
+          回答日時：
+          {pin.timestamp}
         </div>
       )}
     </Popup>

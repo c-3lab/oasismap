@@ -63,27 +63,25 @@ const MapOverlay = ({
   type: string
   filteredPins: Pin[]
   setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
-}) => {
-  return (
-    <LayersControl.Overlay checked name={type}>
-      <LayerGroup>
-        {filteredPins.map((pin, index) => (
-          <Marker
-            key={index}
-            position={[pin.latitude, pin.longitude]}
-            icon={getIconByType(iconType, pin.type, pin.answer)}
-          >
-            {iconType === 'pin' ? (
-              <MePopup pin={pin} setSelectedPin={setSelectedPin} />
-            ) : (
-              <AllPopup pin={pin} />
-            )}
-          </Marker>
-        ))}
-      </LayerGroup>
-    </LayersControl.Overlay>
-  )
-}
+}) => (
+  <LayersControl.Overlay checked name={type}>
+    <LayerGroup>
+      {filteredPins.map((pin, index) => (
+        <Marker
+          key={index}
+          position={[pin.latitude, pin.longitude]}
+          icon={getIconByType(iconType, pin.type, pin.answer)}
+        >
+          {iconType === 'pin' ? (
+            <MePopup pin={pin} setSelectedPin={setSelectedPin} />
+          ) : (
+            <AllPopup pin={pin} />
+          )}
+        </Marker>
+      ))}
+    </LayerGroup>
+  </LayersControl.Overlay>
+)
 
 const Map: React.FC<Props> = ({ iconType, pinData }) => {
   const [currentPosition, setCurrentPosition] = useState<LatLngTuple | null>(
