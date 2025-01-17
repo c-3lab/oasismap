@@ -11,4 +11,5 @@ export interface Pin {
   answer6: number
   basetime: string | undefined
   timestamp: string | undefined
+  memo: string | undefined
 }
