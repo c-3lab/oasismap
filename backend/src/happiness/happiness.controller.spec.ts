@@ -198,9 +198,7 @@ describe('HappinessController', () => {
       );
       expect(result).toEqual(mockHappinesAllResponse);
     });
-  });
 
-  describe('getHappinessAll', () => {
     it('should return array of happinessAll entities By Bounds', async () => {
       // リクエストパラメータのダミーデータ
       const requestParam: GetHappinessAllDto = {

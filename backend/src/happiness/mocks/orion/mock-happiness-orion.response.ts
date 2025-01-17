@@ -309,6 +309,10 @@ export const mockHappinessAllEntities = {
   ],
 };
 
+export const mockHappinessAllEntitiesByBounds = {
+  data: [],
+};
+
 export const mockHappinessListEntities = {
   data: [
     {

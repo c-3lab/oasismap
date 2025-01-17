@@ -43,9 +43,8 @@ type Props = {
   }
   iconType: IconType
   pinData: any[]
-  selectedLayers?: HappinessKey[]
-  setSelectedLayers?: React.Dispatch<HappinessKey[] | undefined>
-  setBounds?: React.Dispatch<LatLngBounds | undefined>
+  setSelectedLayers?: React.Dispatch<React.SetStateAction<HappinessKey[]>>
+  setBounds?: React.Dispatch<React.SetStateAction<LatLngBounds | undefined>>
   selectedEntityId?: string | null
   entityByEntityId?: EntityByEntityId
   onPopupClose?: () => void
@@ -148,34 +147,31 @@ const MapOverlay = ({
 )
 
 const SelectedLayers = ({
-  selectedLayers,
   setSelectedLayers,
 }: {
-  selectedLayers?: HappinessKey[]
-  setSelectedLayers?: React.Dispatch<HappinessKey[] | undefined>
+  setSelectedLayers: React.Dispatch<React.SetStateAction<HappinessKey[]>>
 }) => {
   useMapEvents({
     overlayadd: (e) => {
-      if (!setSelectedLayers || !selectedLayers) return
-
       const targetLayer = HAPPINESS_KEYS.find(
         (key) => questionTitles[key] === e.name
       )
-      if (!targetLayer || selectedLayers.includes(targetLayer)) return
-
-      setSelectedLayers([...selectedLayers, targetLayer])
+      if (targetLayer) {
+        setSelectedLayers((selectedLayers: HappinessKey[]) => [
+          ...selectedLayers,
+          targetLayer,
+        ])
+      }
     },
     overlayremove: (e) => {
-      if (!setSelectedLayers || !selectedLayers) return
-
       const targetLayer = HAPPINESS_KEYS.find(
         (key) => questionTitles[key] === e.name
       )
-      if (!targetLayer || !selectedLayers.includes(targetLayer)) return
-
-      setSelectedLayers(
-        [...selectedLayers].filter((layer) => layer !== targetLayer)
-      )
+      if (targetLayer) {
+        setSelectedLayers((selectedLayers: HappinessKey[]) =>
+          [...selectedLayers].filter((layer) => layer !== targetLayer)
+        )
+      }
     },
   })
   return null
@@ -184,7 +180,7 @@ const SelectedLayers = ({
 const Bounds = ({
   setBounds,
 }: {
-  setBounds: React.Dispatch<LatLngBounds | undefined>
+  setBounds: React.Dispatch<React.SetStateAction<LatLngBounds | undefined>>
 }) => {
   const map = useMap()
 
@@ -203,12 +199,11 @@ const Bounds = ({
 const Map: React.FC<Props> = ({
   iconType,
   pinData,
-  selectedLayers,
   setSelectedLayers,
   setBounds,
   selectedEntityId,
   entityByEntityId,
-  onPopupClose
+  onPopupClose,
 }) => {
   const [currentPosition, setCurrentPosition] = useState<LatLngTuple | null>(
     null
@@ -267,11 +262,8 @@ const Map: React.FC<Props> = ({
       scrollWheelZoom={true}
       zoomControl={false}
     >
-      {selectedLayers && (
-        <SelectedLayers
-          selectedLayers={selectedLayers}
-          setSelectedLayers={setSelectedLayers}
-        />
+      {setSelectedLayers && (
+        <SelectedLayers setSelectedLayers={setSelectedLayers} />
       )}
       {setBounds && <Bounds setBounds={setBounds} />}
       <ZoomControl position={'bottomleft'} />
