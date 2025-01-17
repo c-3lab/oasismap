@@ -22,7 +22,7 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  //  これも最終的には要らなくなったが、Dockerコンテナ内でテストする場合、デフォルトではIPv6からしか接続を受け付けないっぽかったのでhostを指定
+  //  Dockerコンテナ内でテストする場合、デフォルトではIPv6からしか接続を受け付けないっぽかったのでhostを指定
   reporter: [['html', { host: '0.0.0.0', port: '9323' }]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -49,7 +49,7 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         launchOptions: {
           //  Googleのログインは自動化されたブラウザだと不可と言われるので、実際のブラウザを起動（非headless）
-          //  そのため、Dockerコンテナ内ではなくHostマシンのWSL上でnpm run test:e2eする必要がある
+          //  WSLgのソケットをコンテナと共有することで、コンテナ内からのテストも行えた。
           //  CIを実施する際はX Windowがサポートされている環境じゃないとダメそう
           headless: false,
           args: [
