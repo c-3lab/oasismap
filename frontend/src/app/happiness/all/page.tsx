@@ -45,6 +45,7 @@ const HappinessAll: React.FC = () => {
   const { data: session, update } = useSession()
   const { isLoading, setIsLoading } = useContext(LoadingContext)
   const { fetchData } = useFetchData()
+  const [isLoaded, setIsLoaded] = useState(false)
 
   const getData = async () => {
     try {
@@ -165,6 +166,7 @@ const HappinessAll: React.FC = () => {
       }
     } finally {
       setIsLoading(false)
+      setIsLoaded(true)
     }
   }
 
@@ -240,6 +242,7 @@ const HappinessAll: React.FC = () => {
               plotdata={OurHappiness[period]}
               color={graphColors}
               xTickFormatter={renderCustomDayTick}
+              isLoaded={isLoaded}
             />
           </ResponsiveContainer>
         </Grid>
