@@ -20,4 +20,7 @@ export interface Data {
     happiness5: number
     happiness6: number
   }
+  memo: string
+  memos: string[]
+  totalmemos: string
 }
