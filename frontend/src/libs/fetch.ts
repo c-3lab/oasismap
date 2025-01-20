@@ -9,6 +9,7 @@ interface HappinessParams {
   end: string
   period?: string
   zoomLevel?: number
+  boundsNESW?: string
 }
 
 interface HappinessRequestBody {
@@ -47,6 +48,7 @@ export const useFetchData = () => {
         offset: params.offset.toString(),
         ...(params.period && { period: params.period }),
         ...(params.zoomLevel && { zoomLevel: params.zoomLevel.toString() }),
+        ...(params.boundsNESW && { boundsNESW: params.boundsNESW }),
       })
 
       const response = await fetch(`${url}?${query}`, {
