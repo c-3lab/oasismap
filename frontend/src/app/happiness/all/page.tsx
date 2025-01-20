@@ -113,10 +113,16 @@ const HappinessAll: React.FC = () => {
             })
             allMapData[gridKey]['data'].forEach((data: MapDataItem) => {
               data.answers = { ...newAnswers }
+              data.memos = data.memos.concat(fetchedMapData['data'][0].memos)
+              data.totalmemos = data.memos.join(',')
             })
             allMapData[gridKey]['count'] += fetchedMapData['count']
           } else {
             allMapData[gridKey] = fetchedMapData
+            for (let i = 0; i < 6; i++) {
+              data['map_data'][gridKey].data[i].totalmemos =
+                data['map_data'][gridKey].data[i].memos.join(',')
+            }
           }
         }
         setPinData(

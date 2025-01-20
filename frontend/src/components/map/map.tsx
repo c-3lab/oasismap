@@ -382,6 +382,34 @@ const MapOverlay = ({
                       }}
                     />
                   </BarChart>
+                  {pin.totalmemos !== undefined && (
+                    <div
+                      style={{
+                        top: 5,
+                        marginLeft: '10%',
+                      }}
+                    >
+                      <h4>
+                        {pin.totalmemos.length > 10 ? (
+                          <>
+                            {pin.totalmemos.slice(0, 10)}…
+                            <button
+                              style={{
+                                backgroundColor: 'transparent',
+                                color: 'blue',
+                                border: 'solid 0px',
+                              }}
+                              onClick={() => setSelectedPin(pin)}
+                            >
+                              もっと見る
+                            </button>
+                          </>
+                        ) : (
+                          pin.totalmemos
+                        )}
+                      </h4>
+                    </div>
+                  )}
                 </>
               )}
             </Popup>
