@@ -8,14 +8,23 @@ import {
   LayerGroup,
   useMapEvents,
 } from 'react-leaflet'
-import { LatLngTuple } from 'leaflet'
+import { LatLngTuple, divIcon } from 'leaflet'
 import React, { useState, useEffect } from 'react'
 import 'leaflet/dist/leaflet.css'
 import { getIconByType } from '../utils/icon'
-import { getCurrentPosition } from '../../libs/geolocation'
 import { IconType } from '@/types/icon-type'
 import { ControllablePopup } from './controllablePopup'
 import { EntityByEntityId } from '@/types/entityByEntityId'
+import { IconButton } from '@mui/material'
+import MyLocationIcon from '@mui/icons-material/MyLocation'
+import CurrentPositionIcon from '@mui/icons-material/RadioButtonChecked'
+import { renderToString } from 'react-dom/server'
+
+// 環境変数の取得に失敗した場合は日本経緯度原点を設定
+const defaultLatitude =
+  parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_LATITUDE!) || 35.6581064
+const defaultLongitude =
+  parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_LONGITUDE!) || 139.7413637
 
 const loadEnvAsNumber = (
   variable: string | undefined,
@@ -151,45 +160,89 @@ const Map: React.FC<Props> = ({
   entityByEntityId,
   onPopupClose,
 }) => {
+  const [center, setCenter] = useState<LatLngTuple | null>(null)
   const [currentPosition, setCurrentPosition] = useState<LatLngTuple | null>(
     null
   )
   const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const positionResult = await getCurrentPosition()
-
-        if (
-          positionResult &&
-          positionResult.latitude !== undefined &&
-          positionResult.longitude !== undefined
-        ) {
-          const newPosition: LatLngTuple = [
-            positionResult.latitude,
-            positionResult.longitude,
-          ]
-          setCurrentPosition(newPosition)
-        } else {
-          console.error('Error: Unable to get current position.')
-          setError(new Error('Unable to get current position'))
-        }
-      } catch (error) {
-        console.error('Error in getCurrentPosition:', error)
-        setError(error as Error)
-      }
+    // geolocation が http に対応していないため固定値を設定
+    if (location.protocol === 'http:') {
+      setCenter([defaultLatitude, defaultLongitude])
+      setCurrentPosition([defaultLatitude, defaultLongitude])
+      return
     }
+    const watchId = navigator.geolocation.watchPosition(
+      (position) => {
+        const newPosition: LatLngTuple = [
+          position.coords.latitude,
+          position.coords.longitude,
+        ]
+        setCenter((prev) => {
+          if (!prev) {
+            return newPosition
+          }
+          return prev
+        })
+        setCurrentPosition(newPosition)
+        setError(null)
+      },
+      (e) => {
+        console.error(e)
+        setError(e instanceof Error ? e : new Error(e.message))
+        setCurrentPosition(null)
+        setCenter(null)
+      },
+      { enableHighAccuracy: true }
+    )
 
-    fetchData()
+    return () => {
+      navigator.geolocation.clearWatch(watchId)
+    }
   }, [])
 
+  const currentPositionIconHTML = renderToString(
+    <CurrentPositionIcon style={{ fill: 'blue' }} />
+  )
+  const currentPositionIcon = divIcon({
+    html: currentPositionIconHTML,
+    className: 'current-position',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  })
+
+  const MoveToCurrentPositionButton = () => {
+    const map = useMap()
+    const moveToCurrentPosition = () => {
+      if (currentPosition) {
+        map.flyTo(currentPosition, defaultZoom)
+      }
+    }
+    return (
+      <IconButton
+        style={{
+          top: '2%',
+          left: '2%',
+          width: '35px',
+          height: '35px',
+          backgroundColor: '#f7f7f7',
+          border: '1px solid #ccc',
+          zIndex: 1000,
+          borderRadius: 2,
+          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
+        }}
+        onClick={moveToCurrentPosition}
+      >
+        <MyLocationIcon style={{ color: 'blue' }} />
+      </IconButton>
+    )
+  }
   if (error) {
     console.error('Error: Unable to get current position.', error)
     return null
   }
-
-  if (currentPosition === null) {
+  if (center === null || currentPosition === null) {
     return <p>Loading...</p>
   }
 
@@ -203,11 +256,12 @@ const Map: React.FC<Props> = ({
 
   return (
     <MapContainer
-      center={currentPosition}
+      center={center}
       zoom={defaultZoom}
       scrollWheelZoom={true}
       zoomControl={false}
     >
+      <MoveToCurrentPositionButton />
       <ZoomControl position={'bottomleft'} />
       <TileLayer
         attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
@@ -234,6 +288,10 @@ const Map: React.FC<Props> = ({
       </LayersControl>
       {!selectedEntityId && <ClosePopup />}
       {onPopupClose && <OnPopupClose onPopupClose={onPopupClose} />}
+      {currentPosition && (
+        <Marker position={currentPosition} icon={currentPositionIcon}></Marker>
+      )}
+      <ClosePopup />
     </MapContainer>
   )
 }
