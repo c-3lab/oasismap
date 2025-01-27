@@ -24,7 +24,6 @@ import {
 const PreviewMap = dynamic(() => import('@/components/map/previewMap'), {
   ssr: false,
 })
-import { getIconByType } from '@/components/utils/icon'
 import { messageContext } from '@/contexts/message-context'
 import { MessageType } from '@/types/message-type'
 import { ERROR_TYPE } from '@/libs/constants'
@@ -124,15 +123,15 @@ const HappinessInput: React.FC = () => {
     try {
       const rawExif = await exifr.parse(image)
       const exif = {
-        latitude: rawExif?.latitude,
-        longitude: rawExif?.longitude,
         timestamp: rawExif?.CreateDate,
+        latitude: isNaN(rawExif?.latitude) ? undefined : rawExif?.latitude,
+        longitude: isNaN(rawExif?.longitude) ? undefined : rawExif?.longitude,
       }
 
       let missingFields: string[] = []
-      if (rawExif.latitude === undefined) missingFields.push('緯度')
-      if (rawExif.longitude === undefined) missingFields.push('経度')
-      if (rawExif.CreateDate === undefined) missingFields.push('撮影日時')
+      if (exif.timestamp === undefined) missingFields.push('撮影日時')
+      if (exif.latitude === undefined) missingFields.push('緯度')
+      if (exif.longitude === undefined) missingFields.push('経度')
       if (missingFields.length === 3 && image.name === 'image.jpg') {
         setErrors((prev) => {
           return [
@@ -223,15 +222,6 @@ const HappinessInput: React.FC = () => {
         )
       }
     }
-  }
-
-  const previewIcon = () => {
-    for (const [key, value] of Object.entries(checkboxValues)) {
-      if (value === 1) {
-        return getIconByType('pin', key, value)
-      }
-    }
-    return getIconByType('pin', 'happiness1', 1)
   }
 
   return (
@@ -338,7 +328,7 @@ const HappinessInput: React.FC = () => {
                 <PreviewMap
                   latitude={exif.latitude}
                   longitude={exif.longitude}
-                  icon={previewIcon()}
+                  answer={checkboxValues}
                 />
               </Box>
             )}

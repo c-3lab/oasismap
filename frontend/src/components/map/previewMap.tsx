@@ -1,15 +1,25 @@
 'use client'
 import 'leaflet/dist/leaflet.css'
 import { MapContainer, TileLayer, Marker, ZoomControl } from 'react-leaflet'
-import L from 'leaflet'
+import { getIconByType } from '@/components/utils/icon'
+import { HappinessKey } from '@/types/happiness-key'
 
 type Props = {
   latitude: number
   longitude: number
-  icon: L.DivIcon
+  answer: { [key in HappinessKey]: number }
 }
 
-const PreviewMap: React.FC<Props> = ({ latitude, longitude, icon }) => {
+const PreviewMap: React.FC<Props> = ({ latitude, longitude, answer }) => {
+  const previewIcon = () => {
+    for (const [key, value] of Object.entries(answer)) {
+      if (value === 1) {
+        return getIconByType('pin', key, value)
+      }
+    }
+    return getIconByType('pin', 'happiness1', 1)
+  }
+
   return (
     <MapContainer
       center={[latitude, longitude]}
@@ -25,7 +35,7 @@ const PreviewMap: React.FC<Props> = ({ latitude, longitude, icon }) => {
         maxZoom={18}
         minZoom={5}
       />
-      <Marker position={[latitude, longitude]} icon={icon} />
+      <Marker position={[latitude, longitude]} icon={previewIcon()} />
     </MapContainer>
   )
 }
