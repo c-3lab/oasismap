@@ -8,7 +8,7 @@ import { Happiness } from './happiness.entity';
 import { Repository } from 'typeorm';
 import Papa from 'papaparse';
 import { HappinessImportResponse } from './interface/happiness-import.response';
-import { Answer, CreateHappinessDto } from './dto/create-happiness.dto';
+import { Answer, ImportHappinessDto } from './dto/create-happiness.dto';
 import { validateOrReject } from 'class-validator';
 
 const expectedHeaders = [
@@ -142,7 +142,8 @@ export class HappinessImportService {
           answer.happiness5 = Number(row['happiness5']);
           answer.happiness6 = Number(row['happiness6']);
 
-          const happiness = new CreateHappinessDto();
+          const happiness = new ImportHappinessDto();
+          happiness.timestamp = row['送信日時'];
           happiness.latitude = Number(row['緯度']);
           happiness.longitude = Number(row['経度']);
           happiness.memo = row['メモ'];
@@ -236,15 +237,9 @@ export class HappinessImportService {
   }
 
   private parseDate(dateString: string): DateTime {
-    const dateTime = DateTime.fromFormat(dateString, 'yyyy-MM-dd HH:mm:ss', {
+    return DateTime.fromFormat(dateString, 'yyyy-MM-dd HH:mm:ss', {
       zone: 'Asia/Tokyo',
     });
-
-    if (dateTime.isValid) {
-      return dateTime;
-    } else {
-      throw 'DateTime format is incorrect';
-    }
   }
 
   private async postHappinessEntities(entities: HappinessEntity[]) {

@@ -1,5 +1,6 @@
 import {
   IsIn,
+  IsISO8601,
   IsLatitude,
   IsLongitude,
   IsNotEmpty,
@@ -39,7 +40,7 @@ export class Answer {
   happiness6: number;
 }
 
-export class CreateHappinessDto {
+class HappinessDto {
   @IsNotEmpty()
   @IsLatitude()
   @IsNumber()
@@ -56,10 +57,20 @@ export class CreateHappinessDto {
   @IsNotSurrogatePair()
   memo: string;
 
-  timestamp?: string;
-
   @ValidateNested()
   @Type(() => Answer)
   @IsNotAllHappinessZero()
   answers: Answer;
+}
+
+export class CreateHappinessDto extends HappinessDto {
+  @IsOptional()
+  @IsISO8601()
+  timestamp?: string;
+}
+
+export class ImportHappinessDto extends HappinessDto {
+  @IsNotEmpty()
+  @IsISO8601()
+  timestamp: string;
 }
