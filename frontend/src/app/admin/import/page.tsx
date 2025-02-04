@@ -12,7 +12,7 @@ import { MessageType } from '@/types/message-type'
 import { ERROR_TYPE } from '@/libs/constants'
 import { signOut, useSession } from 'next-auth/react'
 import { messageContext } from '@/contexts/message-context'
-import { upload } from '@/libs/fetch'
+import { useFetchData } from '@/libs/fetch'
 import { useRouter } from 'next/navigation'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
@@ -26,6 +26,7 @@ const Import: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const { update } = useSession()
+  const { upload } = useFetchData()
 
   const fileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]

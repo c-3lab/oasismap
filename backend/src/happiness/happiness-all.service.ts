@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { HappinessEntity } from './interface/happiness-entity';
 import { v4 as uuidv4 } from 'uuid';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import {
   GraphData,
   HappinessAllResponse,
@@ -30,6 +30,7 @@ export class HappinessAllService {
     offset: string,
     period: 'time' | 'day' | 'month',
     zoomLevel: number,
+    boundsNESW?: string,
   ): Promise<HappinessAllResponse> {
     const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
     const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
@@ -45,11 +46,25 @@ export class HappinessAllService {
       happinessEntities,
     );
 
+    let happinessEntitiesByBounds: HappinessEntity[] | undefined = undefined;
+    if (boundsNESW) {
+      const coords: string = this.getCoords(boundsNESW);
+
+      happinessEntitiesByBounds = await this.getHappinessEntities(
+        query,
+        limit,
+        offset,
+        'coveredBy',
+        'polygon',
+        coords,
+      );
+    }
+
     return {
       count: happinessEntities.length,
       map_data: this.toHappinessAllMapData(gridEntities),
       graph_data: this.calculateGraphData(
-        happinessEntities,
+        happinessEntitiesByBounds || happinessEntities,
         startAsUTC,
         endAsUTC,
         period,
@@ -57,10 +72,29 @@ export class HappinessAllService {
     };
   }
 
+  // "北,東,南,西"の座標をもとに四角形の各頂点座標を作成し、
+  // 地図上の四角形範囲を示す座標列を返す。
+  private getCoords(boundsNESW: string): string {
+    const [north, east, south, west] = boundsNESW.split(',').map(Number);
+    if (isNaN(north) || isNaN(east) || isNaN(south) || isNaN(west)) {
+      throw new BadRequestException('Invalid bounds');
+    }
+
+    const boundsNE = `${north},${east}`; // 北東
+    const boundsNW = `${north},${west}`; // 北西
+    const boundsSE = `${south},${east}`; // 南東
+    const boundsSW = `${south},${west}`; // 南西
+
+    return `${boundsNW};${boundsNE};${boundsSE};${boundsSW};${boundsNW}`;
+  }
+
   private async getHappinessEntities(
     query: string,
     limit: string,
     offset: string,
+    georel?: string,
+    geometry?: string,
+    coords?: string,
   ): Promise<HappinessEntity[]> {
     const response = await axios.get(`${process.env.ORION_URI}/v2/entities`, {
       headers: {
@@ -72,6 +106,9 @@ export class HappinessAllService {
         limit: limit,
         offset: offset,
         orderBy: '!timestamp',
+        georel: georel,
+        geometry: geometry,
+        coords: coords,
       },
     });
     return response.data;
@@ -213,6 +250,12 @@ export class HappinessAllService {
               HappinessAllService.keys[5],
             ),
           },
+          memos: entity.happinessEntities.map((entity) => {
+            return {
+              timestamp: entity.timestamp.value,
+              memo: entity.memo.value,
+            };
+          }),
         };
       });
       map_data[entity.gridKey] = {

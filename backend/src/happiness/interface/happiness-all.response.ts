@@ -27,6 +27,10 @@ export interface MapDataItem {
     happiness5: number;
     happiness6: number;
   };
+  memos: {
+    timestamp: string;
+    memo: string;
+  }[];
 }
 
 export interface GraphData {

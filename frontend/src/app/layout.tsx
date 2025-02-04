@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter'
 import MessageArea from '@/components/message'
+import { LoadingProvider } from '@/components/spinner'
 
 import './globals.css'
 
@@ -22,7 +23,9 @@ export default function RootLayout({
     <html lang="ja">
       <body className={inter.className}>
         <AppRouterCacheProvider>
-          <MessageArea>{children}</MessageArea>
+          <MessageArea>
+            <LoadingProvider>{children}</LoadingProvider>
+          </MessageArea>
         </AppRouterCacheProvider>
       </body>
     </html>

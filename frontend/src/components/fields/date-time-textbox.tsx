@@ -46,8 +46,16 @@ export const DateTimeTextbox: React.FC<DateTimeTextboxProps> = (props) => {
   )
 }
 
-export const useDateTimeProps = (period: PeriodType) => {
-  const defaultDateTime = DateTime.local()
+export const useDateTimeProps = (
+  period: PeriodType,
+  timestamp?: string | null
+) => {
+  let defaultDateTime: DateTime
+  if (timestamp && DateTime.fromISO(timestamp).isValid) {
+    defaultDateTime = DateTime.fromISO(timestamp)
+  } else {
+    defaultDateTime = DateTime.local()
+  }
 
   const startProps = useDateTime({
     date: defaultDateTime.toFormat('yyyy-MM-dd'),

@@ -7,6 +7,7 @@ export const expectedHappinessMeResponse: HappinessMeResponse = {
   data: [
     {
       id: expect.stringMatching(uuidv4Pattern),
+      entityId: '174f8874-c91c-4242-b34b-aade5b161da7',
       type: 'happiness1',
       location: {
         type: 'geo:json',
@@ -28,6 +29,7 @@ export const expectedHappinessMeResponse: HappinessMeResponse = {
     },
     {
       id: expect.stringMatching(uuidv4Pattern),
+      entityId: '174f8874-c91c-4242-b34b-aade5b161da7',
       type: 'happiness2',
       location: {
         type: 'geo:json',
@@ -49,6 +51,7 @@ export const expectedHappinessMeResponse: HappinessMeResponse = {
     },
     {
       id: expect.stringMatching(uuidv4Pattern),
+      entityId: '174f8874-c91c-4242-b34b-aade5b161da7',
       type: 'happiness3',
       location: {
         type: 'geo:json',
@@ -70,6 +73,7 @@ export const expectedHappinessMeResponse: HappinessMeResponse = {
     },
     {
       id: expect.stringMatching(uuidv4Pattern),
+      entityId: '174f8874-c91c-4242-b34b-aade5b161da7',
       type: 'happiness4',
       location: {
         type: 'geo:json',
@@ -91,6 +95,7 @@ export const expectedHappinessMeResponse: HappinessMeResponse = {
     },
     {
       id: expect.stringMatching(uuidv4Pattern),
+      entityId: '174f8874-c91c-4242-b34b-aade5b161da7',
       type: 'happiness5',
       location: {
         type: 'geo:json',
@@ -112,6 +117,7 @@ export const expectedHappinessMeResponse: HappinessMeResponse = {
     },
     {
       id: expect.stringMatching(uuidv4Pattern),
+      entityId: '174f8874-c91c-4242-b34b-aade5b161da7',
       type: 'happiness6',
       location: {
         type: 'geo:json',
@@ -133,6 +139,7 @@ export const expectedHappinessMeResponse: HappinessMeResponse = {
     },
     {
       id: expect.stringMatching(uuidv4Pattern),
+      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
       type: 'happiness1',
       location: {
         type: 'geo:json',
@@ -154,6 +161,7 @@ export const expectedHappinessMeResponse: HappinessMeResponse = {
     },
     {
       id: expect.stringMatching(uuidv4Pattern),
+      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
       type: 'happiness2',
       location: {
         type: 'geo:json',
@@ -175,6 +183,7 @@ export const expectedHappinessMeResponse: HappinessMeResponse = {
     },
     {
       id: expect.stringMatching(uuidv4Pattern),
+      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
       type: 'happiness3',
       location: {
         type: 'geo:json',
@@ -196,6 +205,7 @@ export const expectedHappinessMeResponse: HappinessMeResponse = {
     },
     {
       id: expect.stringMatching(uuidv4Pattern),
+      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
       type: 'happiness4',
       location: {
         type: 'geo:json',
@@ -217,6 +227,7 @@ export const expectedHappinessMeResponse: HappinessMeResponse = {
     },
     {
       id: expect.stringMatching(uuidv4Pattern),
+      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
       type: 'happiness5',
       location: {
         type: 'geo:json',
@@ -238,6 +249,7 @@ export const expectedHappinessMeResponse: HappinessMeResponse = {
     },
     {
       id: expect.stringMatching(uuidv4Pattern),
+      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
       type: 'happiness6',
       location: {
         type: 'geo:json',

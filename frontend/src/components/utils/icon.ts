@@ -1,35 +1,32 @@
 import L, { DivIconOptions } from 'leaflet'
 import { mapColors } from '@/theme/color'
 import { IconType } from '@/types/icon-type'
+import { HappinessKey } from '@/types/happiness-key'
+
+type HappinessColers = {
+  [key in HappinessKey]: string[]
+}
+
+const happinessPalettes: HappinessColers = {
+  happiness1: mapColors.BLUE,
+  happiness2: mapColors.GREEN,
+  happiness3: mapColors.VIOLET,
+  happiness4: mapColors.YELLOW,
+  happiness5: mapColors.ORANGE,
+  happiness6: mapColors.RED,
+}
 
 export const getIconByType = (
   iconType: IconType,
-  type: string,
-  answer: number
-) => {
-  switch (type) {
-    case 'happiness1':
-      return getIconForHappiness(iconType, answer, mapColors['BLUE'])
-    case 'happiness2':
-      return getIconForHappiness(iconType, answer, mapColors['GREEN'])
-    case 'happiness3':
-      return getIconForHappiness(iconType, answer, mapColors['VIOLET'])
-    case 'happiness4':
-      return getIconForHappiness(iconType, answer, mapColors['YELLOW'])
-    case 'happiness5':
-      return getIconForHappiness(iconType, answer, mapColors['ORANGE'])
-    case 'happiness6':
-      return getIconForHappiness(iconType, answer, mapColors['RED'])
-    default:
-      return getIconForHappiness(iconType, 1, mapColors['RED'])
-  }
-}
-
-const getIconForHappiness = (
-  iconType: IconType,
+  type: HappinessKey,
   answer: number,
-  palette: string[]
+  isActive: boolean
 ) => {
+  if (!isActive) {
+    return createColoredIcon(iconType, 'grey')
+  }
+  const palette = happinessPalettes[type]
+
   switch (answer) {
     case 1:
       return createColoredIcon(iconType, palette[0])

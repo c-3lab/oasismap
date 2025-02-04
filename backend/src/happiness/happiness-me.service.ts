@@ -63,6 +63,7 @@ export class HappinessMeService {
     return entities.flatMap((entity) => {
       return HappinessMeService.keys.map((key) => ({
         id: uuidv4(),
+        entityId: entity.id,
         type: key,
         location: {
           type: entity.location.type,

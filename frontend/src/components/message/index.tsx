@@ -18,7 +18,10 @@ const MessageArea: React.FC<MessageProps> = ({ children }) => {
         <Snackbar
           open={true}
           autoHideDuration={6000}
-          onClose={noticeMessageContext.clearMessage}
+          onClose={(_, reason) => {
+            if (reason === 'clickaway') return
+            noticeMessageContext.clearMessage()
+          }}
           anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         >
           <Alert

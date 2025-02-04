@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Box,
   Collapse,
@@ -11,6 +12,11 @@ import {
   TableRow,
   Typography,
   Paper,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  TableSortLabel,
 } from '@mui/material'
 import {
   CheckCircle,
@@ -18,13 +24,25 @@ import {
   KeyboardArrowUp,
   DeleteForever,
 } from '@mui/icons-material'
+import LayersIcon from '@mui/icons-material/Layers'
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
 import { Data } from '@/types/happiness-list-response'
 import { timestampToDateTime } from '@/libs/date-converter'
 import DeleteConfirmationDialog from '@/components/happiness/delete-confirmation-dialog'
+import { HappinessKey } from '@/types/happiness-key'
+
+type Order = 'asc' | 'desc'
+
+type TableCellCategories = {
+  title: string
+  key: HappinessKey
+}
 
 interface ListTableProps {
   listData: Data[]
   deleteListData: (id: string) => void
+  isLoaded: boolean
 }
 
 interface RowProps {
@@ -32,8 +50,47 @@ interface RowProps {
   openDialog: (row: Data) => void
 }
 
+const tableCellCategories: TableCellCategories[] = [
+  { title: 'ワクワク', key: 'happiness1' },
+  { title: '学び', key: 'happiness2' },
+  { title: 'ホッとする', key: 'happiness3' },
+  { title: '自分を取り戻せる', key: 'happiness4' },
+  { title: '自慢', key: 'happiness5' },
+  { title: '思い出', key: 'happiness6' },
+]
+
+function getComparator(
+  order: Order,
+  orderBy: HappinessKey
+): (a: Data, b: Data) => number {
+  return order === 'asc'
+    ? (a, b) => ascendingComparator(a, b, orderBy)
+    : (a, b) => -ascendingComparator(a, b, orderBy)
+}
+
+function ascendingComparator(a: Data, b: Data, orderBy: HappinessKey) {
+  if (b.answers[orderBy] < a.answers[orderBy]) {
+    return 1
+  } else {
+    return -1
+  }
+}
+
 const Row: React.FC<RowProps> = ({ row, openDialog }) => {
   const [isCollapseOpen, setIsCollapseOpen] = useState(false)
+  const [anchorElement, setAnchorElement] = React.useState<null | HTMLElement>(
+    null
+  )
+  const router = useRouter()
+
+  const open = Boolean(anchorElement)
+
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorElement(event.currentTarget)
+  }
+  const handleClose = () => {
+    setAnchorElement(null)
+  }
 
   return (
     <>
@@ -75,8 +132,8 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
           {row.answers?.happiness6 ? <CheckCircle /> : null}
         </TableCell>
         <TableCell>
-          <IconButton onClick={() => openDialog(row)}>
-            <DeleteForever sx={{ color: 'black' }} />
+          <IconButton onClick={handleClick}>
+            <MoreHorizIcon sx={{ color: 'black' }} />
           </IconButton>
         </TableCell>
       </TableRow>
@@ -103,12 +160,68 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
           </Collapse>
         </TableCell>
       </TableRow>
+      <Menu anchorEl={anchorElement} open={open} onClose={handleClose}>
+        <MenuItem
+          onClick={() => {
+            const params = new URLSearchParams()
+            params.set('entityId', row.id)
+            params.set('timestamp', row.timestamp)
+            router.push(`/happiness/me?${params.toString()}`)
+          }}
+        >
+          <ListItemIcon>
+            <LayersIcon sx={{ color: 'black' }} />
+          </ListItemIcon>
+          <ListItemText
+            primary="地図に表示"
+            secondary="選択した幸福度を地図に表示します"
+          />
+        </MenuItem>
+        <MenuItem onClick={() => openDialog(row)}>
+          <ListItemIcon>
+            <DeleteForever sx={{ color: 'black' }} />
+          </ListItemIcon>
+          <ListItemText primary="削除" secondary="選択した幸福度を削除します" />
+        </MenuItem>
+      </Menu>
     </>
   )
 }
 
-const ListTable: React.FC<ListTableProps> = ({ listData, deleteListData }) => {
+const ListTable: React.FC<ListTableProps> = ({
+  listData,
+  deleteListData,
+  isLoaded,
+}) => {
   const [selectedData, setSelectedData] = useState<Data | null>(null)
+  const [order, setOrder] = useState<Order | undefined>(undefined)
+  const [orderBy, setOrderBy] = useState<HappinessKey | null>(null)
+
+  const handleSort = (property: HappinessKey) => {
+    if (orderBy === property) {
+      if (order === undefined) {
+        setOrder('desc')
+        return
+      }
+      if (order === 'desc') {
+        setOrder('asc')
+        return
+      }
+      if (order === 'asc') {
+        setOrder(undefined)
+        setOrderBy(null)
+        return
+      }
+    } else {
+      setOrder('desc')
+      setOrderBy(property)
+      return
+    }
+  }
+  const sortedListData =
+    order === undefined || orderBy === null
+      ? [...listData]
+      : [...listData].sort(getComparator(order, orderBy))
 
   const deleteRowData = () => {
     if (selectedData) {
@@ -128,7 +241,7 @@ const ListTable: React.FC<ListTableProps> = ({ listData, deleteListData }) => {
     >
       <Table
         stickyHeader
-        sx={{ px: '16px', tableLayout: 'fixed', width: '100%' }}
+        sx={{ px: '8px', tableLayout: 'fixed', width: '100%' }}
       >
         <TableHead>
           <TableRow
@@ -141,23 +254,52 @@ const ListTable: React.FC<ListTableProps> = ({ listData, deleteListData }) => {
             }}
           >
             <TableCell sx={{ pl: '8px', width: '28px' }} />
-            <TableCell>ワクワク</TableCell>
-            <TableCell>学び</TableCell>
-            <TableCell>ホッとする</TableCell>
-            <TableCell>自分を取り戻せる</TableCell>
-            <TableCell>自慢</TableCell>
-            <TableCell>思い出</TableCell>
+            {tableCellCategories.map(({ title, key }) => (
+              <TableCell
+                key={key}
+                sx={{
+                  padding: '16px 4px',
+                }}
+              >
+                <TableSortLabel
+                  onClick={() => handleSort(key)}
+                  active={orderBy === key || orderBy === null}
+                  direction={orderBy === key ? order : 'desc'}
+                  IconComponent={orderBy !== null ? undefined : SwapVertIcon}
+                  sx={{
+                    flexFlow: { xs: 'column', sm: 'row' },
+                    mx: { xs: 0, sm: '4px' },
+                    '& .MuiTableSortLabel-icon': {
+                      paddingTop: {
+                        xs: '5px',
+                        sm: 0,
+                      },
+                    },
+                  }}
+                >
+                  {title}
+                </TableSortLabel>
+              </TableCell>
+            ))}
             <TableCell sx={{ width: '28px' }} />
           </TableRow>
         </TableHead>
         <TableBody>
-          {listData.map((row) => (
-            <Row
-              key={row.id}
-              row={row}
-              openDialog={() => setSelectedData(row)}
-            />
-          ))}
+          {isLoaded === true && listData.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={8} sx={{ textAlign: 'center' }}>
+                データがありません
+              </TableCell>
+            </TableRow>
+          ) : (
+            sortedListData.map((row: any) => (
+              <Row
+                key={row.id}
+                row={row}
+                openDialog={() => setSelectedData(row)}
+              />
+            ))
+          )}
         </TableBody>
       </Table>
       <DeleteConfirmationDialog

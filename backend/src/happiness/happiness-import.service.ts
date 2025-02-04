@@ -8,6 +8,8 @@ import { Happiness } from './happiness.entity';
 import { Repository } from 'typeorm';
 import Papa from 'papaparse';
 import { HappinessImportResponse } from './interface/happiness-import.response';
+import { Answer, ImportHappinessDto } from './dto/create-happiness.dto';
+import { validateOrReject } from 'class-validator';
 
 const expectedHeaders = [
   'ニックネーム',
@@ -57,6 +59,7 @@ export class HappinessImportService {
       }
 
       if (results.data.length > 0) {
+        await this.validateHappinessCsvRows(results.data);
         await this.postHappinessEntities(this.toPostEntities(results.data));
       }
 
@@ -123,6 +126,35 @@ export class HappinessImportService {
       (header) => header !== 'メモ',
     );
     return requiredHeaders.every((header) => headers.includes(header));
+  }
+
+  private async validateHappinessCsvRows(
+    rows: HappinessCsvRow[],
+  ): Promise<void> {
+    await Promise.all(
+      rows.map(async (row, index) => {
+        try {
+          const answer = new Answer();
+          answer.happiness1 = Number(row['happiness1']);
+          answer.happiness2 = Number(row['happiness2']);
+          answer.happiness3 = Number(row['happiness3']);
+          answer.happiness4 = Number(row['happiness4']);
+          answer.happiness5 = Number(row['happiness5']);
+          answer.happiness6 = Number(row['happiness6']);
+
+          const happiness = new ImportHappinessDto();
+          happiness.timestamp = row['送信日時'];
+          happiness.latitude = Number(row['緯度']);
+          happiness.longitude = Number(row['経度']);
+          happiness.memo = row['メモ'];
+          happiness.answers = answer;
+          await validateOrReject(happiness);
+        } catch (error) {
+          console.debug(`Validation error at row ${index + 2}: ${error}`);
+          throw error;
+        }
+      }),
+    );
   }
 
   private toPostEntities(rows: HappinessCsvRow[]): HappinessEntity[] {
@@ -205,15 +237,9 @@ export class HappinessImportService {
   }
 
   private parseDate(dateString: string): DateTime {
-    const dateTime = DateTime.fromFormat(dateString, 'yyyy-MM-dd HH:mm:ss', {
+    return DateTime.fromFormat(dateString, 'yyyy-MM-dd HH:mm:ss', {
       zone: 'Asia/Tokyo',
     });
-
-    if (dateTime.isValid) {
-      return dateTime;
-    } else {
-      throw 'DateTime format is incorrect';
-    }
   }
 
   private async postHappinessEntities(entities: HappinessEntity[]) {

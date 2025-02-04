@@ -48,6 +48,13 @@ const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
               <ListItemText primary="一覧表示" />
             </ListItemButton>
           </ListItem>
+          <ListItem key="license" disablePadding>
+            <ListItemButton
+              onClick={() => router.push('/terms/third-party-license')}
+            >
+              <ListItemText primary="サードパーティライセンス" />
+            </ListItemButton>
+          </ListItem>
           <ListItem key="logout" disablePadding>
             <ListItemButton onClick={() => signOut({ callbackUrl: '/login' })}>
               <ListItemText primary="ログアウト" />

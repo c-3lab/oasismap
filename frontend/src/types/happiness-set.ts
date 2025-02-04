@@ -1,12 +1,11 @@
-export interface happinessObj {
-  timestamp: string
-  happiness1: number
-  happiness2: number
-  happiness3: number
-  happiness4: number
-  happiness5: number
-  happiness6: number
+import { HappinessKey } from '@/types/happiness-key'
+
+export type HappinessFields = {
+  [key in HappinessKey]: number
 }
+export type happinessObj = {
+  timestamp: string
+} & HappinessFields
 
 export interface happinessSet {
   month: happinessObj[]

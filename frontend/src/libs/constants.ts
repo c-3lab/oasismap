@@ -1,4 +1,5 @@
 import { HappinessKey } from '@/types/happiness-key'
+import { QuestionTitles } from '@/types/question-titles'
 
 export const PROFILE_TYPE = {
   GENERAL: 'general',
@@ -18,3 +19,14 @@ export const HAPPINESS_KEYS: HappinessKey[] = [
   'happiness5',
   'happiness6',
 ]
+
+export const questionTitles: QuestionTitles = {
+  happiness1: 'ワクワクする場所',
+  happiness2: '発見の学びの場所',
+  happiness3: 'ホッとする場所',
+  happiness4: '自分を取り戻せる場所',
+  happiness5: '自慢の場所',
+  happiness6: '思い出の場所',
+}
+
+export const HAPPINESS_ALL_BAR_GRAPH_YAXIS_WIDTH = 125

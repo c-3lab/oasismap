@@ -8,8 +8,9 @@ import { MessageType } from '@/types/message-type'
 import { ERROR_TYPE } from '@/libs/constants'
 import ListTable from '@/components/happiness/list-table'
 import { HappinessListResponse, Data } from '@/types/happiness-list-response'
-import { fetchListData, deleteData } from '@/libs/fetch'
+import { useFetchData } from '@/libs/fetch'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
+import { LoadingContext } from '@/contexts/loading-context'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -20,9 +21,13 @@ const HappinessList: React.FC = () => {
   const { update } = useSession()
   const [listData, setListData] = useState<Data[]>([])
   const willStop = useRef(false)
+  const [isLoaded, setIsLoaded] = useState(false)
+  const { setIsLoading } = useContext(LoadingContext)
+  const { fetchListData, deleteData } = useFetchData()
 
   const getData = async () => {
     try {
+      setIsLoading(true)
       willStop.current = false
       setListData([])
 
@@ -61,6 +66,9 @@ const HappinessList: React.FC = () => {
           MessageType.Error
         )
       }
+    } finally {
+      setIsLoaded(true)
+      setIsLoading(false)
     }
   }
 
@@ -107,9 +115,11 @@ const HappinessList: React.FC = () => {
 
   return (
     <Grid sx={{ p: '16px' }}>
-      {listData.length >= 1 && (
-        <ListTable listData={listData} deleteListData={deleteListData} />
-      )}
+      <ListTable
+        listData={listData}
+        deleteListData={deleteListData}
+        isLoaded={isLoaded}
+      />
     </Grid>
   )
 }

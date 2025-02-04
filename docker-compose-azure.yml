@@ -97,6 +97,24 @@ services:
         syslog-facility: local0
         tag: frontend
 
+  # "ORION_MONGO_DB=oriondb"や"ORION_FIWARE_SERVICE=Government"を変更した場合、"oriondb-government"も変更すること
+  mongo-cli:
+    image: mongo:6.0.14
+    hostname: mongo-cli
+    container_name: mongo-cli
+    volumes:
+      - type: bind
+        source: ./scripts/add-mongo-index-azure.js
+        target: /opt/add-mongo-index-azure.js
+    networks:
+      - backend-network
+    entrypoint: "mongosh 'mongodb://${MONGOUSERNAME}:${MONGOPASSWORD}@${MONGOHOST}/oriondb-government?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@${MONGOUSERNAME}@' --file '/opt/add-mongo-index-azure.js'"
+    logging:
+      driver: syslog
+      options:
+        syslog-facility: local0
+        tag: mongo-cli
+
   postgres-cli:
     image: postgres:16.1
     hostname: postgres-cli

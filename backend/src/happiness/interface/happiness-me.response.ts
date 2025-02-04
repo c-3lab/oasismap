@@ -5,6 +5,7 @@ export interface HappinessMeResponse {
 
 export interface Data {
   id: string;
+  entityId: string;
   type: string;
   location: {
     type: string;

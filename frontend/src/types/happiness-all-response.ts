@@ -1,4 +1,5 @@
 import { HappinessKey } from '@/types/happiness-key'
+import { HappinessFields, happinessObj } from '@/types/happiness-set'
 
 export interface HappinessAllResponse {
   count: number
@@ -21,23 +22,10 @@ export interface MapDataItem {
       coordinates: [number, number]
     }
   }
-  answers: {
-    happiness1: number
-    happiness2: number
-    happiness3: number
-    happiness4: number
-    happiness5: number
-    happiness6: number
-  }
+  answers: HappinessFields
+  memos: { timestamp: string; memo: string }[]
 }
 
-interface GraphData {
+type GraphData = {
   count: number
-  timestamp: string
-  happiness1: number
-  happiness2: number
-  happiness3: number
-  happiness4: number
-  happiness5: number
-  happiness6: number
-}
+} & happinessObj

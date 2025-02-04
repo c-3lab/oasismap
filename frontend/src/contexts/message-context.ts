@@ -1,7 +1,7 @@
 import { createContext } from 'react'
 import { MessageType } from '@/types/message-type'
 
-type MessagesContextType = {
+export type MessagesContextType = {
   message: string | null
   type: MessageType
   showMessage: (text: string, type: MessageType) => void

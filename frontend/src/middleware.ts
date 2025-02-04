@@ -7,6 +7,7 @@ const paths: Record<string, Permission[]> = {
   '/login': ['pubilc'],
   '/terms/use': ['pubilc'],
   '/terms/privacy-policy': ['pubilc'],
+  '/terms/third-party-license': ['pubilc'],
   '/happiness/me': ['general'],
   '/happiness/all': ['general', 'admin'],
   '/happiness/input': ['general'],

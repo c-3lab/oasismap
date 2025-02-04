@@ -1,7 +1,9 @@
 import { HappinessKey } from '@/types/happiness-key'
+import { HappinessFields } from '@/types/happiness-set'
 
 export interface Data {
   id: string
+  entityId: string
   type: HappinessKey
   location: {
     type: string
@@ -11,12 +13,7 @@ export interface Data {
     }
   }
   timestamp: string
-  answers: {
-    happiness1: number
-    happiness2: number
-    happiness3: number
-    happiness4: number
-    happiness5: number
-    happiness6: number
-  }
+  answers: HappinessFields
+  memo: string
+  memos: { timestamp: string; memo: string }[]
 }

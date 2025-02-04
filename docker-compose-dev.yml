@@ -42,6 +42,7 @@ services:
     working_dir: /app/frontend
     ports:
       - "3000:3000"
+      - "9323:9323"
     command: sleep infinity
     environment:
       - "NEXTAUTH_URL=${NEXTAUTH_URL}"
@@ -57,8 +58,22 @@ services:
       - "ADMIN_KEYCLOAK_CLIENT_ID=${ADMIN_KEYCLOAK_CLIENT_ID}"
       - "ADMIN_KEYCLOAK_CLIENT_SECRET=${ADMIN_KEYCLOAK_CLIENT_SECRET}"
       - "KEYCLOAK_CLIENT_ISSUER=${KEYCLOAK_CLIENT_ISSUER}"
+      # 後述するGUI描画用設定
+      - "DISPLAY=:0"
+      # E2Eテスト用のGoogleアカウント情報
+      - "GOOGLE_MFA_SECRET_KEY=${GOOGLE_MFA_SECRET_KEY}"
+      - "GOOGLE_EMAIL=${GOOGLE_EMAIL}"
+      - "GOOGLE_PASSWORD=${GOOGLE_PASSWORD}"
     volumes:
       - ./frontend/:/app/frontend/
+      # ホストマシン(WSL)のX Window System(WSLg)用ソケットをマウントすることで、コンテナ内からGUI描画が行える
+      # 1. コンテナ内でX11 appsが起動される
+      # 2. DISPLAY=:0でホスト名（:の前）が無いため、Unixソケットが使用される
+      # 3. DISPLAY=:0で0番のディスプレイが使用されるため、/tmp/.X11-unix/X0に映像が出力される
+      # 4. マウントされているので、ホストマシンの/tmp/.X11-unix/X0に映像が出力される
+      # 5. シンボリックリンクというわけではないが、これは/mnt/wslg/.X11-unix/X0と同じソケットっぽい？
+      # 6. WSLgによるウィンドウ描画が行える
+      - /tmp/.X11-unix:/tmp/.X11-unix
     networks:
       - frontend-network
 

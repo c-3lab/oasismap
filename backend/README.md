@@ -71,3 +71,9 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+## e2eテスト実装に対する懸念点
+
+- テスト実行に開発用DBを使用している
+  - 現状では開発用DBにテスト時データが入ってしまう。また、テストの不具合によっては開発に使用しているデータが壊れる可能性もある。
+  - 本来であればテスト用DBを別で立ち上げて利用するのが望ましい。

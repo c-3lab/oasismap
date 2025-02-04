@@ -297,6 +297,21 @@ describe('HappinessImportService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
+    it('should throw BadRequestException if validation failed', async () => {
+      const header =
+        'ニックネーム,年代,住所,送信日時,緯度,経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6,メモ';
+      const csvData =
+        'nickname,30代,東京都新宿区,2023-06-27 12:34:56,35.6895,139.6917,東京都渋谷区,0,0,0,0,0,0,ダミーメモ';
+      const csvString = header + '\n' + csvData;
+      const errorCsvFile = {
+        buffer: Buffer.from(csvString),
+      } as Express.Multer.File;
+
+      await expect(
+        happinessImportService.importCsv(errorCsvFile, false),
+      ).rejects.toThrow(BadRequestException);
+    });
+
     it('should throw BadRequestException if not CSV File', async () => {
       const notCsvString = 'This is not csv file';
       const errorCsvFile = {

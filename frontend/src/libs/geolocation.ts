@@ -15,7 +15,9 @@ export const getCurrentPosition = async () => {
   try {
     const position: GeolocationPosition = await new Promise(
       (resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject)
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+        })
       }
     )
     return {

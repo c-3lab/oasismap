@@ -1,6 +1,7 @@
 'use client'
 import dynamic from 'next/dynamic'
 import { useState, useEffect, useContext, useRef } from 'react'
+import { LatLngBounds } from 'leaflet'
 import { useRouter } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
@@ -20,8 +21,9 @@ const LineGraph = dynamic(() => import('@/components/happiness/line-graph'), {
 })
 import { ourHappinessData } from '@/libs/graph'
 import { messageContext } from '@/contexts/message-context'
-import { fetchData } from '@/libs/fetch'
+import { useFetchData } from '@/libs/fetch'
 import { ERROR_TYPE, PROFILE_TYPE, HAPPINESS_KEYS } from '@/libs/constants'
+import { HappinessKey } from '@/types/happiness-key'
 import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 import {
@@ -29,6 +31,9 @@ import {
   MapData,
   MapDataItem,
 } from '@/types/happiness-all-response'
+import { LoadingContext } from '@/contexts/loading-context'
+import { Pin } from '@/types/pin'
+import { happinessSet } from '@/types/happiness-set'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -36,18 +41,45 @@ const HappinessAll: React.FC = () => {
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
   const [period, setPeriod] = useState(PeriodType.Month)
-  const [pinData, setPinData] = useState<any>([])
-  const [isFetching, setIsfetching] = useState(false)
+  const [pinData, setPinData] = useState<Pin[]>([])
   const willStop = useRef(false)
-  const [OurHappiness, setOurHappiness] = useState<any>([])
+  const [OurHappiness, setOurHappiness] = useState<happinessSet>({
+    month: [],
+    day: [],
+    time: [],
+  })
   const { isTokenFetched } = useTokenFetchStatus()
   const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
   const { data: session, update } = useSession()
+  const [selectedLayers, setSelectedLayers] =
+    useState<HappinessKey[]>(HAPPINESS_KEYS)
+  const [bounds, setBounds] = useState<LatLngBounds | undefined>(undefined)
+  const { isLoading, setIsLoading } = useContext(LoadingContext)
+  const { fetchData } = useFetchData()
+  const [isLoaded, setIsLoaded] = useState(false)
+
+  const getBoundsNESW = (): string | undefined => {
+    if (session?.user?.type !== PROFILE_TYPE.ADMIN) return undefined
+    if (!bounds) return undefined
+
+    const boundsNESW = `${bounds.getNorth()},${bounds.getEast()},${bounds.getSouth()},${bounds.getWest()}`
+
+    // 画面上部・画面下部の緯度、左端・右端の経度が全て取得できている事を確認する
+    if (!/^[\d.-]+,[\d.-]+,[\d.-]+,[\d.-]+$/.test(boundsNESW)) {
+      console.error('Invalid boundsNESW format:', boundsNESW)
+      return undefined
+    }
+
+    return boundsNESW
+  }
 
   const getData = async () => {
+    if (isLoading) return
     try {
+      setIsLoading(true)
       willStop.current = false
-      setIsfetching(true)
+      setPinData([])
+      setOurHappiness({ month: [], day: [], time: [] })
 
       const url = backendUrl + '/api/happiness/all'
       const startDateTime = toDateTime(startProps.value).toISO()
@@ -62,6 +94,9 @@ const HappinessAll: React.FC = () => {
       let offset = 0
       const allMapData: HappinessAllResponse['map_data'] = {}
       const allGraphData: HappinessAllResponse['graph_data'] = []
+
+      const boundsNESW: string | undefined = getBoundsNESW()
+
       while (!willStop.current) {
         // アクセストークンを再取得
         const updatedSession = await update()
@@ -78,6 +113,7 @@ const HappinessAll: React.FC = () => {
               parseInt(
                 process.env.NEXT_PUBLIC_DEFAULT_ZOOM_FOR_COLLECTION_RANGE!
               ) || 14,
+            boundsNESW: boundsNESW,
           },
           updatedSession?.user?.accessToken!
         )
@@ -109,6 +145,7 @@ const HappinessAll: React.FC = () => {
             })
             allMapData[gridKey]['data'].forEach((data: MapDataItem) => {
               data.answers = { ...newAnswers }
+              data.memos = data.memos.concat(fetchedMapData['data'][0].memos)
             })
             allMapData[gridKey]['count'] += fetchedMapData['count']
           } else {
@@ -160,7 +197,8 @@ const HappinessAll: React.FC = () => {
         )
       }
     } finally {
-      setIsfetching(false)
+      setIsLoading(false)
+      setIsLoaded(true)
     }
   }
 
@@ -172,7 +210,7 @@ const HappinessAll: React.FC = () => {
       willStop.current = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTokenFetched, updatedPeriod])
+  }, [isTokenFetched, updatedPeriod, bounds])
 
   const renderCustomDayTick = (tickProps: any) => {
     const { x, y, payload } = tickProps
@@ -210,6 +248,14 @@ const HappinessAll: React.FC = () => {
           fiware={{ servicePath: '', tenant: '' }}
           iconType="heatmap"
           pinData={pinData}
+          setSelectedLayers={
+            session?.user?.type === PROFILE_TYPE.ADMIN
+              ? setSelectedLayers
+              : undefined
+          }
+          setBounds={
+            session?.user?.type === PROFILE_TYPE.ADMIN ? setBounds : undefined
+          }
         />
       </Grid>
       <Grid
@@ -236,6 +282,8 @@ const HappinessAll: React.FC = () => {
               plotdata={OurHappiness[period]}
               color={graphColors}
               xTickFormatter={renderCustomDayTick}
+              isLoaded={isLoaded}
+              selectedLayers={selectedLayers}
             />
           </ResponsiveContainer>
         </Grid>
@@ -254,7 +302,7 @@ const HappinessAll: React.FC = () => {
                 onClick={() => {
                   setPeriod(PeriodType.Month)
                 }}
-                disabled={isFetching}
+                disabled={isLoading}
               >
                 月
               </Button>
@@ -264,7 +312,7 @@ const HappinessAll: React.FC = () => {
                 onClick={() => {
                   setPeriod(PeriodType.Day)
                 }}
-                disabled={isFetching}
+                disabled={isLoading}
               >
                 日
               </Button>
@@ -274,7 +322,7 @@ const HappinessAll: React.FC = () => {
                 onClick={() => {
                   setPeriod(PeriodType.Time)
                 }}
-                disabled={isFetching}
+                disabled={isLoading}
               >
                 時間
               </Button>
@@ -285,7 +333,7 @@ const HappinessAll: React.FC = () => {
               dateLabel="開始日"
               timeLabel="時間"
               period={period}
-              disabled={isFetching}
+              disabled={isLoading}
               {...startProps}
             />
           </Grid>
@@ -294,7 +342,7 @@ const HappinessAll: React.FC = () => {
               dateLabel="終了日"
               timeLabel="時間"
               period={period}
-              disabled={isFetching}
+              disabled={isLoading}
               {...endProps}
             />
           </Grid>
@@ -306,7 +354,7 @@ const HappinessAll: React.FC = () => {
                 fullWidth
                 sx={{ borderColor: 'primary.light' }}
                 onClick={getData}
-                disabled={isFetching}
+                disabled={isLoading}
               >
                 検索
               </Button>

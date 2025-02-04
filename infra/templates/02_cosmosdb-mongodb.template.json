@@ -89,6 +89,9 @@
           },
           {
             "name": "EnableServerless"
+          },
+          {
+            "name": "EnableUniqueCompoundNestedDocs"
           }
         ],
         "ipRules": [
@@ -201,21 +204,7 @@
             {
               "key": {
                 "keys": [
-                  "location.coords"
-                ]
-              }
-            },
-            {
-              "key": {
-                "keys": [
                   "creDate"
-                ]
-              }
-            },
-            {
-              "key": {
-                "keys": [
-                  "attrs.timestamp.value"
                 ]
               }
             }

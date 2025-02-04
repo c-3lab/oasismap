@@ -1,5 +1,8 @@
+import { HappinessKey } from './happiness-key'
+
 export interface Pin {
-  type: string
+  id: string
+  type: HappinessKey
   latitude: number
   longitude: number
   answer: number
@@ -11,4 +14,6 @@ export interface Pin {
   answer6: number
   basetime: string | undefined
   timestamp: string | undefined
+  memo: string | undefined
+  memos: { timestamp: string; memo: string }[] | undefined
 }
