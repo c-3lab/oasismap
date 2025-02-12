@@ -1,5 +1,5 @@
 # FROM node:20-slim AS build
-FROM node:20.10.0 AS build
+FROM node:22.13 AS build
 
 ARG NEXTAUTH_URL
 ARG NEXTAUTH_SECRET

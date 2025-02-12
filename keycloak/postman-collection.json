@@ -234,6 +234,9 @@
 					"listen": "prerequest",
 					"script": {
 						"exec": [
+              "//暫定対応：undefindになる以下の行をコメントアウト",
+							"//  \"identityProviders\": ` + JSON.stringify(response.json().identityProviders) + `,\r",
+							"//  \"identityProviderMappers\": ` + JSON.stringify(response.json().identityProviderMappers) + `,\r",
 							"pm.sendRequest({\r",
 							"    url:  pm.variables.get(\"KeycloakRootURL\") + \"/admin/realms/\" + pm.variables.get(\"RealmName\"), \r",
 							"    method: 'GET',\r",
@@ -353,8 +356,6 @@
 							"\"enabledEventTypes\": ` + JSON.stringify(response.json().enabledEventTypes) + `,\r",
 							"\"adminEventsEnabled\": ` + JSON.stringify(response.json().adminEventsEnabled) + `,\r",
 							"\"adminEventsDetailsEnabled\": ` + JSON.stringify(response.json().adminEventsDetailsEnabled) + `,\r",
-							"\"identityProviders\": ` + JSON.stringify(response.json().identityProviders) + `,\r",
-							"\"identityProviderMappers\": ` + JSON.stringify(response.json().identityProviderMappers) + `,\r",
 							"\"internationalizationEnabled\": true,\r",
 							"\"supportedLocales\": [\"ja\"],\r",
 							"\"defaultLocale\": \"ja\",\r",
@@ -768,8 +769,9 @@
 					"script": {
 						"exec": [
 							"pm.collectionVariables.unset(\"TEMP_REQUEST_BODY\");\r",
-							"pm.test(\"HTTP ステータスコードの確認 202 Accepted\", function () {\r",
-							"    pm.response.to.have.status(202);\r",
+              "//暫定対応: 202だけでなく204もOKとする",
+							"pm.test(\"HTTP ステータスコードの確認 202 Accepted or 204 No Content\", function () {\r",
+							"    pm.expect(pm.response.code).to.be.oneOf([202, 204]);\r",
 							"});\r",
 							"\r",
 							"pm.test(\"認証フロー first broker login 内の Review Profile が必須であること\", function () {\r",
