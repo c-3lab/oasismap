@@ -126,14 +126,14 @@
 1. （作業用PC）編集したOASIS　Mapアプリケーション用設定ファイルをAzure VMにscpで転送する
 
     ```sh
-    workPC$ scp -i <Azure VMの管理者アカウントでSSH接続するための秘密鍵のパス> ./_env-azure <Azure VMの管理者アカウント名>@<表示されｔAzure　VMのPublicIP>:~
+    workPC$ scp -i <Azure VMの管理者アカウントでSSH接続するための秘密鍵のパス> ./_env-azure <Azure VMの管理者アカウント名>@<表示されたAzure　VMのPublicIP>:~
     ```
     
 ### Azure VM上でoasismapアプリケーションを準備
 1. （作業用PC）Azure VMにsshで接続する
 
     ```sh
-    workPC$ ssh -i <Azure VMの管理者アカウントでSSH接続するための秘密鍵のパス> <Azure VMの管理者アカウント名>@<表示されｔAzure　VMのPublicIP>
+    workPC$ ssh -i <Azure VMの管理者アカウントでSSH接続するための秘密鍵のパス> <Azure VMの管理者アカウント名>@<表示されたAzure　VMのPublicIP>
     ```
 
 1. （Azure VM）oasismapリポジトリをcloneする
@@ -174,6 +174,22 @@
 
     ```sh
     VM$ sudo systemctl enable oasismap
+    ```
+
+### 参加同意書の自治体名を更新
+
+1. （Azure VM）参加同意書を更新する（ `<対象自治体名>` と `<実証実験の日付>` は適切な値に変更すること）
+
+    ```sh
+    VM$ sed -i 's/ （雛形）//g' frontend/src/app/terms/use/page.tsx
+    VM$ sed -i 's/【自治体名】/<対象自治体名>/g' frontend/src/app/terms/use/page.tsx
+    VM$ sed -i 's/yyyy年mm月dd日/<実証実験の日付>/g' frontend/src/app/terms/use/page.tsx
+    ```
+
+1. （Azure VM）参加同意書を更新を確認する
+
+    ```sh
+    VM$ git diff frontend/src/app/terms/use/page.tsx
     ```
 
 ### Azure VM上でoasismapアプリケーションを起動
@@ -378,6 +394,7 @@
 
 ### 動作確認
 1. スマートフォンから **https://<設定したルートドメイン>** にアクセスし、oasismapが動作していることを確認する
+    * 参加同意書が正しく修正されていることも併せて確認する
 2. スマートフォンから **https://<設定したルートドメイン>/admin/login** にアクセスし、oasismapの管理者画面が動作していることを確認する
     * 一般利用者と同様に住所や年代等の入力画面が表示された場合は、ダミーのデータを入力する
 
