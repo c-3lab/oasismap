@@ -136,11 +136,12 @@ OASIS Mapでは現在の位置情報を利用します。
     ~/keycloak$ bash formatting-variables.sh cities.json
     ```
 
-3. 自動設定スクリプトで利用する環境変数を設定
+3. 自動設定スクリプトで利用する環境変数を設定ファイルから読み込む
 
     ```sh
-    ~/keycloak$ export KEYCLOAK_ADMIN={.envで指定した管理者ユーザー名}
-    ~/keycloak$ export KEYCLOAK_ADMIN_PASSWORD={.envで指定した管理者ユーザーのパスワード}
+    ~/keycloak$ source ./.env
+    ~/keycloak$ echo $KEYCLOAK_ADMIN
+    ~/keycloak$ echo $KEYCLOAK_ADMIN_PASSWORD
     ```
 
 4. keycloakディレクトリのパスを取得
@@ -153,7 +154,7 @@ OASIS Mapでは現在の位置情報を利用します。
     ※ 4で取得したkeycloakディレクトリのパスに書き換えて実行すること
 
     ```sh
-    ~/keycloak$ docker run --network oasismap_backend-network --volume {keycloakディレクトリのパス}:/etc/newman/keycloak \
+    ~/keycloak$ docker run --network oasismap_backend-network --volume $(pwd):/etc/newman/keycloak \
     postman/newman:latest run --bail --environment /etc/newman/keycloak/variables.json \
     --env-var "KeycloakAdminUser=$KEYCLOAK_ADMIN" \
     --env-var "KeycloakAdminPassword=$KEYCLOAK_ADMIN_PASSWORD" \
@@ -260,6 +261,7 @@ OASIS Mapでは現在の位置情報を利用します。
 
 2. 自治体管理者用アカウントでログインします  
   ![admin-user-2](doc/img/admin-user-2.png)  
+  * 一般利用者と同様に住所や年代等の入力画面が表示された場合は、ダミーのデータを入力してください
 
 3. 右端のハンバーガーメニューの `データエクスポート` から幸福度情報をダウンロードできます  
   ![admin-user-3](doc/img/admin-user-3.png)  
@@ -318,18 +320,19 @@ OASIS Mapでは現在の位置情報を利用します。
 
 ## 利用バージョン
 
-- [next 14.1.0](https://nextjs.org/)
-- [nest 10.0.0](https://nestjs.com/)
+- [next 14.2.3](https://nextjs.org/)
+- [nest 10.4.15](https://nestjs.com/)
 - [react 18系](https://ja.reactjs.org/)
 - [typescript 5系](https://www.typescriptlang.org/)
-- [eslint 8系](https://eslint.org/)
+- [eslint 8系(frontend), 9系(backend)](https://eslint.org/)
 - [prettier 3系](https://prettier.io/)
 - [jest 29.5.0](https://jestjs.io/ja/)
-- [Postgresql 16.1](https://www.postgresql.org/)
-- [FIWARE Cygnus 3.5.0](https://fiware-cygnus.readthedocs.io/en/master/index.html)
-- [FIWARE Orion 3.11.0](https://fiware-orion.readthedocs.io/en/master/index.html)
-- [mongoDB 6.0.14](https://www.mongodb.com/)
-- [node 20.10.0](https://nodejs.org/ja/about/releases/)
+- [Postgresql 17.2](https://www.postgresql.org/)
+- [FIWARE Cygnus 3.15.0](https://fiware-cygnus.readthedocs.io/en/master/index.html)
+- [FIWARE Orion 4.1.0](https://fiware-orion.readthedocs.io/en/master/index.html)
+- [keycloak 26.1.4](https://www.keycloak.org/)
+- [mongoDB 8.0.4](https://www.mongodb.com/)
+- [node 22.13.1](https://nodejs.org/ja/about/releases/)
 
 ## ライセンス
 
