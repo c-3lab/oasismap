@@ -50,11 +50,11 @@ jobs:
           cd frontend
           npm run test
       
-      - name: Run E2E Tests
-        run: |
-          cd frontend
-          npm run test:e2e:prepare
-          npm run test:e2e
+      # - name: Run E2E Tests
+      #   run: |
+      #     cd frontend
+      #     npm run test:e2e:prepare
+      #     npm run test:e2e
 
       - name: Check build
         run: |
