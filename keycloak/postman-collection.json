@@ -221,13 +221,10 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.collectionVariables.unset(\"TEMP_REALM_REQUEST_BODY\");",
-							"",
-							"pm.test(\"HTTP ステータスコードの確認 204 No Content\", function () {",
-							"    if (pm.response.code !== 204) {",
-							"        console.log('エラーレスポンス:', pm.response.json());",
-							"    }",
-							"    pm.response.to.have.status(204);",
+              "pm.collectionVariables.unset(\"TEMP_REALM_REQUEST_BODY\");\r",
+							"\r",
+							"pm.test(\"HTTP ステータスコードの確認 204 No Content\", function () {\r",
+							"    pm.response.to.have.status(204);\r",
 							"});"
 						],
 						"type": "text/javascript"
