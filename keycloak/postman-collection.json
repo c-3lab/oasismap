@@ -221,7 +221,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-              "pm.collectionVariables.unset(\"TEMP_REALM_REQUEST_BODY\");\r",
+							"pm.collectionVariables.unset(\"TEMP_REALM_REQUEST_BODY\");\r",
 							"\r",
 							"pm.test(\"HTTP ステータスコードの確認 204 No Content\", function () {\r",
 							"    pm.response.to.have.status(204);\r",
