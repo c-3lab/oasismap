@@ -1138,46 +1138,46 @@
 			"response": []
 		},
 		{
-		"name": "Disable VERIFY_PROFILE Required Action",
-		"event": [
-			{
-				"listen": "test",
-				"script": {
-					"exec": [
-						"pm.test(\"HTTP ステータスコードの確認 204 No Content\", function () {",
-						"    pm.response.to.have.status(204);",
-						"});"
-					],
-					"type": "text/javascript"
-				}
-			}
-		],
-		"request": {
-			"method": "DELETE",
-			"header": [
+			"name": "Disable VERIFY_PROFILE Required Action",
+			"event": [
 				{
-					"key": "Authorization",
-					"value": "Bearer {{KeycloakAdminAccessToken}}",
-					"type": "text"
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP ステータスコードの確認 204 No Content\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
 				}
 			],
-			"url": {
-				"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/authentication/required-actions/VERIFY_PROFILE",
-				"host": [
-					"{{KeycloakRootURL}}"
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{KeycloakAdminAccessToken}}",
+						"type": "text"
+					}
 				],
-				"path": [
-					"admin",
-					"realms",
-					"{{RealmName}}",
-					"authentication",
-					"required-actions",
-					"VERIFY_PROFILE"
-				]
-			}
-		},
-		"response": []
-	  }
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/authentication/required-actions/VERIFY_PROFILE",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}",
+						"authentication",
+						"required-actions",
+						"VERIFY_PROFILE"
+					]
+				}
+			},
+			"response": []
+		}
 	],
 	"auth": {
 		"type": "bearer",
