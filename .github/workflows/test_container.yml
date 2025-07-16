@@ -1,0 +1,239 @@
+# name: Container Security Scan
+
+# on:
+#   push:
+#     paths:
+#       - '.github/workflows/test_container.yml'
+#       - 'docker-compose*.yml'
+#   schedule:
+#     # Run daily at JST 00:00 (UTC 15:00)
+#     - cron: '0 15 * * *'
+#   workflow_dispatch: # Allow manual trigger
+
+# jobs:
+#   container-scan:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v4
+
+#       - name: Setup Docker Buildx
+#         uses: docker/setup-buildx-action@v3
+
+#       - name: Install Trivy and jq
+#         run: |
+#           echo "Installing Trivy..."
+#           curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.64.0
+#           trivy --version
+
+#           echo "Installing jq..."
+#           sudo apt-get update && sudo apt-get install -y jq
+#           jq --version
+
+#       - name: Create test environment file
+#         run: |
+#           # Create a minimal .env file for building
+#           echo "NEXTAUTH_URL=http://localhost:3000" > .env
+#           echo "NEXTAUTH_SECRET=test-secret" >> .env
+#           echo "MAP_DEFAULT_LATITUDE=35.6762" >> .env
+#           echo "MAP_DEFAULT_LONGITUDE=139.6503" >> .env
+#           echo "MAP_DEFAULT_ZOOM=10" >> .env
+#           echo "DEFAULT_ZOOM_FOR_COLLECTION_RANGE=15" >> .env
+#           echo "DATASET_LIST_BY=10" >> .env
+#           echo "BACKEND_URL=http://localhost:4000" >> .env
+#           echo "GENERAL_USER_KEYCLOAK_CLIENT_ID=test-client" >> .env
+#           echo "GENERAL_USER_KEYCLOAK_CLIENT_SECRET=test-secret" >> .env
+#           echo "ADMIN_KEYCLOAK_CLIENT_ID=admin-client" >> .env
+#           echo "ADMIN_KEYCLOAK_CLIENT_SECRET=admin-secret" >> .env
+#           echo "KEYCLOAK_CLIENT_ISSUER=http://localhost:8080" >> .env
+#           echo "POSTGREHOST=postgres" >> .env
+#           echo "POSTGREPORT=5432" >> .env
+#           echo "POSTGREUSER=testuser" >> .env
+#           echo "POSTGREPASSWORD=testpass" >> .env
+#           echo "REVERSE_GEOCODING_URL=http://localhost:8080" >> .env
+#           echo "KEYCLOAK_ADMIN=admin" >> .env
+#           echo "KEYCLOAK_ADMIN_PASSWORD=admin" >> .env
+#           echo "KC_HOSTNAME_URL=localhost" >> .env
+#           echo "KC_HOSTNAME_ADMIN_URL=localhost" >> .env
+#           echo "MONGOUSERNAME=test" >> .env
+#           echo "MONGOPASSWORD=test" >> .env
+#           echo "MONGOHOST=mongo" >> .env
+
+#       - name: Scan docker-compose.yml images
+#         if: hashFiles('docker-compose.yml')
+#         run: |
+#           echo "=== Scanning docker-compose.yml ==="
+
+#           # Pull and build images from docker-compose.yml
+#           echo "Pulling and building docker-compose.yml images..."
+#           docker compose -f docker-compose.yml pull
+#           docker compose -f docker-compose.yml build
+
+#           # Extract images from docker-compose.yml
+#           echo "Extracting images from docker-compose.yml..."
+#           grep -E "^[[:space:]]*image:" docker-compose.yml | sed 's/.*image:[[:space:]]*//' > docker_compose_images.txt
+
+#           # Also get built images
+#           docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" >> docker_compose_images.txt
+
+#           # Remove duplicates
+#           sort -u docker_compose_images.txt > docker_compose_images_unique.txt
+#           mv docker_compose_images_unique.txt docker_compose_images.txt
+
+#           echo "Images from docker-compose.yml:"
+#           cat docker_compose_images.txt
+
+#           # Scan each image for CRITICAL vulnerabilities
+#           critical_found=false
+#           while IFS= read -r image; do
+#             if [ -n "$image" ]; then
+#               echo "Scanning image: $image"
+
+#               scan_file="scan_docker_compose_${image//[\/:]/_}.json"
+#               trivy image --severity CRITICAL --format json "$image" > "$scan_file" 2>/dev/null
+
+#               if [ -f "$scan_file" ]; then
+#                 vuln_count=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "CRITICAL") | .VulnerabilityID' "$scan_file" 2>/dev/null | wc -l)
+
+#                 if [ "$vuln_count" -gt 0 ]; then
+#                   echo "❌ $image - Found $vuln_count CRITICAL vulnerabilities!"
+#                   critical_found=true
+#                   echo "CRITICAL vulnerability details for $image:"
+#                   trivy image --severity CRITICAL --format table "$image" || true
+#                 else
+#                   echo "✅ $image - No CRITICAL vulnerabilities found"
+#                 fi
+#               else
+#                 echo "⚠️ $image - Scan failed or no results"
+#               fi
+#             fi
+#           done < docker_compose_images.txt
+
+#           if [ "$critical_found" = true ]; then
+#             echo "🚨 CRITICAL vulnerabilities found in docker-compose.yml images!"
+#             exit 1
+#           else
+#             echo "✅ All docker-compose.yml images passed CRITICAL security scan!"
+#           fi
+
+#       - name: Scan docker-compose-dev.yml images
+#         if: hashFiles('docker-compose-dev.yml')
+#         run: |
+#           echo "=== Scanning docker-compose-dev.yml ==="
+
+#           # Pull and build images from docker-compose-dev.yml
+#           echo "Pulling and building docker-compose-dev.yml images..."
+#           docker compose -f docker-compose-dev.yml pull
+#           docker compose -f docker-compose-dev.yml build
+
+#           # Extract images from docker-compose-dev.yml
+#           echo "Extracting images from docker-compose-dev.yml..."
+#           grep -E "^[[:space:]]*image:" docker-compose-dev.yml | sed 's/.*image:[[:space:]]*//' > docker_compose_dev_images.txt
+
+#           # Also get built images
+#           docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" >> docker_compose_dev_images.txt
+
+#           # Remove duplicates
+#           sort -u docker_compose_dev_images.txt > docker_compose_dev_images_unique.txt
+#           mv docker_compose_dev_images_unique.txt docker_compose_dev_images.txt
+
+#           echo "Images from docker-compose-dev.yml:"
+#           cat docker_compose_dev_images.txt
+
+#           # Scan each image for CRITICAL vulnerabilities
+#           critical_found=false
+#           while IFS= read -r image; do
+#             if [ -n "$image" ]; then
+#               echo "Scanning image: $image"
+
+#               scan_file="scan_docker_compose_dev_${image//[\/:]/_}.json"
+#               trivy image --severity CRITICAL --format json "$image" > "$scan_file" 2>/dev/null
+
+#               if [ -f "$scan_file" ]; then
+#                 vuln_count=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "CRITICAL") | .VulnerabilityID' "$scan_file" 2>/dev/null | wc -l)
+
+#                 if [ "$vuln_count" -gt 0 ]; then
+#                   echo "❌ $image - Found $vuln_count CRITICAL vulnerabilities!"
+#                   critical_found=true
+#                   echo "CRITICAL vulnerability details for $image:"
+#                   trivy image --severity CRITICAL --format table "$image" || true
+#                 else
+#                   echo "✅ $image - No CRITICAL vulnerabilities found"
+#                 fi
+#               else
+#                 echo "⚠️ $image - Scan failed or no results"
+#               fi
+#             fi
+#           done < docker_compose_dev_images.txt
+
+#           if [ "$critical_found" = true ]; then
+#             echo "🚨 CRITICAL vulnerabilities found in docker-compose-dev.yml images!"
+#             exit 1
+#           else
+#             echo "✅ All docker-compose-dev.yml images passed CRITICAL security scan!"
+#           fi
+
+#       - name: Scan docker-compose-azure.yml images
+#         if: hashFiles('docker-compose-azure.yml')
+#         run: |
+#           echo "=== Scanning docker-compose-azure.yml ==="
+
+#           # Pull and build images from docker-compose-azure.yml
+#           echo "Pulling and building docker-compose-azure.yml images..."
+#           docker compose -f docker-compose-azure.yml pull
+#           docker compose -f docker-compose-azure.yml build
+
+#           # Extract images from docker-compose-azure.yml
+#           echo "Extracting images from docker-compose-azure.yml..."
+#           grep -E "^[[:space:]]*image:" docker-compose-azure.yml | sed 's/.*image:[[:space:]]*//' > docker_compose_azure_images.txt
+
+#           # Also get built images
+#           docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" >> docker_compose_azure_images.txt
+
+#           # Remove duplicates
+#           sort -u docker_compose_azure_images.txt > docker_compose_azure_images_unique.txt
+#           mv docker_compose_azure_images_unique.txt docker_compose_azure_images.txt
+
+#           echo "Images from docker-compose-azure.yml:"
+#           cat docker_compose_azure_images.txt
+
+#           # Scan each image for CRITICAL vulnerabilities
+#           critical_found=false
+#           while IFS= read -r image; do
+#             if [ -n "$image" ]; then
+#               echo "Scanning image: $image"
+
+#               scan_file="scan_docker_compose_azure_${image//[\/:]/_}.json"
+#               trivy image --severity CRITICAL --format json "$image" > "$scan_file" 2>/dev/null
+
+#               if [ -f "$scan_file" ]; then
+#                 vuln_count=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "CRITICAL") | .VulnerabilityID' "$scan_file" 2>/dev/null | wc -l)
+
+#                 if [ "$vuln_count" -gt 0 ]; then
+#                   echo "❌ $image - Found $vuln_count CRITICAL vulnerabilities!"
+#                   critical_found=true
+#                   echo "CRITICAL vulnerability details for $image:"
+#                   trivy image --severity CRITICAL --format table "$image" || true
+#                 else
+#                   echo "✅ $image - No CRITICAL vulnerabilities found"
+#                 fi
+#               else
+#                 echo "⚠️ $image - Scan failed or no results"
+#               fi
+#             fi
+#           done < docker_compose_azure_images.txt
+
+#           if [ "$critical_found" = true ]; then
+#             echo "🚨 CRITICAL vulnerabilities found in docker-compose-azure.yml images!"
+#             exit 1
+#           else
+#             echo "✅ All docker-compose-azure.yml images passed CRITICAL security scan!"
+#           fi
+
+#       - name: Cleanup Docker images
+#         if: always()
+#         run: |
+#           echo "Cleaning up Docker images..."
+#           docker system prune -f
+#           docker image prune -f
