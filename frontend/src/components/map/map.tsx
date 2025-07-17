@@ -8,11 +8,14 @@ import {
   LayerGroup,
   useMapEvents,
 } from 'react-leaflet'
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect, useContext, useRef } from 'react'
 import { LatLng, LatLngTuple, LatLngBounds, divIcon } from 'leaflet'
 import L from 'leaflet'
 import { createRoot } from 'react-dom/client'
 import 'leaflet/dist/leaflet.css'
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { getIconByType } from '../utils/icon'
 import { IconType } from '@/types/icon-type'
 import { messageContext } from '@/contexts/message-context'
@@ -207,50 +210,100 @@ const MapOverlay = ({
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
   period?: PeriodType
   activeTimestamp: { start: Date; end: Date } | null
-}) => (
-  <LayersControl.Overlay checked name={type}>
-    <LayerGroup>
-      {filteredPins.map((pin, index) => (
-        <Marker
-          key={index}
-          position={[pin.latitude, pin.longitude]}
-          icon={getIconByType(
-            iconType,
-            pin.type,
-            pin.answer,
-            pinIsActive(pin, activeTimestamp)
-          )}
-          zIndexOffset={-layerIndex}
-          eventHandlers={{
-            click: () => {
-              if (!setHighlightTarget || !period) return
-              setHighlightTarget((highlightTarget: HighlightTarget) => {
-                const newXAxisValue = convertToXAxisValue(pin, period)
-                // ハイライト中のピンをクリックした場合は何もしない。
-                // => 全体のハイライト解除はグラフクリックによって行う。
-                if (highlightTarget.xAxisValue === newXAxisValue) {
-                  return highlightTarget
-                } else {
-                  return { lastUpdateBy: 'Map', xAxisValue: newXAxisValue }
-                }
-              })
-            },
-          }}
-        >
-          {iconType === 'pin' ? (
+}) => {
+  const map = useMap()
+  const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null)
+
+  useEffect(() => {
+    if (!map || filteredPins.length === 0) return
+
+    // Tạo cluster group nếu chưa có
+    if (!clusterGroupRef.current) {
+      clusterGroupRef.current = L.markerClusterGroup({
+        chunkedLoading: true,
+        maxClusterRadius: 50,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: true,
+        zoomToBoundsOnClick: true,
+        disableClusteringAtZoom: 18
+      })
+      map.addLayer(clusterGroupRef.current)
+    }
+
+    // Xóa markers cũ
+    if (clusterGroupRef.current) {
+      clusterGroupRef.current.clearLayers()
+    }
+
+    // Thêm markers mới
+    filteredPins.forEach((pin) => {
+      const marker = L.marker([pin.latitude, pin.longitude], {
+        icon: getIconByType(
+          iconType,
+          pin.type,
+          pin.answer,
+          pinIsActive(pin, activeTimestamp)
+        ),
+        zIndexOffset: -layerIndex
+      })
+
+      // Thêm popup
+      if (iconType === 'pin') {
+        marker.bindPopup(() => {
+          const div = document.createElement('div')
+          const root = createRoot(div)
+          root.render(
             <MePopup
               pin={pin}
               initialPopupPin={initialPopupPin}
               setSelectedPin={setSelectedPin}
             />
-          ) : (
+          )
+          return div
+        })
+      } else {
+        marker.bindPopup(() => {
+          const div = document.createElement('div')
+          const root = createRoot(div)
+          root.render(
             <AllPopup pin={pin} setSelectedPin={setSelectedPin} />
-          )}
-        </Marker>
-      ))}
-    </LayerGroup>
-  </LayersControl.Overlay>
-)
+          )
+          return div
+        })
+      }
+
+      // Thêm event handler
+      marker.on('click', () => {
+        if (!setHighlightTarget || !period) return
+        setHighlightTarget((highlightTarget: HighlightTarget) => {
+          const newXAxisValue = convertToXAxisValue(pin, period)
+          if (highlightTarget.xAxisValue === newXAxisValue) {
+            return highlightTarget
+          } else {
+            return { lastUpdateBy: 'Map', xAxisValue: newXAxisValue }
+          }
+        })
+      })
+
+      if (clusterGroupRef.current) {
+        clusterGroupRef.current.addLayer(marker)
+      }
+    })
+
+    return () => {
+      if (clusterGroupRef.current) {
+        map.removeLayer(clusterGroupRef.current)
+        clusterGroupRef.current = null
+      }
+    }
+  }, [map, filteredPins, iconType, layerIndex, activeTimestamp, setHighlightTarget, period, initialPopupPin, setSelectedPin])
+
+  return (
+    <LayersControl.Overlay checked name={type}>
+      <LayerGroup />
+    </LayersControl.Overlay>
+  )
+}
 
 const SelectedLayers = ({
   setSelectedLayers,

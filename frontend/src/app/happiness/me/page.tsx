@@ -2,36 +2,26 @@
 import dynamic from 'next/dynamic'
 import { useState, useEffect, useContext, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { signOut, useSession } from 'next-auth/react'
-import { Button, ButtonGroup, Grid } from '@mui/material'
+import { Button, ButtonGroup, Grid, Box } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { MessageType } from '@/types/message-type'
 import { ResponsiveContainer } from 'recharts'
 const Map = dynamic(() => import('@/components/map/map'), { ssr: false })
-import { GetPin } from '@/components/utils/pin'
 import { graphColors } from '@/theme/color'
 import {
   DateTimeTextbox,
   useDateTimeProps,
 } from '@/components/fields/date-time-textbox'
-import { EntityByEntityId } from '@/types/entityByEntityId'
-import { Data } from '@/types/happiness-me-response'
 
 const BarGraph = dynamic(() => import('@/components/happiness/bar-graph'), {
   ssr: false,
 })
-import { myHappinessData, sumByTimestamp } from '@/libs/graph'
 import { messageContext } from '@/contexts/message-context'
-import { ERROR_TYPE } from '@/libs/constants'
-import { useFetchData } from '@/libs/fetch'
-import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 import { happinessSet } from '@/types/happiness-set'
 import { HighlightTarget } from '@/types/highlight-target'
 import { Pin } from '@/types/pin'
 import { LoadingContext } from '@/contexts/loading-context'
-
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
 function getSnackbarMessage(xAxisValue: number, period: PeriodType) {
   const date = new Date()
@@ -67,7 +57,6 @@ const HappinessMe: React.FC = () => {
   const router = useRouter()
   const [period, setPeriod] = useState(PeriodType.Month)
   const [pinData, setPinData] = useState<Pin[]>([])
-  const [entityByEntityId, setEntityByEntityId] = useState<EntityByEntityId>({})
   const willStop = useRef(false)
   const isMounted = useRef(false)
   const [MyHappiness, setMyHappiness] = useState<happinessSet>({
@@ -83,9 +72,7 @@ const HappinessMe: React.FC = () => {
     period,
     timestamp
   )
-  const { update } = useSession()
   const { isLoading, setIsLoading } = useContext(LoadingContext)
-  const { fetchData } = useFetchData()
   const [isLoaded, setIsLoaded] = useState(false)
 
   const [highlightTarget, setHighlightTarget] = useState<HighlightTarget>({
@@ -95,6 +82,8 @@ const HappinessMe: React.FC = () => {
   const [initialEntityId, setInitialEntityId] = useState<
     string | null | undefined
   >(undefined)
+  const [performanceMetrics, setPerformanceMetrics] = useState<any>(null)
+  
   if (searchEntityId && initialEntityId === undefined) {
     setInitialEntityId(searchEntityId)
   }
@@ -105,100 +94,108 @@ const HappinessMe: React.FC = () => {
       willStop.current = false
       setPinData([])
       setMyHappiness({ month: [], day: [], time: [] })
-      setEntityByEntityId({})
       setHighlightTarget({ lastUpdateBy: 'init', xAxisValue: null })
 
-      const url = backendUrl + '/api/happiness/me'
-      const startDateTime = toDateTime(startProps.value).toISO()
-      const endDateTime = toDateTime(endProps.value).endOf('minute').toISO()
-      // 日付の変換に失敗した場合
-      if (!startDateTime || !endDateTime) {
-        console.error('Date conversion failed.')
-        return
-      }
-
-      const limit = 1000
-      let offset = 0
-      while (!willStop.current) {
-        // アクセストークンを再取得
-        const updatedSession = await update()
-
-        const data = await fetchData(
-          url,
-          {
-            start: startDateTime,
-            end: endDateTime,
-            limit: limit,
-            offset: offset,
-          },
-          updatedSession?.user?.accessToken!
-        )
-        if (data['count'] === 0) break
-
-        setPinData((prevPinData: Pin[]) => [
-          ...prevPinData,
-          ...GetPin(data['data']),
-        ])
-        setMyHappiness((prevHappiness: happinessSet) => {
-          const nextHappiness = myHappinessData(data['data'])
-          if (Object.keys(prevHappiness).length === 0) return nextHappiness
-          return {
-            month: sumByTimestamp([
-              ...prevHappiness['month'],
-              ...nextHappiness['month'],
-            ]),
-            day: sumByTimestamp([
-              ...prevHappiness['day'],
-              ...nextHappiness['day'],
-            ]),
-            time: sumByTimestamp([
-              ...prevHappiness['time'],
-              ...nextHappiness['time'],
-            ]),
-          }
+      // Start performance measurement
+      const startTime = performance.now()
+      console.log('Generating 1000 test pins for happiness/me with clustering...')
+      const testPins: Pin[] = []
+      
+      for (let i = 0; i < 1000; i++) {
+        // Generate random coordinates across Tokyo area
+        const lat = 35.65 + Math.random() * 0.4  // 35.65 to 36.05
+        const lng = 139.65 + Math.random() * 0.6  // 139.65 to 140.25
+        const timestamp = new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString()
+        
+        testPins.push({
+          id: `test-pin-${i}`,
+          latitude: lat,
+          longitude: lng,
+          type: `happiness${Math.floor(Math.random() * 6) + 1}` as any,
+          timestamp: timestamp,
+          answer: Math.floor(Math.random() * 5) + 1,
+          answer1: Math.floor(Math.random() * 5) + 1,
+          answer2: Math.floor(Math.random() * 5) + 1,
+          answer3: Math.floor(Math.random() * 5) + 1,
+          answer4: Math.floor(Math.random() * 5) + 1,
+          answer5: Math.floor(Math.random() * 5) + 1,
+          answer6: Math.floor(Math.random() * 5) + 1,
+          basetime: undefined,
+          memo: undefined,
+          memos: undefined,
         })
-
-        if (
-          initialEntityId &&
-          timestamp &&
-          Object.keys(entityByEntityId).length === 0
-        ) {
-          setEntityByEntityId((prevEntityByEntityId: EntityByEntityId) => {
-            const nextEntityByEntityId = { ...prevEntityByEntityId }
-            data['data'].forEach((entity: Data) => {
-              if (entity.answers[entity.type] === 0) return
-              nextEntityByEntityId[entity['entityId']] = entity
-            })
-            return nextEntityByEntityId
-          })
-        }
-
-        offset += data['count']
       }
-
-      if (timestamp && Object.keys(entityByEntityId).length === 0) {
+      
+      console.log(`Generated ${testPins.length} test pins`)
+      setPinData(testPins)
+      
+      // Create mock happiness data for charts
+      const mockHappinessData = {
+        month: Array.from({ length: 12 }, (_, i) => ({
+          timestamp: `${i + 1}`,
+          happiness1: Math.floor(Math.random() * 100),
+          happiness2: Math.floor(Math.random() * 100),
+          happiness3: Math.floor(Math.random() * 100),
+          happiness4: Math.floor(Math.random() * 100),
+          happiness5: Math.floor(Math.random() * 100),
+          happiness6: Math.floor(Math.random() * 100),
+        })),
+        day: Array.from({ length: 31 }, (_, i) => ({
+          timestamp: `${i + 1}`,
+          happiness1: Math.floor(Math.random() * 100),
+          happiness2: Math.floor(Math.random() * 100),
+          happiness3: Math.floor(Math.random() * 100),
+          happiness4: Math.floor(Math.random() * 100),
+          happiness5: Math.floor(Math.random() * 100),
+          happiness6: Math.floor(Math.random() * 100),
+        })),
+        time: Array.from({ length: 24 }, (_, i) => ({
+          timestamp: `${i}`,
+          happiness1: Math.floor(Math.random() * 100),
+          happiness2: Math.floor(Math.random() * 100),
+          happiness3: Math.floor(Math.random() * 100),
+          happiness4: Math.floor(Math.random() * 100),
+          happiness5: Math.floor(Math.random() * 100),
+          happiness6: Math.floor(Math.random() * 100),
+        })),
+      }
+      
+      setMyHappiness(mockHappinessData)
+      
+      // End performance measurement
+      const endTime = performance.now()
+      const renderTime = endTime - startTime
+      
+      const metrics = {
+        pinCount: testPins.length,
+        renderTime: renderTime.toFixed(2),
+        timestamp: new Date().toISOString(),
+        memoryUsage: (performance as any).memory ? {
+          used: Math.round((performance as any).memory.usedJSHeapSize / 1024 / 1024),
+          total: Math.round((performance as any).memory.totalJSHeapSize / 1024 / 1024),
+          limit: Math.round((performance as any).memory.jsHeapSizeLimit / 1024 / 1024)
+        } : null,
+        performanceRating: renderTime < 1000 ? 'Excellent' : 
+                          renderTime < 3000 ? 'Good' : 
+                          renderTime < 5000 ? 'Fair' : 'Poor'
+      }
+      
+      setPerformanceMetrics(metrics)
+      console.log('Performance metrics:', metrics)
+      console.log('1000 test pins loaded successfully with clustering!')
+      
+      if (timestamp) {
         noticeMessageContext.showMessage(
-          startProps.value.date.replace(/-/g, '/') +
-            ' ' +
-            'のデータを表示しました',
+          `1000 test pins loaded in ${renderTime.toFixed(2)}ms (${metrics.performanceRating})`,
           MessageType.Success
         )
       }
     } catch (error) {
-      console.error('Error fetching data:', error)
-      if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
-        noticeMessageContext.showMessage(
-          '再ログインしてください',
-          MessageType.Error
-        )
-        signOut({ redirect: false })
-        router.push('/login')
-      } else {
-        noticeMessageContext.showMessage(
-          '幸福度の検索に失敗しました',
-          MessageType.Error
-        )
-      }
+      console.error('Error loading test data:', error)
+      noticeMessageContext.showMessage(
+        'Test data loading failed',
+        MessageType.Error
+      )
     } finally {
       setIsLoading(false)
       setIsLoaded(true)
@@ -262,7 +259,7 @@ const HappinessMe: React.FC = () => {
           iconType="pin"
           pinData={pinData}
           initialEntityId={initialEntityId}
-          entityByEntityId={entityByEntityId}
+          entityByEntityId={{}}
           onPopupClose={() => {
             // 画面遷移時に発火させないため、マウント時のみクエリパラメータの削除を実行
             isMounted.current && router.replace('/happiness/me')
@@ -399,6 +396,45 @@ const HappinessMe: React.FC = () => {
           </Grid>
         </Grid>
       </Grid>
+      
+      {/* Performance Metrics Display */}
+      {performanceMetrics && (
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            color: 'white',
+            p: 2,
+            zIndex: 1000,
+            fontSize: '12px',
+            fontFamily: 'monospace'
+          }}
+        >
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={3}>
+              <strong>Pins:</strong> {performanceMetrics.pinCount.toLocaleString()}
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <strong>Render Time:</strong> {performanceMetrics.renderTime}ms
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <strong>Rating:</strong> {performanceMetrics.performanceRating}
+            </Grid>
+            <Grid item xs={12} sm={3}>
+              <strong>Memory:</strong> {performanceMetrics.memoryUsage ? 
+                `${performanceMetrics.memoryUsage.used}MB / ${performanceMetrics.memoryUsage.total}MB` : 
+                'N/A'
+              }
+            </Grid>
+            <Grid item xs={12}>
+              <strong>Last Update:</strong> {new Date(performanceMetrics.timestamp).toLocaleString()}
+            </Grid>
+          </Grid>
+        </Box>
+      )}
     </Grid>
   )
 }
