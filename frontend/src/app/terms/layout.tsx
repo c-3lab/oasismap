@@ -1,9 +1,9 @@
 import Layout from '@/components/layout'
 
-export default function LoginLayout({
+export default function TermsLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  return <Layout simple={true}>{children}</Layout>
+  return <Layout>{children}</Layout>
 }

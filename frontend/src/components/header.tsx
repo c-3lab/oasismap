@@ -22,13 +22,15 @@ const Header: React.FC<HeaderProps> = ({
   simple = false,
   handleDrawerOpen,
 }) => {
+  const { data: session } = useSession()
+
   return (
     <AppBar sx={{ color: '#FFF', backgroundColor: '#459586' }}>
       <Toolbar>
         <Typography variant="h6" noWrap sx={{ flexGrow: 1 }} component="div">
           地域幸福度可視化アプリ
         </Typography>
-        {!simple && (
+        {!simple && session && (
           <>
             <Typography noWrap component="div">
               <Nickname />
