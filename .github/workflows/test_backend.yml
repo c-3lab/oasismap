@@ -53,53 +53,6 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Install ngrok and start tunnel
-        id: ngrok
-        run: |
-          echo "Installing ngrok..."
-          curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null
-          echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
-          sudo apt update && sudo apt install ngrok
-          ngrok version
-          ngrok config add-authtoken 2zGNPItcmONNe79lklQStiYHUiH_3jK4WzraJHF96hFa6ZpKX
-
-          echo "Starting ngrok tunnel for Keycloak..."
-          
-          # Kill any existing ngrok processes to avoid session conflicts
-          echo "Killing any existing ngrok processes..."
-          pkill ngrok || echo "No existing ngrok processes found"
-          sleep 2
-
-          # Start ngrok tunnel for Keycloak (port 8080)
-          ngrok http 8080 --log=stdout > ngrok.log 2>&1 &
-          NGROK_PID=$!
-
-          # Wait for ngrok to start and get URL
-          echo "Waiting for ngrok to start..."
-          for i in {1..30}; do
-            if curl -s http://localhost:4040/api/tunnels > /dev/null 2>&1; then
-              break
-            fi
-            sleep 2
-            echo "Attempt $i: Waiting for ngrok API..."
-          done
-
-          # Get the ngrok URL
-          NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | jq -r '.tunnels[0].public_url')
-          echo "Ngrok URL: $NGROK_URL"
-
-          # Validate URL
-          if [ "$NGROK_URL" = "null" ] || [ -z "$NGROK_URL" ]; then
-            echo "Error: Failed to get ngrok URL"
-            cat ngrok.log
-            exit 1
-          fi
-
-          # Set output for other steps
-          echo "url=$NGROK_URL" >> $GITHUB_OUTPUT
-
-          echo "Ngrok installed and tunnel started successfully!"
-
       - name: Create test environment file for docker-compose
         run: |
           # Create a minimal .env file for docker-compose
@@ -115,7 +68,7 @@ jobs:
           echo "GENERAL_USER_KEYCLOAK_CLIENT_SECRET=test-secret" >> .env
           echo "ADMIN_KEYCLOAK_CLIENT_ID=admin-client" >> .env
           echo "ADMIN_KEYCLOAK_CLIENT_SECRET=admin-secret" >> .env
-          echo "KEYCLOAK_CLIENT_ISSUER=${{ steps.ngrok.outputs.url }}/realms/oasismap" >> .env
+          echo "KEYCLOAK_CLIENT_ISSUER=http://localhost:8080/realms/oasismap" >> .env
           echo "POSTGREHOST=postgres" >> .env
           echo "POSTGREPORT=5432" >> .env
           echo "POSTGREUSER=testuser" >> .env
@@ -123,8 +76,8 @@ jobs:
           echo "REVERSE_GEOCODING_URL=https://nominatim.openstreetmap.org/reverse" >> .env
           echo "KEYCLOAK_ADMIN=admin" >> .env
           echo "KEYCLOAK_ADMIN_PASSWORD=admin" >> .env
-          echo "KC_HOSTNAME_URL=${{ steps.ngrok.outputs.url }}" >> .env
-          echo "KC_HOSTNAME_ADMIN_URL=${{ steps.ngrok.outputs.url }}" >> .env
+          echo "KC_HOSTNAME_URL=http://localhost:8080" >> .env
+          echo "KC_HOSTNAME_ADMIN_URL=http://localhost:8080" >> .env
           echo "MONGOUSERNAME=test" >> .env
           echo "MONGOPASSWORD=test" >> .env
           echo "MONGOHOST=mongo" >> .env
@@ -165,11 +118,7 @@ jobs:
         if: always()
         run: |
           echo "Stopping all services..."
-          
-          # Stop ngrok tunnel
-          echo "Stopping ngrok tunnel..."
-          pkill ngrok || echo "No ngrok process found"
-          
+
           # Stop docker-compose services
           echo "Stopping docker-compose services..."
           docker compose -f docker-compose.yml down
