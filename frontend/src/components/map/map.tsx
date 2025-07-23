@@ -190,22 +190,17 @@ const convertToTimestampRange = (
   }
 }
 
-const MapOverlay = ({
+// Tạo 1 cluster group chung cho tất cả pins
+const GlobalClusterGroup = ({
   iconType,
-  type,
-  filteredPins,
-  initialPopupPin,
-  layerIndex,
+  pinData,
   setSelectedPin,
   setHighlightTarget,
   period,
   activeTimestamp,
 }: {
   iconType: IconType
-  type: string
-  filteredPins: Pin[]
-  initialPopupPin: Pin | undefined
-  layerIndex: number
+  pinData: Pin[]
   setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
   period?: PeriodType
@@ -215,17 +210,20 @@ const MapOverlay = ({
   const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null)
 
   useEffect(() => {
-    if (!map || filteredPins.length === 0) return
+    if (!map || pinData.length === 0) return
 
-    // Tạo cluster group nếu chưa có
+    // Tạo cluster group chung nếu chưa có
     if (!clusterGroupRef.current) {
       clusterGroupRef.current = L.markerClusterGroup({
         chunkedLoading: true,
-        maxClusterRadius: 50,
+        maxClusterRadius: 150, // Giảm xuống để thấy cluster con rõ ràng hơn khi zoom in
         spiderfyOnMaxZoom: true,
         showCoverageOnHover: true,
         zoomToBoundsOnClick: true,
-        disableClusteringAtZoom: 18
+        disableClusteringAtZoom: 16, // Tắt clustering sớm hơn (zoom level >= 16)
+        removeOutsideVisibleBounds: true,
+        animate: true,
+        animateAddingMarkers: false
       })
       map.addLayer(clusterGroupRef.current)
     }
@@ -235,16 +233,15 @@ const MapOverlay = ({
       clusterGroupRef.current.clearLayers()
     }
 
-    // Thêm markers mới
-    filteredPins.forEach((pin) => {
+    // Thêm tất cả markers vào cluster group chung
+    pinData.forEach((pin) => {
       const marker = L.marker([pin.latitude, pin.longitude], {
         icon: getIconByType(
           iconType,
           pin.type,
           pin.answer,
           pinIsActive(pin, activeTimestamp)
-        ),
-        zIndexOffset: -layerIndex
+        )
       })
 
       // Thêm popup
@@ -255,7 +252,7 @@ const MapOverlay = ({
           root.render(
             <MePopup
               pin={pin}
-              initialPopupPin={initialPopupPin}
+              initialPopupPin={undefined}
               setSelectedPin={setSelectedPin}
             />
           )
@@ -296,8 +293,32 @@ const MapOverlay = ({
         clusterGroupRef.current = null
       }
     }
-  }, [map, filteredPins, iconType, layerIndex, activeTimestamp, setHighlightTarget, period, initialPopupPin, setSelectedPin])
+  }, [map, pinData, iconType, activeTimestamp, setHighlightTarget, period, setSelectedPin])
 
+  return null
+}
+
+const MapOverlay = ({
+  _iconType,
+  type,
+  _filteredPins,
+  _initialPopupPin,
+  _layerIndex,
+  _setSelectedPin,
+  _setHighlightTarget,
+  _period,
+  _activeTimestamp,
+}: {
+  _iconType: IconType
+  type: string
+  _filteredPins: Pin[]
+  _initialPopupPin: Pin | undefined
+  _layerIndex: number
+  _setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
+  _setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
+  _period?: PeriodType
+  _activeTimestamp: { start: Date; end: Date } | null
+}) => {
   return (
     <LayersControl.Overlay checked name={type}>
       <LayerGroup />
@@ -528,23 +549,34 @@ const Map: React.FC<Props> = ({
             />
           </LayersControl.BaseLayer>
         </LayersControl>
+        {/* Sử dụng GlobalClusterGroup thay vì nhiều MapOverlay riêng biệt */}
+        <GlobalClusterGroup
+          iconType={iconType}
+          pinData={pinData}
+          setSelectedPin={setSelectedPin}
+          setHighlightTarget={setHighlightTarget}
+          period={period}
+          activeTimestamp={activeTimestamp}
+        />
+        
+        {/* Giữ lại LayersControl để hiển thị legend nhưng không tạo cluster riêng */}
         <LayersControl position="topright">
           {HAPPINESS_KEYS.map((type, index) => {
             const filteredPins = filteredPinsByType(type)
             return (
               <MapOverlay
                 key={type}
-                iconType={iconType}
+                _iconType={iconType}
                 type={questionTitles[type]}
-                layerIndex={index}
-                filteredPins={filteredPins}
-                initialPopupPin={filteredPins.find(
+                _layerIndex={index}
+                _filteredPins={filteredPins}
+                _initialPopupPin={filteredPins.find(
                   (pin) => pin.id === initialEntityUuid
                 )}
-                setSelectedPin={setSelectedPin}
-                setHighlightTarget={setHighlightTarget}
-                period={period}
-                activeTimestamp={activeTimestamp}
+                _setSelectedPin={setSelectedPin}
+                _setHighlightTarget={setHighlightTarget}
+                _period={period}
+                _activeTimestamp={activeTimestamp}
               />
             )
           })}
