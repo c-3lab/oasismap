@@ -210,17 +210,23 @@ const GlobalClusterGroup = ({
   const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null)
 
   useEffect(() => {
-    if (!map || pinData.length === 0) return
+    console.log('GlobalClusterGroup: pinData received:', pinData.length);
+    console.log('GlobalClusterGroup: first pin:', pinData[0]);
+    
+    if (!map || pinData.length === 0) {
+      console.log('GlobalClusterGroup: No map or no pinData');
+      return;
+    }
 
     // Tạo cluster group chung nếu chưa có
     if (!clusterGroupRef.current) {
       clusterGroupRef.current = L.markerClusterGroup({
         chunkedLoading: true,
-        maxClusterRadius: 150, // Giảm xuống để thấy cluster con rõ ràng hơn khi zoom in
+        maxClusterRadius: 200, // Giảm để thấy clusters nhỏ khi zoom in
         spiderfyOnMaxZoom: true,
         showCoverageOnHover: true,
         zoomToBoundsOnClick: true,
-        disableClusteringAtZoom: 16, // Tắt clustering sớm hơn (zoom level >= 16)
+        disableClusteringAtZoom: 16, // Tắt clustering ở zoom level >= 16
         removeOutsideVisibleBounds: true,
         animate: true,
         animateAddingMarkers: false
@@ -233,8 +239,11 @@ const GlobalClusterGroup = ({
       clusterGroupRef.current.clearLayers()
     }
 
+    console.log('GlobalClusterGroup: Creating markers for', pinData.length, 'pins');
+    
     // Thêm tất cả markers vào cluster group chung
-    pinData.forEach((pin) => {
+    pinData.forEach((pin, index) => {
+      console.log(`GlobalClusterGroup: Creating marker ${index + 1}/${pinData.length}:`, pin.latitude, pin.longitude);
       const marker = L.marker([pin.latitude, pin.longitude], {
         icon: getIconByType(
           iconType,

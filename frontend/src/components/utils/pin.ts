@@ -13,9 +13,18 @@ function convertTimestamp(timestamp: string) {
 }
 
 export function GetPin(arr: (Data | MapDataItem)[]): Pin[] {
-  return arr
-    .filter((data: MapDataItem) => data.answers[data.type] !== 0)
-    .map((data) => {
+  console.log('GetPin: Input array length:', arr.length);
+  console.log('GetPin: First item:', arr[0]);
+  
+  const filteredArr = arr.filter((data: MapDataItem) => {
+    const shouldInclude = data.answers[data.type] !== 0;
+    console.log(`GetPin: Filtering ${data.type}, answer: ${data.answers[data.type]}, include: ${shouldInclude}`);
+    return shouldInclude;
+  });
+  
+  console.log('GetPin: Filtered array length:', filteredArr.length);
+  
+  return filteredArr.map((data) => {
       let basetime
       let timestamp
       let memo
