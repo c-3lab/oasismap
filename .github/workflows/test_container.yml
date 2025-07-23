@@ -1,10 +1,6 @@
 name: Container Security Scan
 
 on:
-  push:
-    paths:
-      - '.github/workflows/test_container.yml'
-      - 'docker-compose*.yml'
   schedule:
     # Run daily at JST 00:00 (UTC 15:00)
     - cron: '0 15 * * *'
@@ -84,38 +80,85 @@ jobs:
           echo "Images from docker-compose.yml:"
           cat docker_compose_images.txt
 
-          # Scan each image for CRITICAL vulnerabilities
-          critical_found=false
+          # Initialize summary file
+          echo "# docker-compose.yml Scan Results" > docker_compose_summary.md
+          echo "" >> docker_compose_summary.md
+
+          # Scan each image for CRITICAL and HIGH vulnerabilities
+          total_images=0
+          critical_vulns=0
+          high_vulns=0
+          failed_scans=0
+
           while IFS= read -r image; do
             if [ -n "$image" ]; then
+              total_images=$((total_images + 1))
               echo "Scanning image: $image"
 
               scan_file="scan_docker_compose_${image//[\/:]/_}.json"
-              trivy image --severity CRITICAL --format json "$image" > "$scan_file" 2>/dev/null
+              trivy image --severity CRITICAL,HIGH --format json "$image" > "$scan_file" 2>/dev/null
 
               if [ -f "$scan_file" ]; then
-                vuln_count=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "CRITICAL") | .VulnerabilityID' "$scan_file" 2>/dev/null | wc -l)
+                critical_count=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "CRITICAL") | .VulnerabilityID' "$scan_file" 2>/dev/null | wc -l)
+                high_count=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "HIGH") | .VulnerabilityID' "$scan_file" 2>/dev/null | wc -l)
+                total_vulns=$((critical_count + high_count))
 
-                if [ "$vuln_count" -gt 0 ]; then
-                  echo "❌ $image - Found $vuln_count CRITICAL vulnerabilities!"
-                  critical_found=true
-                  echo "CRITICAL vulnerability details for $image:"
-                  trivy image --severity CRITICAL --format table "$image" || true
+                if [ "$total_vulns" -gt 0 ]; then
+                  echo "❌ $image - Found $critical_count CRITICAL and $high_count HIGH vulnerabilities!"
+                  critical_vulns=$((critical_vulns + critical_count))
+                  high_vulns=$((high_vulns + high_count))
+                  echo "## ❌ $image" >> docker_compose_summary.md
+                  echo "**CRITICAL vulnerabilities found: $critical_count**" >> docker_compose_summary.md
+                  echo "**HIGH vulnerabilities found: $high_count**" >> docker_compose_summary.md
+                  echo "" >> docker_compose_summary.md
+                  echo "### Vulnerability Details:" >> docker_compose_summary.md
+                  echo '```' >> docker_compose_summary.md
+                  trivy image --severity CRITICAL,HIGH --format table "$image" >> docker_compose_summary.md 2>/dev/null || echo "Failed to get detailed results" >> docker_compose_summary.md
+                  echo '```' >> docker_compose_summary.md
+                  echo "" >> docker_compose_summary.md
                 else
-                  echo "✅ $image - No CRITICAL vulnerabilities found"
+                  echo "✅ $image - No CRITICAL or HIGH vulnerabilities found"
+                  echo "## ✅ $image" >> docker_compose_summary.md
+                  echo "**No CRITICAL or HIGH vulnerabilities found**" >> docker_compose_summary.md
+                  echo "" >> docker_compose_summary.md
                 fi
               else
                 echo "⚠️ $image - Scan failed or no results"
+                failed_scans=$((failed_scans + 1))
+                echo "## ⚠️ $image" >> docker_compose_summary.md
+                echo "**Scan failed or no results**" >> docker_compose_summary.md
+                echo "" >> docker_compose_summary.md
               fi
             fi
           done < docker_compose_images.txt
 
-          if [ "$critical_found" = true ]; then
-            echo "🚨 CRITICAL vulnerabilities found in docker-compose.yml images!"
-            exit 1
+          # Add summary to the file
+          echo "## 📊 Summary" >> docker_compose_summary.md
+          echo "- **Total images scanned:** $total_images" >> docker_compose_summary.md
+          echo "- **CRITICAL vulnerabilities found:** $critical_vulns" >> docker_compose_summary.md
+          echo "- **HIGH vulnerabilities found:** $high_vulns" >> docker_compose_summary.md
+          echo "- **Failed scans:** $failed_scans" >> docker_compose_summary.md
+          echo "" >> docker_compose_summary.md
+
+          total_vulns=$((critical_vulns + high_vulns))
+          if [ "$total_vulns" -gt 0 ]; then
+            echo "🚨 CRITICAL and HIGH vulnerabilities found in docker-compose.yml images!"
+            echo "- **Status:** ❌ FAILED" >> docker_compose_summary.md
           else
-            echo "✅ All docker-compose.yml images passed CRITICAL security scan!"
+            echo "✅ All docker-compose.yml images passed CRITICAL and HIGH security scan!"
+            echo "- **Status:** ✅ PASSED" >> docker_compose_summary.md
           fi
+
+          echo "docker-compose.yml scan completed. Summary saved to docker_compose_summary.md"
+          
+          # Store vulnerability counts for final check
+          echo "$critical_vulns" > docker_compose_critical_count.txt
+          echo "$high_vulns" > docker_compose_high_count.txt
+
+          # Clean up images after scanning docker-compose.yml
+          echo "Cleaning up docker-compose.yml images..."
+          docker compose -f docker-compose.yml down --rmi all
+          docker image prune -f
 
       - name: Scan docker-compose-dev.yml images
         if: hashFiles('docker-compose-dev.yml')
@@ -141,38 +184,85 @@ jobs:
           echo "Images from docker-compose-dev.yml:"
           cat docker_compose_dev_images.txt
 
-          # Scan each image for CRITICAL vulnerabilities
-          critical_found=false
+          # Initialize summary file
+          echo "# docker-compose-dev.yml Scan Results" > docker_compose_dev_summary.md
+          echo "" >> docker_compose_dev_summary.md
+
+          # Scan each image for CRITICAL and HIGH vulnerabilities
+          total_images=0
+          critical_vulns=0
+          high_vulns=0
+          failed_scans=0
+          
           while IFS= read -r image; do
             if [ -n "$image" ]; then
+              total_images=$((total_images + 1))
               echo "Scanning image: $image"
 
               scan_file="scan_docker_compose_dev_${image//[\/:]/_}.json"
-              trivy image --severity CRITICAL --format json "$image" > "$scan_file" 2>/dev/null
+              trivy image --severity CRITICAL,HIGH --format json "$image" > "$scan_file" 2>/dev/null
 
               if [ -f "$scan_file" ]; then
-                vuln_count=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "CRITICAL") | .VulnerabilityID' "$scan_file" 2>/dev/null | wc -l)
+                critical_count=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "CRITICAL") | .VulnerabilityID' "$scan_file" 2>/dev/null | wc -l)
+                high_count=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "HIGH") | .VulnerabilityID' "$scan_file" 2>/dev/null | wc -l)
+                total_vulns=$((critical_count + high_count))
 
-                if [ "$vuln_count" -gt 0 ]; then
-                  echo "❌ $image - Found $vuln_count CRITICAL vulnerabilities!"
-                  critical_found=true
-                  echo "CRITICAL vulnerability details for $image:"
-                  trivy image --severity CRITICAL --format table "$image" || true
+                if [ "$total_vulns" -gt 0 ]; then
+                  echo "❌ $image - Found $critical_count CRITICAL and $high_count HIGH vulnerabilities!"
+                  critical_vulns=$((critical_vulns + critical_count))
+                  high_vulns=$((high_vulns + high_count))
+                  echo "## ❌ $image" >> docker_compose_dev_summary.md
+                  echo "**CRITICAL vulnerabilities found: $critical_count**" >> docker_compose_dev_summary.md
+                  echo "**HIGH vulnerabilities found: $high_count**" >> docker_compose_dev_summary.md
+                  echo "" >> docker_compose_dev_summary.md
+                  echo "### Vulnerability Details:" >> docker_compose_dev_summary.md
+                  echo '```' >> docker_compose_dev_summary.md
+                  trivy image --severity CRITICAL,HIGH --format table "$image" >> docker_compose_dev_summary.md 2>/dev/null || echo "Failed to get detailed results" >> docker_compose_dev_summary.md
+                  echo '```' >> docker_compose_dev_summary.md
+                  echo "" >> docker_compose_dev_summary.md
                 else
-                  echo "✅ $image - No CRITICAL vulnerabilities found"
+                  echo "✅ $image - No CRITICAL or HIGH vulnerabilities found"
+                  echo "## ✅ $image" >> docker_compose_dev_summary.md
+                  echo "**No CRITICAL or HIGH vulnerabilities found**" >> docker_compose_dev_summary.md
+                  echo "" >> docker_compose_dev_summary.md
                 fi
               else
                 echo "⚠️ $image - Scan failed or no results"
+                failed_scans=$((failed_scans + 1))
+                echo "## ⚠️ $image" >> docker_compose_dev_summary.md
+                echo "**Scan failed or no results**" >> docker_compose_dev_summary.md
+                echo "" >> docker_compose_dev_summary.md
               fi
             fi
           done < docker_compose_dev_images.txt
 
-          if [ "$critical_found" = true ]; then
-            echo "🚨 CRITICAL vulnerabilities found in docker-compose-dev.yml images!"
-            exit 1
+          # Add summary to the file
+          echo "## 📊 Summary" >> docker_compose_dev_summary.md
+          echo "- **Total images scanned:** $total_images" >> docker_compose_dev_summary.md
+          echo "- **CRITICAL vulnerabilities found:** $critical_vulns" >> docker_compose_dev_summary.md
+          echo "- **HIGH vulnerabilities found:** $high_vulns" >> docker_compose_dev_summary.md
+          echo "- **Failed scans:** $failed_scans" >> docker_compose_dev_summary.md
+          echo "" >> docker_compose_dev_summary.md
+
+          total_vulns=$((critical_vulns + high_vulns))
+          if [ "$total_vulns" -gt 0 ]; then
+            echo "🚨 CRITICAL and HIGH vulnerabilities found in docker-compose-dev.yml images!"
+            echo "- **Status:** ❌ FAILED" >> docker_compose_dev_summary.md
           else
-            echo "✅ All docker-compose-dev.yml images passed CRITICAL security scan!"
+            echo "✅ All docker-compose-dev.yml images passed CRITICAL and HIGH security scan!"
+            echo "- **Status:** ✅ PASSED" >> docker_compose_dev_summary.md
           fi
+
+          echo "docker-compose-dev.yml scan completed. Summary saved to docker_compose_dev_summary.md"
+          
+          # Store vulnerability counts for final check
+          echo "$critical_vulns" > docker_compose_dev_critical_count.txt
+          echo "$high_vulns" > docker_compose_dev_high_count.txt
+
+          # Clean up images after scanning docker-compose-dev.yml
+          echo "Cleaning up docker-compose-dev.yml images..."
+          docker compose -f docker-compose-dev.yml down --rmi all
+          docker image prune -f
 
       - name: Scan docker-compose-azure.yml images
         if: hashFiles('docker-compose-azure.yml')
@@ -198,37 +288,202 @@ jobs:
           echo "Images from docker-compose-azure.yml:"
           cat docker_compose_azure_images.txt
 
-          # Scan each image for CRITICAL vulnerabilities
-          critical_found=false
+          # Initialize summary file
+          echo "# docker-compose-azure.yml Scan Results" > docker_compose_azure_summary.md
+          echo "" >> docker_compose_azure_summary.md
+
+          # Scan each image for CRITICAL and HIGH vulnerabilities
+          total_images=0
+          critical_vulns=0
+          high_vulns=0
+          failed_scans=0
+          
           while IFS= read -r image; do
             if [ -n "$image" ]; then
+              total_images=$((total_images + 1))
               echo "Scanning image: $image"
 
               scan_file="scan_docker_compose_azure_${image//[\/:]/_}.json"
-              trivy image --severity CRITICAL --format json "$image" > "$scan_file" 2>/dev/null
+              trivy image --severity CRITICAL,HIGH --format json "$image" > "$scan_file" 2>/dev/null
 
               if [ -f "$scan_file" ]; then
-                vuln_count=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "CRITICAL") | .VulnerabilityID' "$scan_file" 2>/dev/null | wc -l)
+                critical_count=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "CRITICAL") | .VulnerabilityID' "$scan_file" 2>/dev/null | wc -l)
+                high_count=$(jq '.Results[].Vulnerabilities[] | select(.Severity == "HIGH") | .VulnerabilityID' "$scan_file" 2>/dev/null | wc -l)
+                total_vulns=$((critical_count + high_count))
 
-                if [ "$vuln_count" -gt 0 ]; then
-                  echo "❌ $image - Found $vuln_count CRITICAL vulnerabilities!"
-                  critical_found=true
-                  echo "CRITICAL vulnerability details for $image:"
-                  trivy image --severity CRITICAL --format table "$image" || true
+                if [ "$total_vulns" -gt 0 ]; then
+                  echo "❌ $image - Found $critical_count CRITICAL and $high_count HIGH vulnerabilities!"
+                  critical_vulns=$((critical_vulns + critical_count))
+                  high_vulns=$((high_vulns + high_count))
+                  echo "## ❌ $image" >> docker_compose_azure_summary.md
+                  echo "**CRITICAL vulnerabilities found: $critical_count**" >> docker_compose_azure_summary.md
+                  echo "**HIGH vulnerabilities found: $high_count**" >> docker_compose_azure_summary.md
+                  echo "" >> docker_compose_azure_summary.md
+                  echo "### Vulnerability Details:" >> docker_compose_azure_summary.md
+                  echo '```' >> docker_compose_azure_summary.md
+                  trivy image --severity CRITICAL,HIGH --format table "$image" >> docker_compose_azure_summary.md 2>/dev/null || echo "Failed to get detailed results" >> docker_compose_azure_summary.md
+                  echo '```' >> docker_compose_azure_summary.md
+                  echo "" >> docker_compose_azure_summary.md
                 else
-                  echo "✅ $image - No CRITICAL vulnerabilities found"
+                  echo "✅ $image - No CRITICAL or HIGH vulnerabilities found"
+                  echo "## ✅ $image" >> docker_compose_azure_summary.md
+                  echo "**No CRITICAL or HIGH vulnerabilities found**" >> docker_compose_azure_summary.md
+                  echo "" >> docker_compose_azure_summary.md
                 fi
               else
                 echo "⚠️ $image - Scan failed or no results"
+                failed_scans=$((failed_scans + 1))
+                echo "## ⚠️ $image" >> docker_compose_azure_summary.md
+                echo "**Scan failed or no results**" >> docker_compose_azure_summary.md
+                echo "" >> docker_compose_azure_summary.md
               fi
             fi
           done < docker_compose_azure_images.txt
 
-          if [ "$critical_found" = true ]; then
-            echo "🚨 CRITICAL vulnerabilities found in docker-compose-azure.yml images!"
+          # Add summary to the file
+          echo "## 📊 Summary" >> docker_compose_azure_summary.md
+          echo "- **Total images scanned:** $total_images" >> docker_compose_azure_summary.md
+          echo "- **CRITICAL vulnerabilities found:** $critical_vulns" >> docker_compose_azure_summary.md
+          echo "- **HIGH vulnerabilities found:** $high_vulns" >> docker_compose_azure_summary.md
+          echo "- **Failed scans:** $failed_scans" >> docker_compose_azure_summary.md
+          echo "" >> docker_compose_azure_summary.md
+
+          total_vulns=$((critical_vulns + high_vulns))
+          if [ "$total_vulns" -gt 0 ]; then
+            echo "🚨 CRITICAL and HIGH vulnerabilities found in docker-compose-azure.yml images!"
+            echo "- **Status:** ❌ FAILED" >> docker_compose_azure_summary.md
+          else
+            echo "✅ All docker-compose-azure.yml images passed CRITICAL and HIGH security scan!"
+            echo "- **Status:** ✅ PASSED" >> docker_compose_azure_summary.md
+          fi
+
+          echo "docker-compose-azure.yml scan completed. Summary saved to docker_compose_azure_summary.md"
+          
+          # Store vulnerability counts for final check
+          echo "$critical_vulns" > docker_compose_azure_critical_count.txt
+          echo "$high_vulns" > docker_compose_azure_high_count.txt
+
+          # Clean up images after scanning docker-compose-azure.yml
+          echo "Cleaning up docker-compose-azure.yml images..."
+          docker compose -f docker-compose-azure.yml down --rmi all
+          docker image prune -f
+
+      - name: Generate Final Summary
+        run: |
+          echo "=== FINAL SECURITY SCAN SUMMARY ==="
+          echo ""
+          
+          # Create overall summary
+          echo "# 🔍 OVERALL SECURITY SCAN SUMMARY" > overall_summary.md
+          echo "" >> overall_summary.md
+          echo "## 📊 Scan Results by File:" >> overall_summary.md
+          echo "" >> overall_summary.md
+          
+          total_critical_vulns=0
+          total_high_vulns=0
+          total_images_scanned=0
+          
+          if [ -f "docker_compose_summary.md" ]; then
+            echo "### docker-compose.yml" >> overall_summary.md
+            grep -A 4 "## 📊 Summary" docker_compose_summary.md >> overall_summary.md
+            echo "" >> overall_summary.md
+            
+            # Extract numbers for total calculation
+            critical_vulns=$(grep "CRITICAL vulnerabilities found:" docker_compose_summary.md | grep -o '[0-9]*' | head -1)
+            high_vulns=$(grep "HIGH vulnerabilities found:" docker_compose_summary.md | grep -o '[0-9]*' | head -1)
+            images=$(grep "Total images scanned:" docker_compose_summary.md | grep -o '[0-9]*' | head -1)
+            if [ -n "$critical_vulns" ]; then total_critical_vulns=$((total_critical_vulns + critical_vulns)); fi
+            if [ -n "$high_vulns" ]; then total_high_vulns=$((total_high_vulns + high_vulns)); fi
+            if [ -n "$images" ]; then total_images_scanned=$((total_images_scanned + images)); fi
+          fi
+          
+          if [ -f "docker_compose_dev_summary.md" ]; then
+            echo "### docker-compose-dev.yml" >> overall_summary.md
+            grep -A 4 "## 📊 Summary" docker_compose_dev_summary.md >> overall_summary.md
+            echo "" >> overall_summary.md
+            
+            # Extract numbers for total calculation
+            critical_vulns=$(grep "CRITICAL vulnerabilities found:" docker_compose_dev_summary.md | grep -o '[0-9]*' | head -1)
+            high_vulns=$(grep "HIGH vulnerabilities found:" docker_compose_dev_summary.md | grep -o '[0-9]*' | head -1)
+            images=$(grep "Total images scanned:" docker_compose_dev_summary.md | grep -o '[0-9]*' | head -1)
+            if [ -n "$critical_vulns" ]; then total_critical_vulns=$((total_critical_vulns + critical_vulns)); fi
+            if [ -n "$high_vulns" ]; then total_high_vulns=$((total_high_vulns + high_vulns)); fi
+            if [ -n "$images" ]; then total_images_scanned=$((total_images_scanned + images)); fi
+          fi
+          
+          if [ -f "docker_compose_azure_summary.md" ]; then
+            echo "### docker-compose-azure.yml" >> overall_summary.md
+            grep -A 4 "## 📊 Summary" docker_compose_azure_summary.md >> overall_summary.md
+            echo "" >> overall_summary.md
+            
+            # Extract numbers for total calculation
+            critical_vulns=$(grep "CRITICAL vulnerabilities found:" docker_compose_azure_summary.md | grep -o '[0-9]*' | head -1)
+            high_vulns=$(grep "HIGH vulnerabilities found:" docker_compose_azure_summary.md | grep -o '[0-9]*' | head -1)
+            images=$(grep "Total images scanned:" docker_compose_azure_summary.md | grep -o '[0-9]*' | head -1)
+            if [ -n "$critical_vulns" ]; then total_critical_vulns=$((total_critical_vulns + critical_vulns)); fi
+            if [ -n "$high_vulns" ]; then total_high_vulns=$((total_high_vulns + high_vulns)); fi
+            if [ -n "$images" ]; then total_images_scanned=$((total_images_scanned + images)); fi
+          fi
+          
+          echo "## 🎯 OVERALL TOTALS:" >> overall_summary.md
+          echo "- **Total images scanned across all files:** $total_images_scanned" >> overall_summary.md
+          echo "- **Total CRITICAL vulnerabilities found:** $total_critical_vulns" >> overall_summary.md
+          echo "- **Total HIGH vulnerabilities found:** $total_high_vulns" >> overall_summary.md
+          echo "" >> overall_summary.md
+          
+          total_vulns=$((total_critical_vulns + total_high_vulns))
+          if [ "$total_vulns" -gt 0 ]; then
+            echo "## 🚨 OVERALL STATUS: ❌ FAILED" >> overall_summary.md
+            echo "**Action required:** Please review and fix the CRITICAL and HIGH vulnerabilities found." >> overall_summary.md
+            echo "## 🚨 OVERALL STATUS: ❌ FAILED"
+            echo "**Action required:** Please review and fix the CRITICAL and HIGH vulnerabilities found."
+          else
+            echo "## ✅ OVERALL STATUS: PASSED" >> overall_summary.md
+            echo "**All images passed CRITICAL and HIGH security scan!**" >> overall_summary.md
+            echo "## ✅ OVERALL STATUS: PASSED"
+            echo "**All images passed CRITICAL and HIGH security scan!**"
+          fi
+          
+          # Store total vulnerability counts for final check
+          echo "$total_critical_vulns" > total_critical_vulns.txt
+          echo "$total_high_vulns" > total_high_vulns.txt
+          echo "$total_vulns" > total_vulns.txt
+
+      - name: Check for CRITICAL and HIGH vulnerabilities and fail CI/CD
+        run: |
+          echo "=== FINAL CI/CD STATUS CHECK ==="
+          
+          # Read total vulnerabilities
+          if [ -f "total_vulns.txt" ]; then
+            total_vulns=$(cat total_vulns.txt)
+          else
+            total_vulns=0
+          fi
+          
+          if [ -f "total_critical_vulns.txt" ]; then
+            total_critical=$(cat total_critical_vulns.txt)
+          else
+            total_critical=0
+          fi
+          
+          if [ -f "total_high_vulns.txt" ]; then
+            total_high=$(cat total_high_vulns.txt)
+          else
+            total_high=0
+          fi
+          
+          echo "Total CRITICAL vulnerabilities found: $total_critical"
+          echo "Total HIGH vulnerabilities found: $total_high"
+          echo "Total CRITICAL and HIGH vulnerabilities found: $total_vulns"
+          
+          if [ "$total_vulns" -gt 0 ]; then
+            echo "🚨 CI/CD STATUS: FAILED"
+            echo "CRITICAL and HIGH vulnerabilities detected. Please fix them before proceeding."
+            echo "Check the detailed reports above for vulnerability information."
             exit 1
           else
-            echo "✅ All docker-compose-azure.yml images passed CRITICAL security scan!"
+            echo "✅ CI/CD STATUS: PASSED"
+            echo "No CRITICAL or HIGH vulnerabilities found. All images are secure."
           fi
 
       - name: Cleanup Docker images

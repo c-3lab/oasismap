@@ -1,5 +1,5 @@
 
-name: frontend application CI Pipeline
+name: Frontend application CI Pipeline
 
 on:
   push:
