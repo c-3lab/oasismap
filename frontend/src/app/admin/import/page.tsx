@@ -16,6 +16,7 @@ import { useFetchData } from '@/libs/fetch'
 import { useRouter } from 'next/navigation'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+const maxFileSize = Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_CSV_FILE_SIZE)
 
 const Import: React.FC = () => {
   const noticeMessageContext = useContext(messageContext)
@@ -38,8 +39,18 @@ const Import: React.FC = () => {
       return
     }
 
+    if (file.size > maxFileSize) {
+      setErrorMessage(
+        `ファイルサイズは${maxFileSize / 1024}KB以下にしてください`
+      )
+      setFile(null)
+      setFileName('')
+      return
+    }
+
     setFile(file)
     setFileName(file.name)
+    setErrorMessage('')
   }
 
   const VisuallyHiddenInput = styled('input')({
