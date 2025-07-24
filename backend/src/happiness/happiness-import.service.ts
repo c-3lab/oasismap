@@ -70,6 +70,7 @@ export class HappinessImportService {
 
       return happinessImportResponse;
     } catch (err) {
+      console.error(err);
       throw new BadRequestException(err);
     }
   }
@@ -244,8 +245,8 @@ export class HappinessImportService {
 
   private async postHappinessEntities(entities: HappinessEntity[]) {
     // 1000件ずつに分割して処理する
-    for (let i = 0; i < entities.length; i += 1000) {
-      const chunk = entities.slice(i, i + 1000);
+    for (let i = 0; i < entities.length; i += 500) {
+      const chunk = entities.slice(i, i + 500);
 
       await axios.post(
         `${process.env.ORION_URI}/v2/op/update`,
