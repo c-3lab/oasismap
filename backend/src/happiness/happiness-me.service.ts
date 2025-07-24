@@ -137,31 +137,36 @@ export class HappinessMeService {
       const randomLat = baseLat + (Math.random() - 0.5) * latRange;
       const randomLng = baseLng + (Math.random() - 0.5) * lngRange;
       
-      // Randomly select 1 happiness key
-      const randomKey = happinessKeys[Math.floor(Math.random() * happinessKeys.length)];
+      // Generate multiple happiness values for each entity (1-6 types with random values 0 or 1)
+      const answers = { happiness1: 0, happiness2: 0, happiness3: 0, happiness4: 0, happiness5: 0, happiness6: 0 };
+      const numHappinessTypes = Math.floor(Math.random() * 6) + 1; // 1-6 types
+      const selectedKeys = [];
+      for (let j = 0; j < numHappinessTypes; j++) {
+        const availableKeys = happinessKeys.filter(key => !selectedKeys.includes(key));
+        if (availableKeys.length > 0) {
+          const randomKey = availableKeys[Math.floor(Math.random() * availableKeys.length)];
+          selectedKeys.push(randomKey);
+          answers[randomKey as keyof typeof answers] = 1; // Set value to 1
+        }
+      }
       
-      // Create pin directly in response format
-      pins.push({
-        id: `pin-${Date.now()}-${i}`,
-        entityId: `entity-${Date.now()}-${i}`,
-        type: randomKey,
-        location: {
-          type: 'geo:json',
-          value: {
-            type: 'Point',
-            coordinates: [randomLat, randomLng] as [number, number],
+      // Create 6 separate pins, one for each happiness type
+      happinessKeys.forEach((happinessType) => {
+        pins.push({
+          id: `pin-${Date.now()}-${i}-${happinessType}`,
+          entityId: `entity-${Date.now()}-${i}`,
+          type: happinessType, // Type is the specific happiness key
+          location: {
+            type: 'geo:json',
+            value: {
+              type: 'Point',
+              coordinates: [randomLat, randomLng] as [number, number],
+            },
           },
-        },
-        timestamp: new Date().toISOString(),
-        memo: `Pin ${i}`,
-        answers: {
-          happiness1: randomKey === 'happiness1' ? 1 : 0,
-          happiness2: randomKey === 'happiness2' ? 1 : 0,
-          happiness3: randomKey === 'happiness3' ? 1 : 0,
-          happiness4: randomKey === 'happiness4' ? 1 : 0,
-          happiness5: randomKey === 'happiness5' ? 1 : 0,
-          happiness6: randomKey === 'happiness6' ? 1 : 0,
-        },
+          timestamp: new Date().toISOString(),
+          memo: `Pin ${i} with ${numHappinessTypes} happiness types`,
+          answers: answers, // All 6 pins share the same answers object
+        });
       });
     }
     
@@ -198,31 +203,36 @@ export class HappinessMeService {
       const randomLat = baseLat + (Math.random() - 0.5) * latRange;
       const randomLng = baseLng + (Math.random() - 0.5) * lngRange;
       
-      // Randomly select 1 happiness key
-      const randomKey = happinessKeys[Math.floor(Math.random() * happinessKeys.length)];
+      // Generate multiple happiness values for each entity (1-6 types with random values 0 or 1)
+      const answers = { happiness1: 0, happiness2: 0, happiness3: 0, happiness4: 0, happiness5: 0, happiness6: 0 };
+      const numHappinessTypes = Math.floor(Math.random() * 6) + 1; // 1-6 types
+      const selectedKeys = [];
+      for (let j = 0; j < numHappinessTypes; j++) {
+        const availableKeys = happinessKeys.filter(key => !selectedKeys.includes(key));
+        if (availableKeys.length > 0) {
+          const randomKey = availableKeys[Math.floor(Math.random() * availableKeys.length)];
+          selectedKeys.push(randomKey);
+          answers[randomKey as keyof typeof answers] = 1; // Set value to 1
+        }
+      }
       
-      // Create pin directly in response format
-      pins.push({
-        id: `direct-${Date.now()}-${i}`,
-        entityId: `direct-entity-${Date.now()}-${i}`,
-        type: randomKey,
-        location: {
-          type: 'geo:json',
-          value: {
-            type: 'Point',
-            coordinates: [randomLat, randomLng] as [number, number],
+      // Create 6 separate pins, one for each happiness type
+      happinessKeys.forEach((happinessType) => {
+        pins.push({
+          id: `direct-${Date.now()}-${i}-${happinessType}`,
+          entityId: `direct-entity-${Date.now()}-${i}`,
+          type: happinessType, // Type is the specific happiness key
+          location: {
+            type: 'geo:json',
+            value: {
+              type: 'Point',
+              coordinates: [randomLat, randomLng] as [number, number],
+            },
           },
-        },
-        timestamp: formattedTime,
-        memo: `Direct pin ${i}`,
-        answers: {
-          happiness1: 1,
-          happiness2: 1,
-          happiness3: 1,
-          happiness4: 1,
-          happiness5: 1,
-          happiness6: 1,
-        },
+          timestamp: formattedTime,
+          memo: `Direct pin ${i} with ${numHappinessTypes} happiness types`,
+          answers: answers, // All 6 pins share the same answers object
+        });
       });
     }
     
