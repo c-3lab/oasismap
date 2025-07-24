@@ -1,6 +1,9 @@
 name: Container Security Scan
 
 on:
+  pull_request:
+    branches:
+      - develop
   schedule:
     # Run daily at JST 00:00 (UTC 15:00)
     - cron: '0 15 * * *'
