@@ -1,7 +1,3 @@
-import { useEffect, useRef, useState } from 'react'
-import { Popup, useMap } from 'react-leaflet'
-import L from 'leaflet'
-
 type Props = {
   children: React.ReactNode
   isOpened: boolean
@@ -9,25 +5,10 @@ type Props = {
 }
 
 export const ControllablePopup = ({ children, isOpened, position }: Props) => {
-  const map = useMap()
-  const [refReady, setRefReady] = useState(false)
-  let popupRef = useRef<L.Popup | null>(null)
-
-  useEffect(() => {
-    if (refReady && isOpened && popupRef.current) {
-      map.setView(position)
-      popupRef.current.setLatLng(position).openOn(map)
-    }
-  }, [refReady, isOpened, position, map])
-
+  // Simply return content - let the Marker handle popup opening/closing
   return (
-    <Popup
-      ref={(r) => {
-        popupRef.current = r
-        setRefReady(true)
-      }}
-    >
+    <div>
       {children}
-    </Popup>
+    </div>
   )
 }
