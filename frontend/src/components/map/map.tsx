@@ -197,6 +197,7 @@ const HybridClusterGroup = ({
   setHighlightTarget,
   period,
   activeTimestamp,
+  selectedLayers,
 }: {
   iconType: IconType
   pinData: Pin[]
@@ -204,6 +205,7 @@ const HybridClusterGroup = ({
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
   period?: PeriodType
   activeTimestamp: { start: Date; end: Date } | null
+  selectedLayers?: HappinessKey[]
 }) => {
   const map = useMap()
   const happinessClustersRef = useRef<{ [key: string]: L.MarkerClusterGroup }>({})
@@ -330,8 +332,15 @@ const HybridClusterGroup = ({
     }
 
     console.log('Adding markers to clusters...')
+    // Filter pins based on selectedLayers
+    const filteredPins = selectedLayers && selectedLayers.length > 0 
+      ? pinData.filter(pin => selectedLayers.includes(pin.type))
+      : pinData
+    
+    console.log('Filtered pins:', filteredPins.length, 'from', pinData.length)
+    
     // Add markers to both color clusters and super cluster
-    pinData.forEach((pin, _index) => {
+    filteredPins.forEach((pin, _index) => {
       const marker = L.marker([pin.latitude, pin.longitude], {
         icon: getIconByType(
           iconType,
@@ -466,7 +475,7 @@ const HybridClusterGroup = ({
       happinessClustersRef.current = {}
       superClusterRef.current = null
     }
-  }, [map, pinData, iconType, activeTimestamp, setHighlightTarget, period, setSelectedPin])
+  }, [map, pinData, iconType, activeTimestamp, setHighlightTarget, period, setSelectedPin, selectedLayers])
 
   return null
 }
@@ -558,7 +567,6 @@ const Map: React.FC<Props> = ({
   setHighlightTarget,
   period,
   initialEntityId,
-  setSelectedLayers,
   setBounds,
   entityByEntityId,
   onPopupClose,
@@ -569,6 +577,7 @@ const Map: React.FC<Props> = ({
   )
   const [error, setError] = useState<Error | null>(null)
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null)
+  const [selectedLayers, setSelectedLayersState] = useState<HappinessKey[]>(HAPPINESS_KEYS)
   const noticeMessageContext = useContext(messageContext)
 
   useEffect(() => {
@@ -700,9 +709,7 @@ const Map: React.FC<Props> = ({
         maxBounds={maxBounds}
         maxBoundsViscosity={maxBoundsViscosity}
       >
-        {setSelectedLayers && (
-          <SelectedLayers setSelectedLayers={setSelectedLayers} />
-        )}
+        <SelectedLayers setSelectedLayers={setSelectedLayersState} />
         {setBounds && <Bounds setBounds={setBounds} />}
         <MoveToCurrentPositionControl />
         <ZoomControl position={'bottomleft'} />
@@ -731,6 +738,7 @@ const Map: React.FC<Props> = ({
           setHighlightTarget={setHighlightTarget}
           period={period}
           activeTimestamp={activeTimestamp}
+          selectedLayers={selectedLayers}
         />
         
         {/* Giữ lại LayersControl để hiển thị legend nhưng không tạo cluster riêng */}
