@@ -896,7 +896,7 @@
               "CookieBasedAffinity": "Enabled",
               "pickHostNameFromBackendAddress": false,
               "affinityCookieName": "AGWAffinityBackend",
-              "requestTimeout": 20
+              "requestTimeout": 180
             }
           },
           {
