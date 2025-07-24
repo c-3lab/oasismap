@@ -220,7 +220,7 @@ const HybridClusterGroup = ({
         console.log('Creating cluster for:', happinessType)
         happinessClustersRef.current[happinessType] = L.markerClusterGroup({
           chunkedLoading: true,
-          maxClusterRadius: 80, // Radius for color clusters
+          maxClusterRadius: loadEnvAsNumber(process.env.NEXT_PUBLIC_MAX_CLUSTER_RADIUS, 200), // Environment variable for cluster radius
           disableClusteringAtZoom: 18, // Disable clustering at high zoom
           spiderfyOnMaxZoom: true,
           showCoverageOnHover: true,
@@ -257,7 +257,7 @@ const HybridClusterGroup = ({
       console.log('Creating super cluster')
       superClusterRef.current = L.markerClusterGroup({
         chunkedLoading: true,
-        maxClusterRadius: 120, // Larger radius for super cluster
+        maxClusterRadius: loadEnvAsNumber(process.env.NEXT_PUBLIC_MAX_CLUSTER_RADIUS, 200), // Environment variable for cluster radius
         disableClusteringAtZoom: 8, // Only cluster when zoom < 8
         spiderfyOnMaxZoom: true,
         showCoverageOnHover: true,

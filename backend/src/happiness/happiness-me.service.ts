@@ -36,7 +36,7 @@ export class HappinessMeService {
 
     // Generate 1000 pins from real data
     const baseEntity = realEntities.length > 0 ? realEntities[0] : null;
-    const additionalPins = this.generatePinsFromBase(baseEntity, userAttribute, 1000);
+    const additionalPins = this.generatePinsFromBase(baseEntity, userAttribute, 100);
     
     console.log('Generated pins count:', additionalPins.length);
     console.log('First pin:', JSON.stringify(additionalPins[0], null, 2));

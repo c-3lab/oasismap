@@ -30,3 +30,6 @@ NEXTAUTH_SECRET="CHANGE_TO_RANDOM_STRING"
 BACKEND_URL="https://backend.example.com"
 
 REVERSE_GEOCODING_URL="https://nominatim.openstreetmap.org/reverse"
+
+# Cluster configuration
+NEXT_PUBLIC_MAX_CLUSTER_RADIUS=200
