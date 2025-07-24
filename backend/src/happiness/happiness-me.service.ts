@@ -27,14 +27,14 @@ export class HappinessMeService {
     const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
     const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
     
-    // Query database để lấy 1 dữ liệu thật
+    // Query database to get real data
     const query = `nickname==${userAttribute.nickname}`;
     console.log('Query:', query);
     
     const realEntities = await this.getHappinessEntities(query, limit, offset);
     console.log('Real entities from DB:', realEntities.length);
 
-    // Tạo 1000 pins từ 1 dữ liệu thật
+    // Generate 1000 pins from real data
     const baseEntity = realEntities.length > 0 ? realEntities[0] : null;
     const additionalPins = this.generatePinsFromBase(baseEntity, userAttribute, 1000);
     
@@ -57,31 +57,31 @@ export class HappinessMeService {
     const startDate = DateTime.fromISO(startAsUTC);
     const endDate = DateTime.fromISO(endAsUTC);
     
-    // Tọa độ cơ sở - phân bố rộng hơn cho 100 pins
+    // Base coordinates - wider distribution for 100 pins
     const baseLat = 35.6762; // Tokyo latitude
     const baseLng = 139.6503; // Tokyo longitude
-    const latRange = 1.0; // ±1.0 degree latitude để phân bố rộng hơn
-    const lngRange = 1.0; // ±1.0 degree longitude để phân bố rộng hơn
+    const latRange = 1.0; // ±1.0 degree latitude for wider distribution
+    const lngRange = 1.0; // ±1.0 degree longitude for wider distribution
     
-    // Tạo 100 pins, mỗi pin chỉ có 1 happiness key
+    // Create 100 pins, each pin has only 1 happiness key
     for (let i = 0; i < count; i++) {
-      // Tạo timestamp ngẫu nhiên trong khoảng thời gian
+      // Generate random timestamp within time range
       const randomTime = startDate.plus({
         seconds: Math.random() * endDate.diff(startDate).as('seconds')
       });
       
-      // Đảm bảo timestamp có format đúng
+      // Ensure timestamp has correct format
       const formattedTime = randomTime.toISO();
       
-      // Tạo tọa độ ngẫu nhiên với phân bố rộng hơn
+      // Generate random coordinates with wider distribution
       const randomLat = baseLat + (Math.random() - 0.5) * latRange;
       const randomLng = baseLng + (Math.random() - 0.5) * lngRange;
       
-      // Chọn ngẫu nhiên 1 happiness key cho mỗi pin
+      // Randomly select 1 happiness key for each pin
       const happinessKeys = ['happiness1', 'happiness2', 'happiness3', 'happiness4', 'happiness5', 'happiness6'];
       const randomKey = happinessKeys[Math.floor(Math.random() * happinessKeys.length)];
       
-      // Tạo entity với chỉ 1 happiness key có giá trị, các key khác = 0
+      // Create entity with only 1 happiness key having value, others = 0
       const entity: any = {
         id: `additional-${Date.now()}-${i}`,
         type: 'happiness',
@@ -105,7 +105,7 @@ export class HappinessMeService {
         memo: { type: 'Text', value: `Additional memo ${i}` },
       };
       
-      // Chỉ set 1 happiness key = 1, các key khác = 0 để tạo đúng 1 pin
+      // Only set 1 happiness key = 1, others = 0 to create exactly 1 pin
       happinessKeys.forEach(key => {
         entity[key] = { type: 'Number', value: key === randomKey ? 1 : 0 };
       });
@@ -123,7 +123,7 @@ export class HappinessMeService {
   ): Data[] {
     const pins: Data[] = [];
     
-    // Tọa độ cơ sở
+    // Base coordinates
     const baseLat = 35.6762; // Tokyo latitude
     const baseLng = 139.6503; // Tokyo longitude
     const latRange = 1.0;
@@ -133,14 +133,14 @@ export class HappinessMeService {
     const happinessKeys = ['happiness1', 'happiness2', 'happiness3', 'happiness4', 'happiness5', 'happiness6'];
     
     for (let i = 0; i < count; i++) {
-      // Tạo tọa độ ngẫu nhiên
+      // Generate random coordinates
       const randomLat = baseLat + (Math.random() - 0.5) * latRange;
       const randomLng = baseLng + (Math.random() - 0.5) * lngRange;
       
-      // Chọn ngẫu nhiên 1 happiness key
+      // Randomly select 1 happiness key
       const randomKey = happinessKeys[Math.floor(Math.random() * happinessKeys.length)];
       
-      // Tạo pin trực tiếp theo format response
+      // Create pin directly in response format
       pins.push({
         id: `pin-${Date.now()}-${i}`,
         entityId: `entity-${Date.now()}-${i}`,
@@ -178,7 +178,7 @@ export class HappinessMeService {
     const startDate = DateTime.fromISO(startAsUTC);
     const endDate = DateTime.fromISO(endAsUTC);
     
-    // Tọa độ cơ sở
+    // Base coordinates
     const baseLat = 35.6762; // Tokyo latitude
     const baseLng = 139.6503; // Tokyo longitude
     const latRange = 1.0;
@@ -188,20 +188,20 @@ export class HappinessMeService {
     const happinessKeys = ['happiness1', 'happiness2', 'happiness3', 'happiness4', 'happiness5', 'happiness6'];
     
     for (let i = 0; i < count; i++) {
-      // Tạo timestamp ngẫu nhiên
+      // Generate random timestamp
       const randomTime = startDate.plus({
         seconds: Math.random() * endDate.diff(startDate).as('seconds')
       });
       const formattedTime = randomTime.setZone('Asia/Tokyo').toISO();
       
-      // Tạo tọa độ ngẫu nhiên
+      // Generate random coordinates
       const randomLat = baseLat + (Math.random() - 0.5) * latRange;
       const randomLng = baseLng + (Math.random() - 0.5) * lngRange;
       
-      // Chọn ngẫu nhiên 1 happiness key
+      // Randomly select 1 happiness key
       const randomKey = happinessKeys[Math.floor(Math.random() * happinessKeys.length)];
       
-      // Tạo pin trực tiếp theo format response
+      // Create pin directly in response format
       pins.push({
         id: `direct-${Date.now()}-${i}`,
         entityId: `direct-entity-${Date.now()}-${i}`,
@@ -258,7 +258,7 @@ export class HappinessMeService {
       const result = entities.flatMap((entity) => {
         return HappinessMeService.keys.map((key) => {
           try {
-            // Debug: Kiểm tra timestamp
+            // Debug: Check timestamp
             console.log('Processing entity:', entity.id, 'timestamp:', entity.timestamp.value);
             
             const timestamp = DateTime.fromISO(entity.timestamp.value)
@@ -295,12 +295,12 @@ export class HappinessMeService {
             console.error('Error processing entity:', entity.id, error);
             return null;
           }
-        }).filter(Boolean); // Loại bỏ null values
+        }).filter(Boolean); // Remove null values
       });
       
           console.log('Converted data count:', result.length);
     
-    // Debug: Kiểm tra response cuối cùng
+    // Debug: Check final response
     if (result.length > 0) {
       console.log('First converted data:', JSON.stringify(result[0], null, 2));
     }

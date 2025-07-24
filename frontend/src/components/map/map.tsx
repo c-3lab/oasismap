@@ -190,8 +190,7 @@ const convertToTimestampRange = (
   }
 }
 
-// Tạo 1 cluster group chung cho tất cả pins
-const GlobalClusterGroup = ({
+const HybridClusterGroup = ({
   iconType,
   pinData,
   setSelectedPin,
@@ -207,43 +206,132 @@ const GlobalClusterGroup = ({
   activeTimestamp: { start: Date; end: Date } | null
 }) => {
   const map = useMap()
-  const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null)
+  const happinessClustersRef = useRef<{ [key: string]: L.MarkerClusterGroup }>({})
+  const superClusterRef = useRef<L.MarkerClusterGroup | null>(null)
 
   useEffect(() => {
-    console.log('GlobalClusterGroup: pinData received:', pinData.length);
-    console.log('GlobalClusterGroup: first pin:', pinData[0]);
-    
-    if (!map || pinData.length === 0) {
-      console.log('GlobalClusterGroup: No map or no pinData');
-      return;
-    }
+    if (!map || pinData.length === 0) return
 
-    // Tạo cluster group chung nếu chưa có
-    if (!clusterGroupRef.current) {
-      clusterGroupRef.current = L.markerClusterGroup({
+    console.log('HybridClusterGroup: Creating clusters for', pinData.length, 'pins')
+    
+    // Create cluster groups for each happiness type
+    HAPPINESS_KEYS.forEach((happinessType) => {
+      if (!happinessClustersRef.current[happinessType]) {
+        console.log('Creating cluster for:', happinessType)
+        happinessClustersRef.current[happinessType] = L.markerClusterGroup({
+          chunkedLoading: true,
+          maxClusterRadius: 80, // Radius for color clusters
+          disableClusteringAtZoom: 18, // Disable clustering at high zoom
+          spiderfyOnMaxZoom: true,
+          showCoverageOnHover: true,
+          zoomToBoundsOnClick: true,
+          removeOutsideVisibleBounds: true,
+          animate: true,
+          animateAddingMarkers: false,
+          iconCreateFunction: function(cluster) {
+            const count = cluster.getChildCount();
+            
+            // Color based on specific happiness type
+            const happinessNumber = happinessType.slice(-1);
+            const className = `cluster-happiness${happinessNumber}`;
+            
+            // Increase icon size based on marker count
+            let iconSize = 40;
+            if (count > 10) iconSize = 50;
+            if (count > 50) iconSize = 60;
+            if (count > 100) iconSize = 70;
+            if (count > 500) iconSize = 80;
+            
+            return L.divIcon({
+              html: `<div class="marker-cluster ${className}" style="background-color: ${happinessType === 'happiness1' ? '#007fff' : happinessType === 'happiness2' ? '#4BA724' : happinessType === 'happiness3' ? '#7f00ff' : happinessType === 'happiness4' ? '#FF69B4' : happinessType === 'happiness5' ? '#ff7f00' : '#ff0000'}; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; min-width: ${iconSize}px; min-height: ${iconSize}px; border: 2px solid rgba(255, 255, 255, 0.8); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);"><div><span style="color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);">${count}</span></div></div>`,
+              className: '',
+              iconSize: L.point(iconSize, iconSize)
+            });
+          }
+        })
+      }
+    })
+
+    // Create super cluster for all pins
+    if (!superClusterRef.current) {
+      console.log('Creating super cluster')
+      superClusterRef.current = L.markerClusterGroup({
         chunkedLoading: true,
-        maxClusterRadius: 200, // Giảm để thấy clusters nhỏ khi zoom in
+        maxClusterRadius: 120, // Larger radius for super cluster
+        disableClusteringAtZoom: 8, // Only cluster when zoom < 8
         spiderfyOnMaxZoom: true,
         showCoverageOnHover: true,
         zoomToBoundsOnClick: true,
-        disableClusteringAtZoom: 16, // Tắt clustering ở zoom level >= 16
         removeOutsideVisibleBounds: true,
         animate: true,
-        animateAddingMarkers: false
+        animateAddingMarkers: false,
+        iconCreateFunction: function(cluster) {
+          const count = cluster.getChildCount();
+          
+          // Gray color for super cluster
+          const className = 'cluster-total';
+          
+          // Increase icon size based on marker count (same as sub clusters)
+          let iconSize = 40;
+          if (count > 10) iconSize = 50;
+          if (count > 50) iconSize = 60;
+          if (count > 100) iconSize = 70;
+          if (count > 500) iconSize = 80;
+          
+          return L.divIcon({
+            html: `<div class="marker-cluster ${className}" style="background-color: rgba(241, 128, 23, 0.6); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; min-width: ${iconSize}px; min-height: ${iconSize}px; border: 2px solid rgba(255, 255, 255, 0.8); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);"><div><span style="color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);">${count}</span></div></div>`,
+            className: '',
+            iconSize: L.point(iconSize, iconSize)
+          });
+        }
       })
-      map.addLayer(clusterGroupRef.current)
     }
 
-    // Xóa markers cũ
-    if (clusterGroupRef.current) {
-      clusterGroupRef.current.clearLayers()
+    // Function to update cluster display based on zoom level
+    const updateClusters = () => {
+      const zoomLevel = map.getZoom();
+      console.log('updateClusters called, zoom level:', zoomLevel)
+      
+      if (zoomLevel < 8) {
+        // Zoom out: show super cluster, hide color clusters
+        console.log('Zoom < 8: Showing super cluster')
+        Object.values(happinessClustersRef.current).forEach(cluster => {
+          if (map.hasLayer(cluster)) {
+            console.log('Removing happiness cluster from map')
+            map.removeLayer(cluster)
+          }
+        });
+        if (!map.hasLayer(superClusterRef.current!)) {
+          console.log('Adding super cluster to map')
+          map.addLayer(superClusterRef.current!)
+        }
+      } else {
+        // Zoom in: show color clusters, hide super cluster
+        console.log('Zoom >= 8: Showing happiness clusters')
+        if (map.hasLayer(superClusterRef.current!)) {
+          console.log('Removing super cluster from map')
+          map.removeLayer(superClusterRef.current!)
+        }
+        Object.values(happinessClustersRef.current).forEach(cluster => {
+          if (!map.hasLayer(cluster)) {
+            console.log('Adding happiness cluster to map')
+            map.addLayer(cluster)
+          }
+        });
+      }
     }
 
-    console.log('GlobalClusterGroup: Creating markers for', pinData.length, 'pins');
-    
-    // Thêm tất cả markers vào cluster group chung
-    pinData.forEach((pin, index) => {
-      console.log(`GlobalClusterGroup: Creating marker ${index + 1}/${pinData.length}:`, pin.latitude, pin.longitude);
+    // Clear old markers from all cluster groups
+    Object.values(happinessClustersRef.current).forEach(clusterGroup => {
+      clusterGroup.clearLayers()
+    })
+    if (superClusterRef.current) {
+      superClusterRef.current.clearLayers()
+    }
+
+    console.log('Adding markers to clusters...')
+    // Add markers to both color clusters and super cluster
+    pinData.forEach((pin, _index) => {
       const marker = L.marker([pin.latitude, pin.longitude], {
         icon: getIconByType(
           iconType,
@@ -253,7 +341,9 @@ const GlobalClusterGroup = ({
         )
       })
 
-      // Thêm popup
+
+
+      // Add popup
       if (iconType === 'pin') {
         marker.bindPopup(() => {
           const div = document.createElement('div')
@@ -278,7 +368,7 @@ const GlobalClusterGroup = ({
         })
       }
 
-      // Thêm event handler
+      // Add event handler
       marker.on('click', () => {
         if (!setHighlightTarget || !period) return
         setHighlightTarget((highlightTarget: HighlightTarget) => {
@@ -291,21 +381,97 @@ const GlobalClusterGroup = ({
         })
       })
 
-      if (clusterGroupRef.current) {
-        clusterGroupRef.current.addLayer(marker)
+      // Add marker to color cluster
+      if (happinessClustersRef.current[pin.type]) {
+        console.log('Adding marker to happiness cluster:', pin.type)
+        happinessClustersRef.current[pin.type].addLayer(marker)
+      } else {
+        console.log('No cluster found for type:', pin.type)
+      }
+      
+      // Add marker to super cluster (copy)
+      const superMarker = L.marker([pin.latitude, pin.longitude], {
+        icon: getIconByType(
+          iconType,
+          pin.type,
+          pin.answer,
+          pinIsActive(pin, activeTimestamp)
+        )
+      })
+
+      // Add popup for super marker
+      if (iconType === 'pin') {
+        superMarker.bindPopup(() => {
+          const div = document.createElement('div')
+          const root = createRoot(div)
+          root.render(
+            <MePopup
+              pin={pin}
+              initialPopupPin={undefined}
+              setSelectedPin={setSelectedPin}
+            />
+          )
+          return div
+        })
+      } else {
+        superMarker.bindPopup(() => {
+          const div = document.createElement('div')
+          const root = createRoot(div)
+          root.render(
+            <AllPopup pin={pin} setSelectedPin={setSelectedPin} />
+          )
+          return div
+        })
+      }
+
+      // Add event handler for super marker
+      superMarker.on('click', () => {
+        if (!setHighlightTarget || !period) return
+        setHighlightTarget((highlightTarget: HighlightTarget) => {
+          const newXAxisValue = convertToXAxisValue(pin, period)
+          if (highlightTarget.xAxisValue === newXAxisValue) {
+            return highlightTarget
+          } else {
+            return { lastUpdateBy: 'Map', xAxisValue: newXAxisValue }
+          }
+        })
+      })
+
+      if (superClusterRef.current) {
+        console.log('Adding marker to super cluster')
+        superClusterRef.current.addLayer(superMarker)
       }
     })
 
+    // Update initial cluster display
+    console.log('Initial cluster update')
+    updateClusters()
+
+    // Listen to zoom events to update clusters
+    map.on('zoomend', updateClusters)
+
     return () => {
-      if (clusterGroupRef.current) {
-        map.removeLayer(clusterGroupRef.current)
-        clusterGroupRef.current = null
+      // Remove event listener
+      map.off('zoomend', updateClusters)
+      
+      // Remove all cluster groups
+      Object.values(happinessClustersRef.current).forEach(clusterGroup => {
+        if (map.hasLayer(clusterGroup)) {
+          map.removeLayer(clusterGroup)
+        }
+      })
+      if (superClusterRef.current && map.hasLayer(superClusterRef.current)) {
+        map.removeLayer(superClusterRef.current)
       }
+      happinessClustersRef.current = {}
+      superClusterRef.current = null
     }
   }, [map, pinData, iconType, activeTimestamp, setHighlightTarget, period, setSelectedPin])
 
   return null
 }
+
+
 
 const MapOverlay = ({
   _iconType,
@@ -558,8 +724,7 @@ const Map: React.FC<Props> = ({
             />
           </LayersControl.BaseLayer>
         </LayersControl>
-        {/* Sử dụng GlobalClusterGroup thay vì nhiều MapOverlay riêng biệt */}
-        <GlobalClusterGroup
+        <HybridClusterGroup
           iconType={iconType}
           pinData={pinData}
           setSelectedPin={setSelectedPin}
