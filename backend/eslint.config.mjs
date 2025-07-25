@@ -33,7 +33,7 @@ export default [{
 
         parserOptions: {
             project: "tsconfig.json",
-            tsconfigRootDir: "/home/nmatsui/code/oasismap/backend",
+            tsconfigRootDir: __dirname,
         },
     },
 
