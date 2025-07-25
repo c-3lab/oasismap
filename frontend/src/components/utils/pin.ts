@@ -13,53 +13,47 @@ function convertTimestamp(timestamp: string) {
 }
 
 export function GetPin(arr: (Data | MapDataItem)[]): Pin[] {
-  console.log('GetPin: Input array length:', arr.length);
-  console.log('GetPin: First item:', arr[0]);
-  
   const filteredArr = arr.filter((data: MapDataItem) => {
-    const shouldInclude = data.answers[data.type] !== 0;
-    console.log(`GetPin: Filtering ${data.type}, answer: ${data.answers[data.type]}, include: ${shouldInclude}`);
-    return shouldInclude;
-  });
-  
-  console.log('GetPin: Filtered array length:', filteredArr.length);
-  
-  return filteredArr.map((data) => {
-      let basetime
-      let timestamp
-      let memo
-      let memos
-      if ('timestamp' in data && data.timestamp) {
-        timestamp = convertTimestamp(data.timestamp)
-        basetime = data.timestamp
-        memo = data.memo
-        memos = undefined
-      } else {
-        basetime = undefined
-        timestamp = undefined
-        memo = undefined
-        memos = data.memos.map(({ timestamp, memo }) => {
-          return { timestamp: convertTimestamp(timestamp), memo }
-        })
-      }
+    const shouldInclude = data.answers[data.type] !== 0
+    return shouldInclude
+  })
 
-      const pin: Pin = {
-        id: data.id,
-        type: data.type,
-        latitude: data.location.value.coordinates[0],
-        longitude: data.location.value.coordinates[1],
-        answer: data.answers[data.type],
-        answer1: data.answers['happiness1'],
-        answer2: data.answers['happiness2'],
-        answer3: data.answers['happiness3'],
-        answer4: data.answers['happiness4'],
-        answer5: data.answers['happiness5'],
-        answer6: data.answers['happiness6'],
-        basetime: basetime,
-        memo: memo,
-        memos: memos,
-        timestamp: timestamp,
-      }
-      return pin
-    })
+  return filteredArr.map((data) => {
+    let basetime
+    let timestamp
+    let memo
+    let memos
+    if ('timestamp' in data && data.timestamp) {
+      timestamp = convertTimestamp(data.timestamp)
+      basetime = data.timestamp
+      memo = data.memo
+      memos = undefined
+    } else {
+      basetime = undefined
+      timestamp = undefined
+      memo = undefined
+      memos = data.memos.map(({ timestamp, memo }) => {
+        return { timestamp: convertTimestamp(timestamp), memo }
+      })
+    }
+
+    const pin: Pin = {
+      id: data.id,
+      type: data.type,
+      latitude: data.location.value.coordinates[0],
+      longitude: data.location.value.coordinates[1],
+      answer: data.answers[data.type],
+      answer1: data.answers['happiness1'],
+      answer2: data.answers['happiness2'],
+      answer3: data.answers['happiness3'],
+      answer4: data.answers['happiness4'],
+      answer5: data.answers['happiness5'],
+      answer6: data.answers['happiness6'],
+      basetime: basetime,
+      memo: memo,
+      memos: memos,
+      timestamp: timestamp,
+    }
+    return pin
+  })
 }

@@ -2,19 +2,15 @@ import { Box } from '@mui/material'
 import { Session } from 'next-auth'
 import { Pin } from '@/types/pin'
 import { HappinessAllGraph } from '../happiness/happiness-all-graph'
-import { PROFILE_TYPE } from '@/libs/constants'
-import { Popup } from 'react-leaflet'
 
 export const AllPopup = ({
   pin,
   setSelectedPin,
-  session,
 }: {
   pin: Pin
   setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
   session: Session | null
 }) => {
-
   if (pin.memos === undefined) {
     return
   }

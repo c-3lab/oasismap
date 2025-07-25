@@ -20,7 +20,7 @@ export const MePopup = ({
     >
       <HappinessTitle
         type="popup"
-        title={questionTitles.happiness1 }
+        title={questionTitles.happiness1}
         color={mapColors.BLUE[0]}
         selected={pin.answer1 === 1}
       />

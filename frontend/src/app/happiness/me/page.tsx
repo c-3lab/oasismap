@@ -119,7 +119,7 @@ const HappinessMe: React.FC = () => {
 
       const limit = 1000
       let offset = 0
-            while (!willStop.current) {
+      while (!willStop.current) {
         // アクセストークンを再取得
         const updatedSession = await update()
 
@@ -133,34 +133,22 @@ const HappinessMe: React.FC = () => {
           },
           updatedSession?.user?.accessToken!
         )
-        console.log('Frontend received data:', data);
-        console.log('Data count:', data['count']);
-        console.log('Data length:', data['data']?.length);
-        
+
         if (data['count'] === 0 || data['data'].length === 0) {
-          console.log('Breaking loop: count is 0 or data is empty');
-          break;
+          break
         }
-        
-        console.log('About to call GetPin with data:', data['data'].length, 'items');
-        console.log('Current offset:', offset);
-        console.log('Total pins so far:', pinData.length);
-        
+
         try {
-          const newPins = GetPin(data['data']);
-          console.log('New pins from GetPin:', newPins.length);
-          console.log('First pin:', newPins[0]);
-          
+          const newPins = GetPin(data['data'])
+
           setPinData((prevPinData: Pin[]) => {
-            const updatedPinData = [...prevPinData, ...newPins];
-            console.log('Updated pinData length:', updatedPinData.length);
-            console.log('First pin in updated data:', updatedPinData[0]);
-            return updatedPinData;
+            const updatedPinData = [...prevPinData, ...newPins]
+            return updatedPinData
           })
         } catch (error) {
-          console.error('Error in GetPin or setPinData:', error);
+          console.error('Error in GetPin or setPinData:', error)
         }
-        
+
         setMyHappiness((prevHappiness: happinessSet) => {
           const nextHappiness = myHappinessData(data['data'])
           if (Object.keys(prevHappiness).length === 0) return nextHappiness
@@ -197,10 +185,9 @@ const HappinessMe: React.FC = () => {
 
         // Tăng offset theo số data thực tế nhận được
         offset += data['data'].length
-        
+
         // Break ngay sau lần fetch đầu tiên vì backend trả về tất cả data
-        console.log('Breaking loop: fetched all data in first request');
-        break;
+        break
       }
 
       if (timestamp && Object.keys(entityByEntityId).length === 0) {
