@@ -204,13 +204,10 @@ a {
 }
 
 /* Popup styling */
-.leaflet-popup-content-wrapper {
-  width: 250px !important;
-  max-width: 300px !important;
-  min-width: 200px !important;
-}
 
 .leaflet-popup-content {
   margin: 8px !important;
   line-height: 1.4 !important;
+  width: auto !important ;
 }
+

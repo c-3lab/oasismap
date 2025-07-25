@@ -436,6 +436,9 @@ const HybridClusterGroup = ({
       } else {
         marker.bindPopup(() => {
           const div = document.createElement('div')
+          div.style.padding = '15px'
+          div.style.minWidth = '280px'
+          div.style.maxWidth = '350px'
           const root = createRoot(div)
           root.render(
             <AllPopupWrapper pin={pin} setSelectedPin={setSelectedPin} session={session} />
@@ -501,6 +504,9 @@ const HybridClusterGroup = ({
       } else {
         superMarker.bindPopup(() => {
           const div = document.createElement('div')
+          div.style.padding = '15px'
+          div.style.minWidth = '280px'
+          div.style.maxWidth = '350px'
           const root = createRoot(div)
           root.render(
             <AllPopupWrapper pin={pin} setSelectedPin={setSelectedPin} session={session} />

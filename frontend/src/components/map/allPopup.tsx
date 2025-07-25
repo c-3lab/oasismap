@@ -22,7 +22,11 @@ export const AllPopup = ({
     pin.memos.map((memo) => memoArray.push(memo.memo))
   }
   return (
-    <div style={{ padding: '10px', minWidth: '200px' }}>
+    <div style={{ 
+      padding: '15px', 
+      minWidth: '280px', 
+      maxWidth: '350px',
+    }}>
       <HappinessAllGraph data={pin} />
       {pin.memos !== undefined && (
         <Box sx={{ fontWeight: 'bolder' }}>
