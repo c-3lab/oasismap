@@ -150,23 +150,25 @@ export class HappinessMeService {
         }
       }
       
-      // Create 6 separate pins, one for each happiness type
-      happinessKeys.forEach((happinessType) => {
-        pins.push({
-          id: `pin-${Date.now()}-${i}-${happinessType}`,
-          entityId: `entity-${Date.now()}-${i}`,
-          type: happinessType, // Type is the specific happiness key
-          location: {
-            type: 'geo:json',
-            value: {
-              type: 'Point',
-              coordinates: [randomLat, randomLng] as [number, number],
-            },
+      // Find the primary happiness type (highest value)
+      const maxValue = Math.max(...Object.values(answers));
+      const primaryType = Object.keys(answers).find(key => answers[key as keyof typeof answers] === maxValue) as string;
+      
+      // Create single pin with primary type
+      pins.push({
+        id: `pin-${Date.now()}-${i}`,
+        entityId: `entity-${Date.now()}-${i}`,
+        type: primaryType, // Primary type based on highest value
+        location: {
+          type: 'geo:json',
+          value: {
+            type: 'Point',
+            coordinates: [randomLat, randomLng] as [number, number],
           },
-          timestamp: new Date().toISOString(),
-          memo: `Pin ${i} with ${numHappinessTypes} happiness types`,
-          answers: answers, // All 6 pins share the same answers object
-        });
+        },
+        timestamp: new Date().toISOString(),
+        memo: `Pin ${i} with ${numHappinessTypes} happiness types`,
+        answers: answers, // All happiness values
       });
     }
     
@@ -216,23 +218,25 @@ export class HappinessMeService {
         }
       }
       
-      // Create 6 separate pins, one for each happiness type
-      happinessKeys.forEach((happinessType) => {
-        pins.push({
-          id: `direct-${Date.now()}-${i}-${happinessType}`,
-          entityId: `direct-entity-${Date.now()}-${i}`,
-          type: happinessType, // Type is the specific happiness key
-          location: {
-            type: 'geo:json',
-            value: {
-              type: 'Point',
-              coordinates: [randomLat, randomLng] as [number, number],
-            },
+      // Find the primary happiness type (highest value)
+      const maxValue = Math.max(...Object.values(answers));
+      const primaryType = Object.keys(answers).find(key => answers[key as keyof typeof answers] === maxValue) as string;
+      
+      // Create single pin with primary type
+      pins.push({
+        id: `direct-${Date.now()}-${i}`,
+        entityId: `direct-entity-${Date.now()}-${i}`,
+        type: primaryType, // Primary type based on highest value
+        location: {
+          type: 'geo:json',
+          value: {
+            type: 'Point',
+            coordinates: [randomLat, randomLng] as [number, number],
           },
-          timestamp: formattedTime,
-          memo: `Direct pin ${i} with ${numHappinessTypes} happiness types`,
-          answers: answers, // All 6 pins share the same answers object
-        });
+        },
+        timestamp: formattedTime,
+        memo: `Direct pin ${i} with ${numHappinessTypes} happiness types`,
+        answers: answers, // All happiness values
       });
     }
     
