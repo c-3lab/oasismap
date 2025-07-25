@@ -383,15 +383,7 @@ const HybridClusterGroup = ({
           iconType,
           pin.type,
           pin.answer,
-          pinIsActive(pin, activeTimestamp),
-          {
-            happiness1: pin.answer1,
-            happiness2: pin.answer2,
-            happiness3: pin.answer3,
-            happiness4: pin.answer4,
-            happiness5: pin.answer5,
-            happiness6: pin.answer6,
-          }
+          pinIsActive(pin, activeTimestamp)
         ),
       })
 
@@ -424,15 +416,7 @@ const HybridClusterGroup = ({
           iconType,
           pin.type,
           pin.answer,
-          pinIsActive(pin, activeTimestamp),
-          {
-            happiness1: pin.answer1,
-            happiness2: pin.answer2,
-            happiness3: pin.answer3,
-            happiness4: pin.answer4,
-            happiness5: pin.answer5,
-            happiness6: pin.answer6,
-          }
+          pinIsActive(pin, activeTimestamp)
         ),
       })
 
