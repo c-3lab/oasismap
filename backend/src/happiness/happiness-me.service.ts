@@ -26,7 +26,6 @@ export class HappinessMeService {
   ): Promise<HappinessMeResponse> {
     const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
     const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
-
     const query = `nickname==${userAttribute.nickname};timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;
 
     const realEntities = await this.getHappinessEntities(query, limit, offset);
@@ -35,7 +34,7 @@ export class HappinessMeService {
     const additionalPins = this.generatePinsFromBase(
       baseEntity,
       userAttribute,
-      100,
+      1000,
     );
 
     return {
