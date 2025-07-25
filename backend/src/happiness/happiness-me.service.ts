@@ -35,7 +35,7 @@ export class HappinessMeService {
     const additionalPins = this.generatePinsFromBase(
       baseEntity,
       userAttribute,
-      1000,
+      100,
     );
 
     return {
