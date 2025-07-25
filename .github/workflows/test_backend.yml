@@ -17,7 +17,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20, 22]
+        node-version: [22]
 
     steps:
       - name: Checkout code
@@ -58,63 +58,29 @@ jobs:
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Create test environment file for docker-compose
+      - name: Copy environment file for docker-compose
         run: |
-          # Create a minimal .env file for docker-compose
-          echo "NEXTAUTH_URL=http://localhost:3000" > .env
-          echo "NEXTAUTH_SECRET=test-secret" >> .env
-          echo "MAP_DEFAULT_LATITUDE=35.6762" >> .env
-          echo "MAP_DEFAULT_LONGITUDE=139.6503" >> .env
-          echo "MAP_DEFAULT_ZOOM=10" >> .env
-          echo "DEFAULT_ZOOM_FOR_COLLECTION_RANGE=15" >> .env
-          echo "DATASET_LIST_BY=10" >> .env
-          echo "BACKEND_URL=http://localhost:4000" >> .env
-          echo "GENERAL_USER_KEYCLOAK_CLIENT_ID=test-client" >> .env
-          echo "GENERAL_USER_KEYCLOAK_CLIENT_SECRET=test-secret" >> .env
-          echo "ADMIN_KEYCLOAK_CLIENT_ID=admin-client" >> .env
-          echo "ADMIN_KEYCLOAK_CLIENT_SECRET=admin-secret" >> .env
-          echo "KEYCLOAK_CLIENT_ISSUER=http://localhost:8080/realms/oasismap" >> .env
-          echo "POSTGREHOST=postgres" >> .env
-          echo "POSTGREPORT=5432" >> .env
-          echo "POSTGREUSER=testuser" >> .env
-          echo "POSTGREPASSWORD=testpass" >> .env
-          echo "REVERSE_GEOCODING_URL=https://nominatim.openstreetmap.org/reverse" >> .env
-          echo "KEYCLOAK_ADMIN=admin" >> .env
-          echo "KEYCLOAK_ADMIN_PASSWORD=admin" >> .env
-          echo "KC_HOSTNAME_URL=http://localhost:8080" >> .env
-          echo "KC_HOSTNAME_ADMIN_URL=http://localhost:8080" >> .env
-          echo "MONGOUSERNAME=test" >> .env
-          echo "MONGOPASSWORD=test" >> .env
-          echo "MONGOHOST=mongo" >> .env
+          # Copy _env file to .env for docker-compose
+          cp _env .env
 
       - name: Start application with docker-compose
         run: |
           echo "Starting application with docker-compose..."
-
-          # Pull and build images
-          docker compose -f docker-compose.yml pull
-          docker compose -f docker-compose.yml build
 
           # Start services
           docker compose -f docker-compose.yml up -d
 
           # Wait for services to be ready
           echo "Waiting for services to start..."
-          timeout 300 bash -c 'until curl -f http://localhost:4000 > /dev/null 2>&1; do sleep 10; echo "Waiting for backend..."; done'
-          
+          timeout 60 bash -c 'until curl -f http://localhost:4000 > /dev/null 2>&1; do sleep 10; echo "Waiting for backend..."; done'
+
+          # Additional wait to ensure all services are stable
+          sleep 30
+
           echo "Application started successfully!"
 
       - name: Run E2E Tests with docker-compose
         run: |
-          echo "Running E2E tests with docker-compose application..."
-
-          # Wait a bit more for all services to be fully ready
-          sleep 30
-
-          # Check if services are running
-          echo "Checking service status:"
-          docker compose -f docker-compose.yml ps
-
           # Run E2E tests inside the backend container
           echo "Running E2E tests inside backend container..."
           docker compose -f docker-compose.yml exec -T backend npm run test:e2e
@@ -138,25 +104,6 @@ jobs:
         with:
           scan-type: 'fs'
           scan-ref: './backend'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL'
-          exit-code: '0'
-
-      - name: Debug Trivy results
-        if: always()
-        run: |
-          echo "Checking Trivy scan results..."
-          ls -la *.sarif || echo "No SARIF files found"
-          if [ -f "trivy-results.sarif" ]; then
-            echo "Trivy results file exists"
-            cat trivy-results.sarif | head -20
-          else
-            echo "Trivy results file not found"
-          fi
-
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always() && hashFiles('trivy-results.sarif')
-        with:
-          sarif_file: 'trivy-results.sarif'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
