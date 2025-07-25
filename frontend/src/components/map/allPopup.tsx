@@ -18,7 +18,6 @@ export const AllPopup = ({
   {
     pin.memos.map((memo) => memoArray.push(memo.memo))
   }
-  console.log(pin)
   return (
     <>
       <HappinessAllGraph data={pin} />
