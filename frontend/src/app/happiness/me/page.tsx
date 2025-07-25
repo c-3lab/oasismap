@@ -183,10 +183,8 @@ const HappinessMe: React.FC = () => {
           })
         }
 
-        // Tăng offset theo số data thực tế nhận được
         offset += data['data'].length
 
-        // Break ngay sau lần fetch đầu tiên vì backend trả về tất cả data
         break
       }
 

@@ -16,9 +16,9 @@ import { LatLng, LatLngTuple, LatLngBounds, divIcon } from 'leaflet'
 import L from 'leaflet'
 import { createRoot } from 'react-dom/client'
 import 'leaflet/dist/leaflet.css'
-import 'leaflet.markercluster';
-import 'leaflet.markercluster/dist/MarkerCluster.css';
-import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import 'leaflet.markercluster'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { getIconByType } from '../utils/icon'
 import { IconType } from '@/types/icon-type'
 import { messageContext } from '@/contexts/message-context'
@@ -38,17 +38,18 @@ import { HappinessKey } from '@/types/happiness-key'
 import { PeriodType } from '@/types/period'
 import { AllModal } from '../happiness/all-modal'
 
-// Wrapper component để truyền session vào AllPopup (không sử dụng nữa)
-const AllPopupWrapper = ({ 
-  pin, 
-  setSelectedPin, 
-  session 
-}: { 
+const AllPopupWrapper = ({
+  pin,
+  setSelectedPin,
+  session,
+}: {
   pin: Pin
   setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
-  session: any 
+  session: any
 }) => {
-  return <AllPopup pin={pin} setSelectedPin={setSelectedPin} session={session} />
+  return (
+    <AllPopup pin={pin} setSelectedPin={setSelectedPin} session={session} />
+  )
 }
 
 // 環境変数の取得に失敗した場合は日本経緯度原点を設定
@@ -226,22 +227,25 @@ const HybridClusterGroup = ({
   _session: any
 }) => {
   const map = useMap()
-  const happinessClustersRef = useRef<{ [key: string]: L.MarkerClusterGroup }>({})
+  const happinessClustersRef = useRef<{ [key: string]: L.MarkerClusterGroup }>(
+    {}
+  )
   const superClusterRef = useRef<L.MarkerClusterGroup | null>(null)
   const [popupPin, setPopupPin] = useState<Pin | null>(null)
-  const [popupPosition, setPopupPosition] = useState<[number, number] | null>(null)
+  const [popupPosition, setPopupPosition] = useState<[number, number] | null>(
+    null
+  )
 
   useEffect(() => {
-    console.log('HybridClusterGroup: Starting with', pinData.length, 'pins');
-    console.log('HybridClusterGroup: First pin data:', pinData[0]);
-    
     // Create happiness clusters
     HAPPINESS_KEYS.forEach((happinessType) => {
       if (!happinessClustersRef.current[happinessType]) {
-        console.log('Creating cluster for:', happinessType);
         happinessClustersRef.current[happinessType] = L.markerClusterGroup({
           chunkedLoading: true,
-          maxClusterRadius: loadEnvAsNumber(process.env.NEXT_PUBLIC_MAX_CLUSTER_RADIUS, 200),
+          maxClusterRadius: loadEnvAsNumber(
+            process.env.NEXT_PUBLIC_MAX_CLUSTER_RADIUS,
+            200
+          ),
           disableClusteringAtZoom: 12, // Cluster khi zoom < 12
           spiderfyOnMaxZoom: true,
           showCoverageOnHover: true,
@@ -249,36 +253,38 @@ const HybridClusterGroup = ({
           removeOutsideVisibleBounds: true,
           animate: true,
           animateAddingMarkers: false,
-          iconCreateFunction: function(cluster) {
-            const count = cluster.getChildCount();
-            
+          iconCreateFunction: function (cluster) {
+            const count = cluster.getChildCount()
+
             // Color based on specific happiness type
-            const happinessNumber = happinessType.slice(-1);
-            const className = `cluster-happiness${happinessNumber}`;
-            
+            const happinessNumber = happinessType.slice(-1)
+            const className = `cluster-happiness${happinessNumber}`
+
             // Increase icon size based on marker count
-            let iconSize = 40;
-            if (count > 10) iconSize = 50;
-            if (count > 50) iconSize = 60;
-            if (count > 100) iconSize = 70;
-            if (count > 500) iconSize = 80;
-            
+            let iconSize = 40
+            if (count > 10) iconSize = 50
+            if (count > 50) iconSize = 60
+            if (count > 100) iconSize = 70
+            if (count > 500) iconSize = 80
+
             return L.divIcon({
               html: `<div class="marker-cluster ${className}" style="background-color: ${happinessType === 'happiness1' ? '#007fff' : happinessType === 'happiness2' ? '#4BA724' : happinessType === 'happiness3' ? '#7f00ff' : happinessType === 'happiness4' ? '#FF69B4' : happinessType === 'happiness5' ? '#ff7f00' : '#ff0000'}; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; min-width: ${iconSize}px; min-height: ${iconSize}px; border: 2px solid rgba(255, 255, 255, 0.8); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);"><div><span style="color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);">${count}</span></div></div>`,
               className: '',
-              iconSize: L.point(iconSize, iconSize)
-            });
-          }
+              iconSize: L.point(iconSize, iconSize),
+            })
+          },
         })
       }
     })
 
     // Create super cluster for all pins
     if (!superClusterRef.current) {
-      console.log('Creating super cluster')
       superClusterRef.current = L.markerClusterGroup({
         chunkedLoading: true,
-        maxClusterRadius: loadEnvAsNumber(process.env.NEXT_PUBLIC_MAX_CLUSTER_RADIUS, 200), // Environment variable for cluster radius
+        maxClusterRadius: loadEnvAsNumber(
+          process.env.NEXT_PUBLIC_MAX_CLUSTER_RADIUS,
+          200
+        ), // Environment variable for cluster radius
         disableClusteringAtZoom: 12, // Only cluster when zoom < 12
         spiderfyOnMaxZoom: true,
         showCoverageOnHover: true,
@@ -286,91 +292,77 @@ const HybridClusterGroup = ({
         removeOutsideVisibleBounds: true,
         animate: true,
         animateAddingMarkers: false,
-        iconCreateFunction: function(cluster) {
-          const count = cluster.getChildCount();
-          
+        iconCreateFunction: function (cluster) {
+          const count = cluster.getChildCount()
+
           // Gray color for super cluster
-          const className = 'cluster-total';
-          
+          const className = 'cluster-total'
+
           // Increase icon size based on marker count (same as sub clusters)
-          let iconSize = 40;
-          if (count > 10) iconSize = 50;
-          if (count > 50) iconSize = 60;
-          if (count > 100) iconSize = 70;
-          if (count > 500) iconSize = 80;
-          
+          let iconSize = 40
+          if (count > 10) iconSize = 50
+          if (count > 50) iconSize = 60
+          if (count > 100) iconSize = 70
+          if (count > 500) iconSize = 80
+
           return L.divIcon({
             html: `<div class="marker-cluster ${className}" style="background-color: rgba(241, 128, 23, 0.6); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; min-width: ${iconSize}px; min-height: ${iconSize}px; border: 2px solid rgba(255, 255, 255, 0.8); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);"><div><span style="color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);">${count}</span></div></div>`,
             className: '',
-            iconSize: L.point(iconSize, iconSize)
-          });
-        }
+            iconSize: L.point(iconSize, iconSize),
+          })
+        },
       })
     }
 
     // Function to update cluster display based on zoom level
     const updateClusters = () => {
-      const zoomLevel = map.getZoom();
-      console.log('updateClusters called, zoom level:', zoomLevel)
-      
+      const zoomLevel = map.getZoom()
+
       if (zoomLevel < 10) {
         // Zoom out: show super cluster, hide color clusters
-        console.log('Zoom < 10: Showing super cluster')
-        Object.values(happinessClustersRef.current).forEach(cluster => {
+        Object.values(happinessClustersRef.current).forEach((cluster) => {
           if (map.hasLayer(cluster)) {
-            console.log('Removing happiness cluster from map')
             map.removeLayer(cluster)
           }
-        });
+        })
         if (!map.hasLayer(superClusterRef.current!)) {
-          console.log('Adding super cluster to map')
           map.addLayer(superClusterRef.current!)
         }
       } else {
         // Zoom in: show color clusters, hide super cluster
-        console.log('Zoom >= 10: Showing happiness clusters')
         if (map.hasLayer(superClusterRef.current!)) {
-          console.log('Removing super cluster from map')
           map.removeLayer(superClusterRef.current!)
         }
-        Object.entries(happinessClustersRef.current).forEach(([type, cluster]) => {
-          if (!map.hasLayer(cluster)) {
-            console.log('Adding happiness cluster to map:', type)
-            map.addLayer(cluster)
-          } else {
-            console.log('Happiness cluster already on map:', type)
+        Object.entries(happinessClustersRef.current).forEach(
+          ([_type, cluster]) => {
+            if (!map.hasLayer(cluster)) {
+              map.addLayer(cluster)
+            }
           }
-        });
+        )
       }
     }
 
     if (!map || pinData.length === 0) {
-      console.log('HybridClusterGroup: No map or no pin data, returning early');
-      return;
+      return
     }
 
-    console.log('HybridClusterGroup: Creating clusters for', pinData.length, 'pins');
-
     // Clear old markers from all cluster groups
-    Object.values(happinessClustersRef.current).forEach(clusterGroup => {
+    Object.values(happinessClustersRef.current).forEach((clusterGroup) => {
       clusterGroup.clearLayers()
     })
     if (superClusterRef.current) {
       superClusterRef.current.clearLayers()
     }
 
-    console.log('Adding markers to clusters...')
     // Filter pins based on selectedLayers
-    const filteredPins = selectedLayers && selectedLayers.length > 0 
-      ? pinData.filter(pin => selectedLayers.includes(pin.type))
-      : pinData
-    
-    console.log('Filtered pins:', filteredPins.length, 'from', pinData.length)
-    console.log('First filtered pin:', filteredPins[0]);
-    
+    const filteredPins =
+      selectedLayers && selectedLayers.length > 0
+        ? pinData.filter((pin) => selectedLayers.includes(pin.type))
+        : pinData
+
     // Add markers to both color clusters and super cluster
-    console.log('Starting to add markers to clusters...');
-    filteredPins.forEach((pin, index) => {
+    filteredPins.forEach((pin, _index) => {
       // Check if this pin type has a value > 0 based on pin.type
       const happinessValues = {
         happiness1: pin.answer1,
@@ -379,30 +371,13 @@ const HybridClusterGroup = ({
         happiness4: pin.answer4,
         happiness5: pin.answer5,
         happiness6: pin.answer6,
-      };
-      const pinValue = happinessValues[pin.type];
-      
-      if (pinValue <= 0) {
-        console.log(`Skipping marker ${index + 1}/${filteredPins.length} for ${pin.type} because value is ${pinValue}`);
-        return;
       }
-      
-      console.log(`Adding marker ${index + 1}/${filteredPins.length}:`, {
-        id: pin.id,
-        type: pin.type,
-        lat: pin.latitude,
-        lng: pin.longitude,
-        answer: pin.answer,
-        answers: {
-          happiness1: pin.answer1,
-          happiness2: pin.answer2,
-          happiness3: pin.answer3,
-          happiness4: pin.answer4,
-          happiness5: pin.answer5,
-          happiness6: pin.answer6,
-        }
-      });
-      
+      const pinValue = happinessValues[pin.type]
+
+      if (pinValue <= 0) {
+        return
+      }
+
       const marker = L.marker([pin.latitude, pin.longitude], {
         icon: getIconByType(
           iconType,
@@ -417,19 +392,15 @@ const HybridClusterGroup = ({
             happiness5: pin.answer5,
             happiness6: pin.answer6,
           }
-        )
+        ),
       })
-
-
-
-      // Marker không bind popup để có thể sử dụng context của Container
 
       // Add event handler
       marker.on('click', () => {
         // Set popup
         setPopupPin(pin)
         setPopupPosition([pin.latitude, pin.longitude])
-        
+
         // Handle highlight
         if (!setHighlightTarget || !period) return
         setHighlightTarget((highlightTarget: HighlightTarget) => {
@@ -444,13 +415,9 @@ const HybridClusterGroup = ({
 
       // Add marker to color cluster based on pin type
       if (happinessClustersRef.current[pin.type]) {
-        console.log('Adding marker to happiness cluster:', pin.type, 'at position:', pin.latitude, pin.longitude)
         happinessClustersRef.current[pin.type].addLayer(marker)
-        console.log('Marker added successfully. Cluster now has', happinessClustersRef.current[pin.type].getLayers().length, 'markers')
-      } else {
-        console.log('No cluster found for type:', pin.type, 'Available clusters:', Object.keys(happinessClustersRef.current))
       }
-      
+
       // Add marker to super cluster (copy)
       const superMarker = L.marker([pin.latitude, pin.longitude], {
         icon: getIconByType(
@@ -466,17 +433,15 @@ const HybridClusterGroup = ({
             happiness5: pin.answer5,
             happiness6: pin.answer6,
           }
-        )
+        ),
       })
-
-      // Super marker không bind popup để có thể sử dụng context của Container
 
       // Add event handler for super marker
       superMarker.on('click', () => {
         // Set popup
         setPopupPin(pin)
         setPopupPosition([pin.latitude, pin.longitude])
-        
+
         // Handle highlight
         if (!setHighlightTarget || !period) return
         setHighlightTarget((highlightTarget: HighlightTarget) => {
@@ -490,22 +455,11 @@ const HybridClusterGroup = ({
       })
 
       if (superClusterRef.current) {
-        console.log('Adding marker to super cluster')
         superClusterRef.current.addLayer(superMarker)
       }
     })
 
     // Update initial cluster display
-    console.log('Initial cluster update')
-    console.log('Available happiness clusters:', Object.keys(happinessClustersRef.current));
-    console.log('Total markers added to happiness clusters:', Object.values(happinessClustersRef.current).reduce((total, cluster) => total + cluster.getLayers().length, 0));
-    console.log('Total markers added to super cluster:', superClusterRef.current?.getLayers().length || 0);
-    
-    // Debug: Check which clusters have markers
-    Object.entries(happinessClustersRef.current).forEach(([type, cluster]) => {
-      console.log(`Cluster ${type} has ${cluster.getLayers().length} markers`);
-    });
-    
     updateClusters()
 
     // Listen to zoom events to update clusters
@@ -514,9 +468,9 @@ const HybridClusterGroup = ({
     return () => {
       // Remove event listener
       map.off('zoomend', updateClusters)
-      
+
       // Remove all cluster groups
-      Object.values(happinessClustersRef.current).forEach(clusterGroup => {
+      Object.values(happinessClustersRef.current).forEach((clusterGroup) => {
         if (map.hasLayer(clusterGroup)) {
           map.removeLayer(clusterGroup)
         }
@@ -527,19 +481,28 @@ const HybridClusterGroup = ({
       happinessClustersRef.current = {}
       superClusterRef.current = null
     }
-  }, [map, pinData, iconType, activeTimestamp, setHighlightTarget, period, setSelectedPin, selectedLayers])
+  }, [
+    map,
+    pinData,
+    iconType,
+    activeTimestamp,
+    setHighlightTarget,
+    period,
+    setSelectedPin,
+    selectedLayers,
+  ])
 
   // Add click handler to close popup when clicking on map
   useEffect(() => {
     if (!map) return
-    
+
     const handleMapClick = () => {
       setPopupPin(null)
       setPopupPosition(null)
     }
-    
+
     map.on('click', handleMapClick)
-    
+
     return () => {
       map.off('click', handleMapClick)
     }
@@ -556,7 +519,7 @@ const HybridClusterGroup = ({
             remove: () => {
               setPopupPin(null)
               setPopupPosition(null)
-            }
+            },
           }}
         >
           {iconType === 'pin' ? (
@@ -577,8 +540,6 @@ const HybridClusterGroup = ({
     </>
   )
 }
-
-
 
 const MapOverlay = ({
   _iconType,
@@ -676,7 +637,8 @@ const Map: React.FC<Props> = ({
   )
   const [error, setError] = useState<Error | null>(null)
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null)
-  const [selectedLayers, setSelectedLayersState] = useState<HappinessKey[]>(HAPPINESS_KEYS)
+  const [selectedLayers, setSelectedLayersState] =
+    useState<HappinessKey[]>(HAPPINESS_KEYS)
   const noticeMessageContext = useContext(messageContext)
 
   useEffect(() => {
@@ -796,10 +758,10 @@ const Map: React.FC<Props> = ({
         happiness4: pin.answer4,
         happiness5: pin.answer5,
         happiness6: pin.answer6,
-      };
-      
+      }
+
       // Check if pin type matches the filter type and has value > 0
-      return pin.type === type && happinessValues[type] > 0;
+      return pin.type === type && happinessValues[type] > 0
     })
 
   let initialEntityUuid: string | undefined = undefined
@@ -854,7 +816,7 @@ const Map: React.FC<Props> = ({
           selectedLayers={selectedLayers}
           _session={session}
         />
-        
+
         {/* Keep LayersControl to display legend but don't create separate cluster */}
         <LayersControl position="topright">
           {HAPPINESS_KEYS.map((type, index) => {
