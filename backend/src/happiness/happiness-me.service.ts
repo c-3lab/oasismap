@@ -27,17 +27,15 @@ export class HappinessMeService {
     const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
     const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
 
-    // Query database to get real data
     const query = `nickname==${userAttribute.nickname};timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;
 
     const realEntities = await this.getHappinessEntities(query, limit, offset);
 
-    // Generate 100 pins from real data
     const baseEntity = realEntities.length > 0 ? realEntities[0] : null;
     const additionalPins = this.generatePinsFromBase(
       baseEntity,
       userAttribute,
-      100,
+      1000,
     );
 
     return {
@@ -56,27 +54,20 @@ export class HappinessMeService {
     const startDate = DateTime.fromISO(startAsUTC);
     const endDate = DateTime.fromISO(endAsUTC);
 
-    // Base coordinates - wider distribution for 100 pins
-    const baseLat = 35.6762; // Tokyo latitude
-    const baseLng = 139.6503; // Tokyo longitude
-    const latRange = 1.0; // ±1.0 degree latitude for wider distribution
-    const lngRange = 1.0; // ±1.0 degree longitude for wider distribution
-
-    // Create 100 pins, each pin has only 1 happiness key
+    const baseLat = 35.6762;
+    const baseLng = 139.6503;
+    const latRange = 1.0;
+    const lngRange = 1.0;
     for (let i = 0; i < count; i++) {
-      // Generate random timestamp within time range
       const randomTime = startDate.plus({
         seconds: Math.random() * endDate.diff(startDate).as('seconds'),
       });
 
-      // Ensure timestamp has correct format
       const formattedTime = randomTime.toISO();
 
-      // Generate random coordinates with wider distribution
       const randomLat = baseLat + (Math.random() - 0.5) * latRange;
       const randomLng = baseLng + (Math.random() - 0.5) * lngRange;
 
-      // Randomly select 1 happiness key for each pin
       const happinessKeys = [
         'happiness1',
         'happiness2',
@@ -87,8 +78,6 @@ export class HappinessMeService {
       ];
       const randomKey =
         happinessKeys[Math.floor(Math.random() * happinessKeys.length)];
-
-      // Create entity with only 1 happiness key having value, others = 0
       const entity: any = {
         id: `additional-${Date.now()}-${i}`,
         type: 'happiness',
@@ -115,7 +104,6 @@ export class HappinessMeService {
         memo: { type: 'Text', value: `Additional memo ${i}` },
       };
 
-      // Only set 1 happiness key = 1, others = 0 to create exactly 1 pin
       happinessKeys.forEach((key) => {
         entity[key] = { type: 'Number', value: key === randomKey ? 1 : 0 };
       });
@@ -133,13 +121,10 @@ export class HappinessMeService {
   ): Data[] {
     const pins: Data[] = [];
 
-    // Base coordinates
-    const baseLat = 35.6762; // Tokyo latitude
-    const baseLng = 139.6503; // Tokyo longitude
+    const baseLat = 35.6762;
+    const baseLng = 139.6503;
     const latRange = 1.0;
     const lngRange = 1.0;
-
-    // Happiness keys
     const happinessKeys = [
       'happiness1',
       'happiness2',
@@ -150,11 +135,8 @@ export class HappinessMeService {
     ];
 
     for (let i = 0; i < count; i++) {
-      // Generate random coordinates
       const randomLat = baseLat + (Math.random() - 0.5) * latRange;
       const randomLng = baseLng + (Math.random() - 0.5) * lngRange;
-
-      // Generate multiple happiness values for each entity (1-6 types with random values 0 or 1)
       const answers = {
         happiness1: 0,
         happiness2: 0,
@@ -163,7 +145,7 @@ export class HappinessMeService {
         happiness5: 0,
         happiness6: 0,
       };
-      const numHappinessTypes = Math.floor(Math.random() * 6) + 1; // 1-6 types
+      const numHappinessTypes = Math.floor(Math.random() * 6) + 1;
       const selectedKeys = [];
       for (let j = 0; j < numHappinessTypes; j++) {
         const availableKeys = happinessKeys.filter(
@@ -173,21 +155,19 @@ export class HappinessMeService {
           const randomKey =
             availableKeys[Math.floor(Math.random() * availableKeys.length)];
           selectedKeys.push(randomKey);
-          answers[randomKey as keyof typeof answers] = 1; // Set value to 1
+          answers[randomKey as keyof typeof answers] = 1;
         }
       }
 
-      // Find the primary happiness type (highest value)
       const maxValue = Math.max(...Object.values(answers));
       const primaryType = Object.keys(answers).find(
         (key) => answers[key as keyof typeof answers] === maxValue,
       ) as string;
 
-      // Create single pin with primary type
       pins.push({
         id: `pin-${Date.now()}-${i}`,
         entityId: `entity-${Date.now()}-${i}`,
-        type: primaryType, // Primary type based on highest value
+        type: primaryType,
         location: {
           type: 'geo:json',
           value: {
@@ -197,7 +177,7 @@ export class HappinessMeService {
         },
         timestamp: new Date().toISOString(),
         memo: `Pin ${i} with ${numHappinessTypes} happiness types`,
-        answers: answers, // All happiness values
+        answers: answers,
       });
     }
 
@@ -214,13 +194,10 @@ export class HappinessMeService {
     const startDate = DateTime.fromISO(startAsUTC);
     const endDate = DateTime.fromISO(endAsUTC);
 
-    // Base coordinates
-    const baseLat = 35.6762; // Tokyo latitude
-    const baseLng = 139.6503; // Tokyo longitude
+    const baseLat = 35.6762;
+    const baseLng = 139.6503;
     const latRange = 1.0;
     const lngRange = 1.0;
-
-    // Happiness keys
     const happinessKeys = [
       'happiness1',
       'happiness2',
@@ -231,17 +208,13 @@ export class HappinessMeService {
     ];
 
     for (let i = 0; i < count; i++) {
-      // Generate random timestamp
       const randomTime = startDate.plus({
         seconds: Math.random() * endDate.diff(startDate).as('seconds'),
       });
       const formattedTime = randomTime.setZone('Asia/Tokyo').toISO();
 
-      // Generate random coordinates
       const randomLat = baseLat + (Math.random() - 0.5) * latRange;
       const randomLng = baseLng + (Math.random() - 0.5) * lngRange;
-
-      // Generate multiple happiness values for each entity (1-6 types with random values 0 or 1)
       const answers = {
         happiness1: 0,
         happiness2: 0,
@@ -250,7 +223,7 @@ export class HappinessMeService {
         happiness5: 0,
         happiness6: 0,
       };
-      const numHappinessTypes = Math.floor(Math.random() * 6) + 1; // 1-6 types
+      const numHappinessTypes = Math.floor(Math.random() * 6) + 1;
       const selectedKeys = [];
       for (let j = 0; j < numHappinessTypes; j++) {
         const availableKeys = happinessKeys.filter(
@@ -260,21 +233,19 @@ export class HappinessMeService {
           const randomKey =
             availableKeys[Math.floor(Math.random() * availableKeys.length)];
           selectedKeys.push(randomKey);
-          answers[randomKey as keyof typeof answers] = 1; // Set value to 1
+          answers[randomKey as keyof typeof answers] = 1;
         }
       }
 
-      // Find the primary happiness type (highest value)
       const maxValue = Math.max(...Object.values(answers));
       const primaryType = Object.keys(answers).find(
         (key) => answers[key as keyof typeof answers] === maxValue,
       ) as string;
 
-      // Create single pin with primary type
       pins.push({
         id: `direct-${Date.now()}-${i}`,
         entityId: `direct-entity-${Date.now()}-${i}`,
-        type: primaryType, // Primary type based on highest value
+        type: primaryType,
         location: {
           type: 'geo:json',
           value: {
@@ -284,7 +255,7 @@ export class HappinessMeService {
         },
         timestamp: formattedTime,
         memo: `Direct pin ${i} with ${numHappinessTypes} happiness types`,
-        answers: answers, // All happiness values
+        answers: answers,
       });
     }
 
@@ -352,7 +323,7 @@ export class HappinessMeService {
               return null;
             }
           })
-          .filter(Boolean); // Remove null values
+          .filter(Boolean);
       });
 
       return result;
