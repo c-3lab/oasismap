@@ -1,6 +1,5 @@
-import { Popup } from 'react-leaflet'
 import { Box } from '@mui/material'
-import { useSession } from 'next-auth/react'
+import { Session } from 'next-auth'
 import { Pin } from '@/types/pin'
 import { HappinessAllGraph } from '../happiness/happiness-all-graph'
 import { PROFILE_TYPE } from '@/libs/constants'
@@ -8,11 +7,12 @@ import { PROFILE_TYPE } from '@/libs/constants'
 export const AllPopup = ({
   pin,
   setSelectedPin,
+  session,
 }: {
   pin: Pin
   setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
+  session: Session | null
 }) => {
-  const { data: session } = useSession()
 
   if (pin.memos === undefined) {
     return
@@ -22,7 +22,7 @@ export const AllPopup = ({
     pin.memos.map((memo) => memoArray.push(memo.memo))
   }
   return (
-    <Popup autoPan={session?.user?.type === PROFILE_TYPE.ADMIN ? false : true}>
+    <div style={{ padding: '10px', minWidth: '200px' }}>
       <HappinessAllGraph data={pin} />
       {pin.memos !== undefined && (
         <Box sx={{ fontWeight: 'bolder' }}>
@@ -45,6 +45,6 @@ export const AllPopup = ({
           )}
         </Box>
       )}
-    </Popup>
+    </div>
   )
 }

@@ -25,8 +25,8 @@ export default function HappinessLayout({
         </Grid>
       }
     >
-      <Layout>{children}</Layout>
       <SessionProvider refetchOnWindowFocus={false}>
+        <Layout>{children}</Layout>
         <TokenChecker />
       </SessionProvider>
     </Suspense>
