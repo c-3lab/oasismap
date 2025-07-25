@@ -3,6 +3,7 @@ import { Session } from 'next-auth'
 import { Pin } from '@/types/pin'
 import { HappinessAllGraph } from '../happiness/happiness-all-graph'
 import { PROFILE_TYPE } from '@/libs/constants'
+import { Popup } from 'react-leaflet'
 
 export const AllPopup = ({
   pin,
@@ -21,12 +22,9 @@ export const AllPopup = ({
   {
     pin.memos.map((memo) => memoArray.push(memo.memo))
   }
+  console.log(pin)
   return (
-    <div style={{ 
-      padding: '15px', 
-      minWidth: '280px', 
-      maxWidth: '350px',
-    }}>
+    <>
       <HappinessAllGraph data={pin} />
       {pin.memos !== undefined && (
         <Box sx={{ fontWeight: 'bolder' }}>
@@ -49,6 +47,6 @@ export const AllPopup = ({
           )}
         </Box>
       )}
-    </div>
+    </>
   )
 }

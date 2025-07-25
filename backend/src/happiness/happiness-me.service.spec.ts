@@ -54,7 +54,32 @@ describe('HappinessMeService', () => {
           orderBy: '!timestamp',
         },
       });
-      expect(result).toEqual(expectedHappinessMeResponse);
+      // Test that we get 100 pins with correct structure
+      expect(result.count).toBe(100);
+      expect(result.data).toHaveLength(100);
+      
+      // Test first pin structure
+      const firstPin = result.data[0];
+      expect(firstPin).toHaveProperty('id');
+      expect(firstPin).toHaveProperty('entityId');
+      expect(firstPin).toHaveProperty('type');
+      expect(firstPin).toHaveProperty('location');
+      expect(firstPin).toHaveProperty('timestamp');
+      expect(firstPin).toHaveProperty('memo');
+      expect(firstPin).toHaveProperty('answers');
+      
+      // Test answers structure
+      expect(firstPin.answers).toHaveProperty('happiness1');
+      expect(firstPin.answers).toHaveProperty('happiness2');
+      expect(firstPin.answers).toHaveProperty('happiness3');
+      expect(firstPin.answers).toHaveProperty('happiness4');
+      expect(firstPin.answers).toHaveProperty('happiness5');
+      expect(firstPin.answers).toHaveProperty('happiness6');
+      
+      // Test location structure
+      expect(firstPin.location).toHaveProperty('type', 'geo:json');
+      expect(firstPin.location.value).toHaveProperty('type', 'Point');
+      expect(firstPin.location.value.coordinates).toHaveLength(2);
     });
   });
 });

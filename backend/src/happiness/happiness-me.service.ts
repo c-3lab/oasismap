@@ -28,7 +28,7 @@ export class HappinessMeService {
     const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
     
     // Query database to get real data
-    const query = `nickname==${userAttribute.nickname}`;
+    const query = `nickname==${userAttribute.nickname};timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;
     console.log('Query:', query);
     
     const realEntities = await this.getHappinessEntities(query, limit, offset);
@@ -36,7 +36,7 @@ export class HappinessMeService {
 
     // Generate 1000 pins from real data
     const baseEntity = realEntities.length > 0 ? realEntities[0] : null;
-    const additionalPins = this.generatePinsFromBase(baseEntity, userAttribute, 100);
+    const additionalPins = this.generatePinsFromBase(baseEntity, userAttribute, 50);
     
     console.log('Generated pins count:', additionalPins.length);
     console.log('First pin:', JSON.stringify(additionalPins[0], null, 2));

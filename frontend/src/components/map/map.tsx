@@ -7,6 +7,7 @@ import {
   LayersControl,
   LayerGroup,
   useMapEvents,
+  Popup,
 } from 'react-leaflet'
 import React, { useState, useEffect, useContext, useRef } from 'react'
 
@@ -28,7 +29,7 @@ import CurrentPositionIcon from '@mui/icons-material/RadioButtonChecked'
 import { renderToString } from 'react-dom/server'
 import { MeModal } from '../happiness/me-modal'
 import { Pin } from '@/types/pin'
-import { HAPPINESS_KEYS, questionTitles } from '@/libs/constants'
+import { HAPPINESS_KEYS, PROFILE_TYPE, questionTitles } from '@/libs/constants'
 import { MePopup } from './mePopup'
 import { AllPopup } from './allPopup'
 import { MessageType } from '@/types/message-type'
@@ -37,7 +38,7 @@ import { HappinessKey } from '@/types/happiness-key'
 import { PeriodType } from '@/types/period'
 import { AllModal } from '../happiness/all-modal'
 
-// Wrapper component để truyền session vào AllPopup
+// Wrapper component để truyền session vào AllPopup (không sử dụng nữa)
 const AllPopupWrapper = ({ 
   pin, 
   setSelectedPin, 
@@ -213,7 +214,7 @@ const HybridClusterGroup = ({
   period,
   activeTimestamp,
   selectedLayers,
-  session,
+  _session,
 }: {
   iconType: IconType
   pinData: Pin[]
@@ -222,11 +223,13 @@ const HybridClusterGroup = ({
   period?: PeriodType
   activeTimestamp: { start: Date; end: Date } | null
   selectedLayers?: HappinessKey[]
-  session: any
+  _session: any
 }) => {
   const map = useMap()
   const happinessClustersRef = useRef<{ [key: string]: L.MarkerClusterGroup }>({})
   const superClusterRef = useRef<L.MarkerClusterGroup | null>(null)
+  const [popupPin, setPopupPin] = useState<Pin | null>(null)
+  const [popupPosition, setPopupPosition] = useState<[number, number] | null>(null)
 
   useEffect(() => {
     console.log('HybridClusterGroup: Starting with', pinData.length, 'pins');
@@ -419,36 +422,15 @@ const HybridClusterGroup = ({
 
 
 
-      // Add popup
-      if (iconType === 'pin') {
-        marker.bindPopup(() => {
-          const div = document.createElement('div')
-          const root = createRoot(div)
-          root.render(
-            <MePopup
-              pin={pin}
-              initialPopupPin={undefined}
-              setSelectedPin={setSelectedPin}
-            />
-          )
-          return div
-        })
-      } else {
-        marker.bindPopup(() => {
-          const div = document.createElement('div')
-          div.style.padding = '15px'
-          div.style.minWidth = '280px'
-          div.style.maxWidth = '350px'
-          const root = createRoot(div)
-          root.render(
-            <AllPopupWrapper pin={pin} setSelectedPin={setSelectedPin} session={session} />
-          )
-          return div
-        })
-      }
+      // Marker không bind popup để có thể sử dụng context của Container
 
       // Add event handler
       marker.on('click', () => {
+        // Set popup
+        setPopupPin(pin)
+        setPopupPosition([pin.latitude, pin.longitude])
+        
+        // Handle highlight
         if (!setHighlightTarget || !period) return
         setHighlightTarget((highlightTarget: HighlightTarget) => {
           const newXAxisValue = convertToXAxisValue(pin, period)
@@ -487,36 +469,15 @@ const HybridClusterGroup = ({
         )
       })
 
-      // Add popup for super marker
-      if (iconType === 'pin') {
-        superMarker.bindPopup(() => {
-          const div = document.createElement('div')
-          const root = createRoot(div)
-          root.render(
-            <MePopup
-              pin={pin}
-              initialPopupPin={undefined}
-              setSelectedPin={setSelectedPin}
-            />
-          )
-          return div
-        })
-      } else {
-        superMarker.bindPopup(() => {
-          const div = document.createElement('div')
-          div.style.padding = '15px'
-          div.style.minWidth = '280px'
-          div.style.maxWidth = '350px'
-          const root = createRoot(div)
-          root.render(
-            <AllPopupWrapper pin={pin} setSelectedPin={setSelectedPin} session={session} />
-          )
-          return div
-        })
-      }
+      // Super marker không bind popup để có thể sử dụng context của Container
 
       // Add event handler for super marker
       superMarker.on('click', () => {
+        // Set popup
+        setPopupPin(pin)
+        setPopupPosition([pin.latitude, pin.longitude])
+        
+        // Handle highlight
         if (!setHighlightTarget || !period) return
         setHighlightTarget((highlightTarget: HighlightTarget) => {
           const newXAxisValue = convertToXAxisValue(pin, period)
@@ -568,7 +529,53 @@ const HybridClusterGroup = ({
     }
   }, [map, pinData, iconType, activeTimestamp, setHighlightTarget, period, setSelectedPin, selectedLayers])
 
-  return null
+  // Add click handler to close popup when clicking on map
+  useEffect(() => {
+    if (!map) return
+    
+    const handleMapClick = () => {
+      setPopupPin(null)
+      setPopupPosition(null)
+    }
+    
+    map.on('click', handleMapClick)
+    
+    return () => {
+      map.off('click', handleMapClick)
+    }
+  }, [map])
+
+  return (
+    <>
+      {popupPin && popupPosition && (
+        <Popup
+          autoPan={_session?.user?.type === PROFILE_TYPE.ADMIN ? false : true}
+          position={popupPosition}
+          offset={[0, -20]}
+          eventHandlers={{
+            remove: () => {
+              setPopupPin(null)
+              setPopupPosition(null)
+            }
+          }}
+        >
+          {iconType === 'pin' ? (
+            <MePopup
+              pin={popupPin}
+              initialPopupPin={undefined}
+              setSelectedPin={setSelectedPin}
+            />
+          ) : (
+            <AllPopupWrapper
+              pin={popupPin}
+              setSelectedPin={setSelectedPin}
+              session={_session}
+            />
+          )}
+        </Popup>
+      )}
+    </>
+  )
 }
 
 
@@ -845,10 +852,10 @@ const Map: React.FC<Props> = ({
           period={period}
           activeTimestamp={activeTimestamp}
           selectedLayers={selectedLayers}
-          session={session}
+          _session={session}
         />
         
-        {/* Giữ lại LayersControl để hiển thị legend nhưng không tạo cluster riêng */}
+        {/* Keep LayersControl to display legend but don't create separate cluster */}
         <LayersControl position="topright">
           {HAPPINESS_KEYS.map((type, index) => {
             const filteredPins = filteredPinsByType(type)
