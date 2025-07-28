@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DateTime } from 'luxon';
 import { Injectable } from '@nestjs/common';
 import { UserAttribute } from 'src/auth/interface/user-attribute';
+import { mockHappinessMeResponse } from './mocks/happiness/mock-happiness-me.response';
 
 @Injectable()
 export class HappinessMeService {
@@ -18,247 +19,34 @@ export class HappinessMeService {
   ];
 
   async findHappinessMe(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     userAttribute: UserAttribute,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     start: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     end: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     limit: string,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     offset: string,
   ): Promise<HappinessMeResponse> {
-    const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
-    const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
-    const query = `nickname==${userAttribute.nickname};timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;
+    // Commented out real API call - using mock data instead
+    // const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
+    // const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
+    // const query = `nickname==${userAttribute.nickname};timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;
+    // const happinessEntities = await this.getHappinessEntities(
+    //   query,
+    //   limit,
+    //   offset,
+    // );
 
-    const realEntities = await this.getHappinessEntities(query, limit, offset);
+    // return {
+    //   count: happinessEntities.length,
+    //   data: this.toHappinessMeResponse(happinessEntities),
+    // };
 
-    const baseEntity = realEntities.length > 0 ? realEntities[0] : null;
-    const additionalPins = this.generatePinsFromBase(
-      baseEntity,
-      userAttribute,
-      1000,
-    );
-
-    return {
-      count: additionalPins.length,
-      data: additionalPins,
-    };
-  }
-
-  private generateAdditionalPins(
-    userAttribute: UserAttribute,
-    startAsUTC: string,
-    endAsUTC: string,
-    count: number,
-  ): HappinessEntity[] {
-    const entities: HappinessEntity[] = [];
-    const startDate = DateTime.fromISO(startAsUTC);
-    const endDate = DateTime.fromISO(endAsUTC);
-
-    const baseLat = 35.6762;
-    const baseLng = 139.6503;
-    const latRange = 1.0;
-    const lngRange = 1.0;
-    for (let i = 0; i < count; i++) {
-      const randomTime = startDate.plus({
-        seconds: Math.random() * endDate.diff(startDate).as('seconds'),
-      });
-
-      const formattedTime = randomTime.toISO();
-
-      const randomLat = baseLat + (Math.random() - 0.5) * latRange;
-      const randomLng = baseLng + (Math.random() - 0.5) * lngRange;
-
-      const happinessKeys = [
-        'happiness1',
-        'happiness2',
-        'happiness3',
-        'happiness4',
-        'happiness5',
-        'happiness6',
-      ];
-      const randomKey =
-        happinessKeys[Math.floor(Math.random() * happinessKeys.length)];
-      const entity: any = {
-        id: `additional-${Date.now()}-${i}`,
-        type: 'happiness',
-        timestamp: { type: 'DateTime', value: formattedTime },
-        nickname: { type: 'Text', value: userAttribute.nickname },
-        location: {
-          type: 'geo:json',
-          value: {
-            type: 'Point',
-            coordinates: [randomLng, randomLat],
-          },
-          metadata: {
-            place: {
-              type: 'Text',
-              value: `Additional Location ${i}`,
-            },
-          },
-        },
-        age: { type: 'Text', value: userAttribute.age },
-        address: {
-          type: 'Text',
-          value: userAttribute.prefecture + userAttribute.city,
-        },
-        memo: { type: 'Text', value: `Additional memo ${i}` },
-      };
-
-      happinessKeys.forEach((key) => {
-        entity[key] = { type: 'Number', value: key === randomKey ? 1 : 0 };
-      });
-
-      entities.push(entity);
-    }
-
-    return entities;
-  }
-
-  private generatePinsFromBase(
-    baseEntity: HappinessEntity | null,
-    userAttribute: UserAttribute,
-    count: number,
-  ): Data[] {
-    const pins: Data[] = [];
-
-    const baseLat = 35.6762;
-    const baseLng = 139.6503;
-    const latRange = 1.0;
-    const lngRange = 1.0;
-    const happinessKeys = [
-      'happiness1',
-      'happiness2',
-      'happiness3',
-      'happiness4',
-      'happiness5',
-      'happiness6',
-    ];
-
-    for (let i = 0; i < count; i++) {
-      const randomLat = baseLat + (Math.random() - 0.5) * latRange;
-      const randomLng = baseLng + (Math.random() - 0.5) * lngRange;
-      const answers = {
-        happiness1: 0,
-        happiness2: 0,
-        happiness3: 0,
-        happiness4: 0,
-        happiness5: 0,
-        happiness6: 0,
-      };
-      const numHappinessTypes = Math.floor(Math.random() * 6) + 1;
-      const selectedKeys = [];
-      for (let j = 0; j < numHappinessTypes; j++) {
-        const availableKeys = happinessKeys.filter(
-          (key) => !selectedKeys.includes(key),
-        );
-        if (availableKeys.length > 0) {
-          const randomKey =
-            availableKeys[Math.floor(Math.random() * availableKeys.length)];
-          selectedKeys.push(randomKey);
-          answers[randomKey as keyof typeof answers] = 1;
-        }
-      }
-
-      const maxValue = Math.max(...Object.values(answers));
-      const primaryType = Object.keys(answers).find(
-        (key) => answers[key as keyof typeof answers] === maxValue,
-      ) as string;
-
-      pins.push({
-        id: `pin-${Date.now()}-${i}`,
-        entityId: `entity-${Date.now()}-${i}`,
-        type: primaryType,
-        location: {
-          type: 'geo:json',
-          value: {
-            type: 'Point',
-            coordinates: [randomLat, randomLng] as [number, number],
-          },
-        },
-        timestamp: new Date().toISOString(),
-        memo: `Pin ${i} with ${numHappinessTypes} happiness types`,
-        answers: answers,
-      });
-    }
-
-    return pins;
-  }
-
-  private generateDirectPins(
-    userAttribute: UserAttribute,
-    startAsUTC: string,
-    endAsUTC: string,
-    count: number,
-  ): Data[] {
-    const pins: Data[] = [];
-    const startDate = DateTime.fromISO(startAsUTC);
-    const endDate = DateTime.fromISO(endAsUTC);
-
-    const baseLat = 35.6762;
-    const baseLng = 139.6503;
-    const latRange = 1.0;
-    const lngRange = 1.0;
-    const happinessKeys = [
-      'happiness1',
-      'happiness2',
-      'happiness3',
-      'happiness4',
-      'happiness5',
-      'happiness6',
-    ];
-
-    for (let i = 0; i < count; i++) {
-      const randomTime = startDate.plus({
-        seconds: Math.random() * endDate.diff(startDate).as('seconds'),
-      });
-      const formattedTime = randomTime.setZone('Asia/Tokyo').toISO();
-
-      const randomLat = baseLat + (Math.random() - 0.5) * latRange;
-      const randomLng = baseLng + (Math.random() - 0.5) * lngRange;
-      const answers = {
-        happiness1: 0,
-        happiness2: 0,
-        happiness3: 0,
-        happiness4: 0,
-        happiness5: 0,
-        happiness6: 0,
-      };
-      const numHappinessTypes = Math.floor(Math.random() * 6) + 1;
-      const selectedKeys = [];
-      for (let j = 0; j < numHappinessTypes; j++) {
-        const availableKeys = happinessKeys.filter(
-          (key) => !selectedKeys.includes(key),
-        );
-        if (availableKeys.length > 0) {
-          const randomKey =
-            availableKeys[Math.floor(Math.random() * availableKeys.length)];
-          selectedKeys.push(randomKey);
-          answers[randomKey as keyof typeof answers] = 1;
-        }
-      }
-
-      const maxValue = Math.max(...Object.values(answers));
-      const primaryType = Object.keys(answers).find(
-        (key) => answers[key as keyof typeof answers] === maxValue,
-      ) as string;
-
-      pins.push({
-        id: `direct-${Date.now()}-${i}`,
-        entityId: `direct-entity-${Date.now()}-${i}`,
-        type: primaryType,
-        location: {
-          type: 'geo:json',
-          value: {
-            type: 'Point',
-            coordinates: [randomLat, randomLng] as [number, number],
-          },
-        },
-        timestamp: formattedTime,
-        memo: `Direct pin ${i} with ${numHappinessTypes} happiness types`,
-        answers: answers,
-      });
-    }
-
-    return pins;
+    // Return mock data instead of calling real API
+    return mockHappinessMeResponse;
   }
 
   private async getHappinessEntities(
@@ -282,53 +70,35 @@ export class HappinessMeService {
   }
 
   private toHappinessMeResponse(entities: HappinessEntity[]): Data[] {
-    try {
-      const result = entities.flatMap((entity) => {
-        return HappinessMeService.keys
-          .map((key) => {
-            try {
-              const timestamp = DateTime.fromISO(entity.timestamp.value)
-                .setZone('Asia/Tokyo')
-                .toISO();
-
-              return {
-                id: uuidv4(),
-                entityId: entity.id,
-                type: key,
-                location: {
-                  type: entity.location.type,
-                  value: {
-                    type: entity.location.value.type,
-                    // orionは経度緯度の順なので緯度経度に整形
-                    coordinates: [
-                      entity.location.value.coordinates[1],
-                      entity.location.value.coordinates[0],
-                    ] as [number, number],
-                  },
-                },
-                timestamp: timestamp,
-                memo: entity.memo?.value ?? '',
-                answers: {
-                  happiness1: entity.happiness1.value,
-                  happiness2: entity.happiness2.value,
-                  happiness3: entity.happiness3.value,
-                  happiness4: entity.happiness4.value,
-                  happiness5: entity.happiness5.value,
-                  happiness6: entity.happiness6.value,
-                },
-              };
-            } catch (error) {
-              console.error('Error processing entity:', entity.id, error);
-              return null;
-            }
-          })
-          .filter(Boolean);
-      });
-
-      return result;
-    } catch (error) {
-      console.error('Error in toHappinessMeResponse:', error);
-      return [];
-    }
+    return entities.flatMap((entity) => {
+      return HappinessMeService.keys.map((key) => ({
+        id: uuidv4(),
+        entityId: entity.id,
+        type: key,
+        location: {
+          type: entity.location.type,
+          value: {
+            type: entity.location.value.type,
+            // orionは経度緯度の順なので緯度経度に整形
+            coordinates: [
+              entity.location.value.coordinates[1],
+              entity.location.value.coordinates[0],
+            ],
+          },
+        },
+        timestamp: DateTime.fromISO(entity.timestamp.value)
+          .setZone('Asia/Tokyo')
+          .toISO(),
+        memo: entity.memo?.value ?? '',
+        answers: {
+          happiness1: entity.happiness1.value,
+          happiness2: entity.happiness2.value,
+          happiness3: entity.happiness3.value,
+          happiness4: entity.happiness4.value,
+          happiness5: entity.happiness5.value,
+          happiness6: entity.happiness6.value,
+        },
+      }));
+    });
   }
 }

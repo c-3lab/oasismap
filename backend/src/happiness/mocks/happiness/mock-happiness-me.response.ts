@@ -1,271 +1,73 @@
 import { HappinessMeResponse } from 'src/happiness/interface/happiness-me.response';
 
+// Generate pins using the same logic as the service
+const generatePinsFromBase = (count: number) => {
+  const pins = [];
+
+  const baseLat = 35.6762;
+  const baseLng = 139.6503;
+  const latRange = 1.0;
+  const lngRange = 1.0;
+  const happinessKeys = [
+    'happiness1',
+    'happiness2',
+    'happiness3',
+    'happiness4',
+    'happiness5',
+    'happiness6',
+  ];
+
+  for (let i = 0; i < count; i++) {
+    const randomLat = baseLat + (Math.random() - 0.5) * latRange;
+    const randomLng = baseLng + (Math.random() - 0.5) * lngRange;
+    const answers = {
+      happiness1: 0,
+      happiness2: 0,
+      happiness3: 0,
+      happiness4: 0,
+      happiness5: 0,
+      happiness6: 0,
+    };
+    const numHappinessTypes = Math.floor(Math.random() * 6) + 1;
+    const selectedKeys = [];
+    for (let j = 0; j < numHappinessTypes; j++) {
+      const availableKeys = happinessKeys.filter(
+        (key) => !selectedKeys.includes(key),
+      );
+      if (availableKeys.length > 0) {
+        const randomKey =
+          availableKeys[Math.floor(Math.random() * availableKeys.length)];
+        selectedKeys.push(randomKey);
+        answers[randomKey as keyof typeof answers] = 1;
+      }
+    }
+
+    const maxValue = Math.max(...Object.values(answers));
+    const primaryType = Object.keys(answers).find(
+      (key) => answers[key as keyof typeof answers] === maxValue,
+    ) as string;
+
+    pins.push({
+      id: `pin-${Date.now()}-${i}`,
+      entityId: `entity-${Date.now()}-${i}`,
+      type: primaryType,
+      location: {
+        type: 'geo:json',
+        value: {
+          type: 'Point',
+          coordinates: [randomLat, randomLng] as [number, number],
+        },
+      },
+      timestamp: new Date().toISOString(),
+      memo: `Pin ${i} with ${numHappinessTypes} happiness types`,
+      answers: answers,
+    });
+  }
+
+  return pins;
+};
+
 export const mockHappinessMeResponse: HappinessMeResponse = {
-  count: 30,
-  data: [
-    {
-      id: '42ec444a-1e9f-499b-9db2-581f49ceb1bd',
-      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
-      type: 'happiness1',
-      location: {
-        type: 'geo:json',
-        value: {
-          type: 'Point',
-          coordinates: [35.629327, 139.72382],
-        },
-      },
-      timestamp: '2024-03-16T14:02:38.150+09:00',
-      memo: 'ダミーメモ',
-      answers: {
-        happiness1: 1,
-        happiness2: 1,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
-        happiness6: 1,
-      },
-    },
-    {
-      id: 'e9f43ae3-03f2-482f-91f3-034b7e59a64a',
-      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
-      type: 'happiness2',
-      location: {
-        type: 'geo:json',
-        value: {
-          type: 'Point',
-          coordinates: [35.629327, 139.72382],
-        },
-      },
-      timestamp: '2024-03-16T14:02:38.150+09:00',
-      memo: 'ダミーメモ',
-      answers: {
-        happiness1: 1,
-        happiness2: 1,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
-        happiness6: 1,
-      },
-    },
-    {
-      id: '25fb3b34-567c-479f-8ec4-2c83408bde96',
-      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
-      type: 'happiness3',
-      location: {
-        type: 'geo:json',
-        value: {
-          type: 'Point',
-          coordinates: [35.629327, 139.72382],
-        },
-      },
-      timestamp: '2024-03-16T14:02:38.150+09:00',
-      memo: 'ダミーメモ',
-      answers: {
-        happiness1: 1,
-        happiness2: 1,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
-        happiness6: 1,
-      },
-    },
-    {
-      id: 'a0669580-a891-4e05-8e5e-3dbacf44dd54',
-      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
-      type: 'happiness4',
-      location: {
-        type: 'geo:json',
-        value: {
-          type: 'Point',
-          coordinates: [35.629327, 139.72382],
-        },
-      },
-      timestamp: '2024-03-16T14:02:38.150+09:00',
-      memo: 'ダミーメモ',
-      answers: {
-        happiness1: 1,
-        happiness2: 1,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
-        happiness6: 1,
-      },
-    },
-    {
-      id: 'da5e4f72-1733-46c4-bf61-fd75780f1f22',
-      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
-      type: 'happiness5',
-      location: {
-        type: 'geo:json',
-        value: {
-          type: 'Point',
-          coordinates: [35.629327, 139.72382],
-        },
-      },
-      timestamp: '2024-03-16T14:02:38.150+09:00',
-      memo: 'ダミーメモ',
-      answers: {
-        happiness1: 1,
-        happiness2: 1,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
-        happiness6: 1,
-      },
-    },
-    {
-      id: '8f340b14-a668-4934-8ee4-67e5198908c9',
-      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
-      type: 'happiness6',
-      location: {
-        type: 'geo:json',
-        value: {
-          type: 'Point',
-          coordinates: [35.629327, 139.72382],
-        },
-      },
-      timestamp: '2024-03-16T14:02:38.150+09:00',
-      memo: 'ダミーメモ',
-      answers: {
-        happiness1: 1,
-        happiness2: 1,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
-        happiness6: 1,
-      },
-    },
-    {
-      id: 'b4395c94-54af-4853-b6d8-a20bf8905240',
-      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
-      type: 'happiness1',
-      location: {
-        type: 'geo:json',
-        value: {
-          type: 'Point',
-          coordinates: [35.664061, 139.698168],
-        },
-      },
-      timestamp: '2024-03-18T14:02:38.150+09:00',
-      memo: 'ダミーメモ',
-      answers: {
-        happiness1: 1,
-        happiness2: 1,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
-        happiness6: 1,
-      },
-    },
-    {
-      id: '4e761e45-5941-42f2-840b-fb98a76edde8',
-      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
-      type: 'happiness2',
-      location: {
-        type: 'geo:json',
-        value: {
-          type: 'Point',
-          coordinates: [35.664061, 139.698168],
-        },
-      },
-      timestamp: '2024-03-18T14:02:38.150+09:00',
-      memo: 'ダミーメモ',
-      answers: {
-        happiness1: 1,
-        happiness2: 1,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
-        happiness6: 1,
-      },
-    },
-    {
-      id: 'd9bcf6cf-1394-4a06-ae6f-71483fd5698f',
-      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
-      type: 'happiness3',
-      location: {
-        type: 'geo:json',
-        value: {
-          type: 'Point',
-          coordinates: [35.664061, 139.698168],
-        },
-      },
-      timestamp: '2024-03-18T14:02:38.150+09:00',
-      memo: 'ダミーメモ',
-      answers: {
-        happiness1: 1,
-        happiness2: 1,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
-        happiness6: 1,
-      },
-    },
-    {
-      id: 'f5fa28dd-e917-482a-aa3e-c4dc4981e854',
-      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
-      type: 'happiness4',
-      location: {
-        type: 'geo:json',
-        value: {
-          type: 'Point',
-          coordinates: [35.664061, 139.698168],
-        },
-      },
-      timestamp: '2024-03-18T14:02:38.150+09:00',
-      memo: 'ダミーメモ',
-      answers: {
-        happiness1: 1,
-        happiness2: 1,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
-        happiness6: 1,
-      },
-    },
-    {
-      id: '7f4b9d45-fd27-4aa8-a86b-006d75412718',
-      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
-      type: 'happiness5',
-      location: {
-        type: 'geo:json',
-        value: {
-          type: 'Point',
-          coordinates: [35.664061, 139.698168],
-        },
-      },
-      timestamp: '2024-03-18T14:02:38.150+09:00',
-      memo: 'ダミーメモ',
-      answers: {
-        happiness1: 1,
-        happiness2: 1,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
-        happiness6: 1,
-      },
-    },
-    {
-      id: '6c00ffb9-33a5-4d4a-8784-2aa123b1a793',
-      entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
-      type: 'happiness6',
-      location: {
-        type: 'geo:json',
-        value: {
-          type: 'Point',
-          coordinates: [35.664061, 139.698168],
-        },
-      },
-      timestamp: '2024-03-18T14:02:38.150+09:00',
-      memo: 'ダミーメモ',
-      answers: {
-        happiness1: 1,
-        happiness2: 1,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
-        happiness6: 1,
-      },
-    },
-  ],
+  count: 1000,
+  data: generatePinsFromBase(1000),
 };
