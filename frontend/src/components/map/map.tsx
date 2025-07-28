@@ -578,25 +578,33 @@ const HybridClusterGroup = ({
 }
 
 const MapOverlay = ({
-  _iconType,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  iconType,
   type,
-  _filteredPins,
-  _initialPopupPin,
-  _layerIndex,
-  _setSelectedPin,
-  _setHighlightTarget,
-  _period,
-  _activeTimestamp,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  filteredPins,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  initialPopupPin,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  layerIndex,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setSelectedPin,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setHighlightTarget,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  period,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  activeTimestamp,
 }: {
-  _iconType: IconType
+  iconType: IconType
   type: string
-  _filteredPins: Pin[]
-  _initialPopupPin: Pin | undefined
-  _layerIndex: number
-  _setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
-  _setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
-  _period?: PeriodType
-  _activeTimestamp: { start: Date; end: Date } | null
+  filteredPins: Pin[]
+  initialPopupPin: Pin | undefined
+  layerIndex: number
+  setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
+  setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
+  period?: PeriodType
+  activeTimestamp: { start: Date; end: Date } | null
 }) => {
   return (
     <LayersControl.Overlay checked name={type}>
@@ -860,17 +868,17 @@ const Map: React.FC<Props> = ({
             return (
               <MapOverlay
                 key={type}
-                _iconType={iconType}
+                iconType={iconType}
                 type={questionTitles[type]}
-                _layerIndex={index}
-                _filteredPins={filteredPins}
-                _initialPopupPin={filteredPins.find(
+                filteredPins={filteredPins}
+                initialPopupPin={filteredPins.find(
                   (pin) => pin.id === initialEntityUuid
                 )}
-                _setSelectedPin={setSelectedPin}
-                _setHighlightTarget={setHighlightTarget}
-                _period={period}
-                _activeTimestamp={activeTimestamp}
+                layerIndex={index}
+                setSelectedPin={setSelectedPin}
+                setHighlightTarget={setHighlightTarget}
+                period={period}
+                activeTimestamp={activeTimestamp}
               />
             )
           })}
