@@ -156,7 +156,7 @@ services:
       - "KC_HOSTNAME_URL=${KC_HOSTNAME_URL}"
       - "KC_HOSTNAME_ADMIN_URL=${KC_HOSTNAME_ADMIN_URL}"
       - "TZ=Asia/Tokyo"
-    command: start-dev
+    command: start-dev --hostname ${KC_HOSTNAME_URL} --hostname-admin ${KC_HOSTNAME_ADMIN_URL}
     volumes:
       - ./keycloak/themes:/opt/keycloak/themes
       - ./keycloak/providers:/opt/keycloak/providers
