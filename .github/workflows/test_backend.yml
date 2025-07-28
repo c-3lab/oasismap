@@ -6,10 +6,6 @@ on:
     paths:
       - 'backend/**'
       - '.github/workflows/test_backend.yml'
-  pull_request:
-    paths:
-      - 'backend/**'
-      - '.github/workflows/test_backend.yml'
 
 jobs:
   test:
@@ -68,7 +64,7 @@ jobs:
           echo "Starting application with docker-compose..."
 
           # Start services
-          docker compose -f docker-compose.yml up -d
+          docker compose up -d
 
           # Wait for services to be ready
           echo "Waiting for services to start..."
@@ -83,7 +79,7 @@ jobs:
         run: |
           # Run E2E tests inside the backend container
           echo "Running E2E tests inside backend container..."
-          docker compose -f docker-compose.yml exec -T backend npm run test:e2e
+          docker compose exec -T backend npm run test:e2e
 
       - name: Stop all services
         if: always()
@@ -92,7 +88,7 @@ jobs:
 
           # Stop docker-compose services
           echo "Stopping docker-compose services..."
-          docker compose -f docker-compose.yml down
+          docker compose down
           
           # Clean up Docker
           docker system prune -f
@@ -104,6 +100,25 @@ jobs:
         with:
           scan-type: 'fs'
           scan-ref: './backend'
-          format: 'table'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
-          exit-code: '1'
+          exit-code: '0'
+
+      - name: Display Trivy results in table format
+        if: always()
+        run: |
+          echo "=== Trivy Vulnerability Scan Results ==="
+          trivy fs --severity CRITICAL,HIGH --format table ./backend
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Check for vulnerabilities and fail if found
+        run: |
+          echo "=== Checking for vulnerabilities ==="
+          # Run trivy with json format to check for vulnerabilities
+          trivy fs --severity CRITICAL,HIGH --exit-code 1 ./backend

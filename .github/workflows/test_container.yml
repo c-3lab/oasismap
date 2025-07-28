@@ -58,12 +58,8 @@ jobs:
           docker compose -f ${{ matrix.compose_file }} pull
           docker compose -f ${{ matrix.compose_file }} build
 
-          # Extract images from compose file
-          echo "Extracting images from ${{ matrix.compose_file }}..."
-          grep -E "^[[:space:]]*image:" ${{ matrix.compose_file }} | sed 's/.*image:[[:space:]]*//' > images.txt
-
           # Also get built images
-          docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" >> images.txt
+          docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" > images.txt
 
           # Remove duplicates
           sort -u images.txt > images_unique.txt
@@ -77,69 +73,59 @@ jobs:
           echo "" >> ${{ matrix.summary_file }}
 
           # Scan each image for CRITICAL and HIGH vulnerabilities
-          total_images=0
-          critical_vulns=0
-          high_vulns=0
-          failed_scans=0
           has_vulnerabilities=false
 
           while IFS= read -r image; do
             if [ -n "$image" ]; then
-              total_images=$((total_images + 1))
               echo "Scanning image: $image"
 
               scan_file="scan_${image//[\/:]/_}.json"
               trivy image --quiet --scanners vuln --severity CRITICAL,HIGH --format json "$image" > "$scan_file" 2>&1
 
-              if [ -f "$scan_file" ]; then
-                # Check if JSON is valid and contains actual scan results
-                if jq empty "$scan_file" 2>/dev/null && jq -e '.Results' "$scan_file" >/dev/null 2>&1; then
-                  # Count vulnerabilities by severity - more robust parsing
-                  critical_count=$(jq -r '[.Results[].Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length // 0' "$scan_file" 2>/dev/null)
-                  high_count=$(jq -r '[.Results[].Vulnerabilities[]? | select(.Severity == "HIGH")] | length // 0' "$scan_file" 2>/dev/null)
-                  total_vulns=$((critical_count + high_count))
+              # Check if scan file exists and has content
+              if [ -s "$scan_file" ]; then
+                # Parse JSON to check for vulnerabilities
+                vulnerability_count=$(jq -r '.Results[]?.Vulnerabilities? | length // 0' "$scan_file" 2>/dev/null || echo "0")
+                total_vulnerabilities=0
 
-                  if [ "$total_vulns" -gt 0 ]; then
-                    echo "❌ $image - Found $critical_count CRITICAL and $high_count HIGH vulnerabilities!"
-                    critical_vulns=$((critical_vulns + critical_count))
-                    high_vulns=$((high_vulns + high_count))
-                    has_vulnerabilities=true
-                    echo "## ❌ $image" >> ${{ matrix.summary_file }}
-                    echo "**CRITICAL vulnerabilities found: $critical_count**" >> ${{ matrix.summary_file }}
-                    echo "**HIGH vulnerabilities found: $high_count**" >> ${{ matrix.summary_file }}
-                    echo "" >> ${{ matrix.summary_file }}
-                    echo "### Vulnerability Details:" >> ${{ matrix.summary_file }}
-                    echo '```' >> ${{ matrix.summary_file }}
-                    trivy image --quiet --scanners vuln --severity CRITICAL,HIGH --format table "$image" >> ${{ matrix.summary_file }} 2>&1 || echo "Failed to get detailed results" >> ${{ matrix.summary_file }}
-                    echo '```' >> ${{ matrix.summary_file }}
-                    echo "" >> ${{ matrix.summary_file }}
-                  else
-                    echo "✅ $image - No CRITICAL or HIGH vulnerabilities found"
-                    echo "## ✅ $image" >> ${{ matrix.summary_file }}
-                    echo "**No CRITICAL or HIGH vulnerabilities found**" >> ${{ matrix.summary_file }}
-                    echo "" >> ${{ matrix.summary_file }}
-                  fi
+                # Sum up all vulnerability counts
+                for count in $vulnerability_count; do
+                  total_vulnerabilities=$((total_vulnerabilities + count))
+                done
+
+                if [ $total_vulnerabilities -eq 0 ]; then
+                  # No vulnerabilities found
+                  echo "✅ $image - No CRITICAL or HIGH vulnerabilities found"
+                  echo "## ✅ $image" >> ${{ matrix.summary_file }}
+                  echo "**No CRITICAL or HIGH vulnerabilities found**" >> ${{ matrix.summary_file }}
+                  echo "" >> ${{ matrix.summary_file }}
                 else
-                  echo "⚠️ Trivy scan failed or invalid results for $image"
-                  echo "Scan file content (first 500 chars):"
-                  head -c 500 "$scan_file" 2>/dev/null || echo "Cannot read scan file"
-                  echo ""
-                  failed_scans=$((failed_scans + 1))
-                  echo "## ⚠️ $image" >> ${{ matrix.summary_file }}
-                  echo "**Trivy scan failed or invalid results**" >> ${{ matrix.summary_file }}
+                  # Vulnerabilities found
+                  echo "❌ $image - CRITICAL/HIGH vulnerabilities found! ($total_vulnerabilities total)"
+                  has_vulnerabilities=true
+                  echo "## ❌ $image" >> ${{ matrix.summary_file }}
+                  echo "**CRITICAL/HIGH vulnerabilities found ($total_vulnerabilities total)**" >> ${{ matrix.summary_file }}
+                  echo "" >> ${{ matrix.summary_file }}
+                  echo "### Vulnerability Details:" >> ${{ matrix.summary_file }}
+                  echo '```' >> ${{ matrix.summary_file }}
+                  trivy image --quiet --scanners vuln --severity CRITICAL,HIGH --format table "$image" >> ${{ matrix.summary_file }} 2>&1 || echo "Failed to get detailed results" >> ${{ matrix.summary_file }}
+                  echo '```' >> ${{ matrix.summary_file }}
                   echo "" >> ${{ matrix.summary_file }}
                 fi
               else
-                echo "⚠️ $image - Scan failed or no results"
-                failed_scans=$((failed_scans + 1))
-                echo "## ⚠️ $image" >> ${{ matrix.summary_file }}
-                echo "**Scan failed or no results**" >> ${{ matrix.summary_file }}
+                # Trivy failed technically - stop immediately
+                echo "❌ Trivy scan failed technically for $image"
+                echo "🚨 Stopping workflow due to Trivy technical failure!"
+                echo "## ❌ $image" >> ${{ matrix.summary_file }}
+                echo "**Trivy scan failed technically**" >> ${{ matrix.summary_file }}
                 echo "" >> ${{ matrix.summary_file }}
+
+                # Exit immediately with error code
+                exit 1
               fi
 
               # Clean up current image after scanning
-              echo "Cleaning up image: $image"
-              docker rmi "$image" 2>/dev/null || echo "Image $image not found or already removed"
+              docker rmi "$image" 2>/dev/null || true
               rm -f "$scan_file"
             fi
           done < images.txt

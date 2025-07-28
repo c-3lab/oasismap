@@ -6,10 +6,6 @@ on:
     paths:
       - 'frontend/**'
       - '.github/workflows/test_frontend.yml'
-  pull_request:
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/test_frontend.yml'
 
 jobs:
   test:
@@ -60,6 +56,25 @@ jobs:
         with:
           scan-type: 'fs'
           scan-ref: './frontend'
-          format: 'table'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
-          exit-code: '1'
+          exit-code: '0'
+
+      - name: Display Trivy results in table format
+        if: always()
+        run: |
+          echo "=== Trivy Vulnerability Scan Results ==="
+          trivy fs --severity CRITICAL,HIGH --format table ./frontend
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Check for vulnerabilities and fail if found
+        run: |
+          echo "=== Checking for vulnerabilities ==="
+          # Run trivy with json format to check for vulnerabilities
+          trivy fs --severity CRITICAL,HIGH --exit-code 1 ./frontend
