@@ -246,7 +246,7 @@ const HybridClusterGroup = ({
             process.env.NEXT_PUBLIC_MAX_CLUSTER_RADIUS,
             200
           ),
-          disableClusteringAtZoom: 12, // Cluster khi zoom < 12
+          disableClusteringAtZoom: 12, // Cluster when zoom < 12
           spiderfyOnMaxZoom: true,
           showCoverageOnHover: true,
           zoomToBoundsOnClick: true,
@@ -268,7 +268,39 @@ const HybridClusterGroup = ({
             if (count > 500) iconSize = 80
 
             return L.divIcon({
-              html: `<div class="marker-cluster ${className}" style="background-color: ${happinessType === 'happiness1' ? '#007fff' : happinessType === 'happiness2' ? '#4BA724' : happinessType === 'happiness3' ? '#7f00ff' : happinessType === 'happiness4' ? '#FF69B4' : happinessType === 'happiness5' ? '#ff7f00' : '#ff0000'}; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; min-width: ${iconSize}px; min-height: ${iconSize}px; border: 2px solid rgba(255, 255, 255, 0.8); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);"><div><span style="color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);">${count}</span></div></div>`,
+              html: `<div class="marker-cluster ${className}" style="
+                background-color: ${
+                  happinessType === 'happiness1'
+                    ? '#007fff'
+                    : happinessType === 'happiness2'
+                      ? '#4BA724'
+                      : happinessType === 'happiness3'
+                        ? '#7f00ff'
+                        : happinessType === 'happiness4'
+                          ? '#FF69B4'
+                          : happinessType === 'happiness5'
+                            ? '#ff7f00'
+                            : '#ff0000'
+                };
+                color: white;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                min-width: ${iconSize}px;
+                min-height: ${iconSize}px;
+                border: 2px solid rgba(255, 255, 255, 0.8);
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+              ">
+                <div>
+                  <span style="
+                    color: white;
+                    font-weight: bold;
+                    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+                  ">${count}</span>
+                </div>
+              </div>`,
               className: '',
               iconSize: L.point(iconSize, iconSize),
             })
@@ -306,7 +338,27 @@ const HybridClusterGroup = ({
           if (count > 500) iconSize = 80
 
           return L.divIcon({
-            html: `<div class="marker-cluster ${className}" style="background-color: rgba(241, 128, 23, 0.6); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; min-width: ${iconSize}px; min-height: ${iconSize}px; border: 2px solid rgba(255, 255, 255, 0.8); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);"><div><span style="color: white; font-weight: bold; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);">${count}</span></div></div>`,
+            html: `<div class="marker-cluster ${className}" style="
+              background-color: rgba(255, 255, 255, 0.9);
+              color: #333;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-weight: bold;
+              min-width: ${iconSize}px;
+              min-height: ${iconSize}px;
+              border: 2px solid rgba(0, 0, 0, 0.3);
+              box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            ">
+              <div>
+                <span style="
+                  color: #333;
+                  font-weight: bold;
+                  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+                ">${count}</span>
+              </div>
+            </div>`,
             className: '',
             iconSize: L.point(iconSize, iconSize),
           })

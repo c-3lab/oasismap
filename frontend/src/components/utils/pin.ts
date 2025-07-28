@@ -13,28 +13,25 @@ function convertTimestamp(timestamp: string) {
 }
 
 export function GetPin(arr: (Data | MapDataItem)[]): Pin[] {
-  const filteredArr = arr.filter((data: MapDataItem) => {
-    const shouldInclude = data.answers[data.type] !== 0
-    return shouldInclude
-  })
+  const filteredArr = arr.filter(
+    (item: MapDataItem) => item.answers[item.type] !== 0
+  )
 
   return filteredArr.map((data) => {
-    let basetime
-    let timestamp
-    let memo
-    let memos
+    let timestamp: string | undefined
+    let baseTime: string | undefined
+    let memo: string | undefined
+    let memos: { timestamp: string; memo: string }[] | undefined
+
     if ('timestamp' in data && data.timestamp) {
       timestamp = convertTimestamp(data.timestamp)
-      basetime = data.timestamp
+      baseTime = data.timestamp
       memo = data.memo
-      memos = undefined
     } else {
-      basetime = undefined
-      timestamp = undefined
-      memo = undefined
-      memos = data.memos.map(({ timestamp, memo }) => {
-        return { timestamp: convertTimestamp(timestamp), memo }
-      })
+      memos = data.memos.map(({ timestamp, memo }) => ({
+        timestamp: convertTimestamp(timestamp),
+        memo,
+      }))
     }
 
     const pin: Pin = {
@@ -49,7 +46,7 @@ export function GetPin(arr: (Data | MapDataItem)[]): Pin[] {
       answer4: data.answers['happiness4'],
       answer5: data.answers['happiness5'],
       answer6: data.answers['happiness6'],
-      basetime: basetime,
+      basetime: baseTime,
       memo: memo,
       memos: memos,
       timestamp: timestamp,

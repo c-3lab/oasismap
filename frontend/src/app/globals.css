@@ -195,12 +195,12 @@ a {
 
 /* Total cluster for low zoom level */
 .cluster-total {
-  background-color: rgba(241, 128, 23, 0.6) !important; /* Transparent orange color */
-  color: white !important;
+  background-color: rgba(255, 255, 255, 0.9) !important; /* White color */
+  color: #333 !important;
 }
 
 .cluster-total:hover {
-  background-color: rgba(241, 128, 23, 0.8) !important;
+  background-color: rgba(255, 255, 255, 1) !important;
 }
 
 /* Popup styling */

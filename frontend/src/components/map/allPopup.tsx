@@ -18,6 +18,7 @@ export const AllPopup = ({
   {
     pin.memos.map((memo) => memoArray.push(memo.memo))
   }
+  // Using div/Box instead of Popup for better control over styling and positioning
   return (
     <>
       <HappinessAllGraph data={pin} />
