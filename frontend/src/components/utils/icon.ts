@@ -8,12 +8,12 @@ type HappinessColers = {
 }
 
 const happinessPalettes: HappinessColers = {
-  happiness1: mapColors.BLUE,
-  happiness2: mapColors.GREEN,
-  happiness3: mapColors.VIOLET,
+  happiness1: mapColors.RED,
+  happiness2: mapColors.BLUE,
+  happiness3: mapColors.GREEN,
   happiness4: mapColors.YELLOW,
   happiness5: mapColors.ORANGE,
-  happiness6: mapColors.RED,
+  happiness6: mapColors.VIOLET,
 }
 
 // SVG mapping for happiness types

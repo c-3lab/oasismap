@@ -271,16 +271,16 @@ const HybridClusterGroup = ({
               html: `<div class="marker-cluster ${className}" style="
                 background-color: ${
                   happinessType === 'happiness1'
-                    ? '#007fff'
+                    ? '#ff0000' // RED
                     : happinessType === 'happiness2'
-                      ? '#4BA724'
+                      ? '#007fff' // BLUE
                       : happinessType === 'happiness3'
-                        ? '#7f00ff'
+                        ? '#4BA724' // GREEN
                         : happinessType === 'happiness4'
-                          ? '#FF69B4'
+                          ? '#FF00D8' // YELLOW
                           : happinessType === 'happiness5'
-                            ? '#ff7f00'
-                            : '#ff0000'
+                            ? '#ff7f00' // ORANGE
+                            : '#7f00ff' // VIOLET (happiness6)
                 };
                 color: white;
                 border-radius: 50%;
@@ -578,23 +578,15 @@ const HybridClusterGroup = ({
 }
 
 const MapOverlay = ({
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  iconType,
+  iconType: _iconType,
   type,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  filteredPins,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  initialPopupPin,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  layerIndex,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setSelectedPin,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  setHighlightTarget,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  period,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  activeTimestamp,
+  filteredPins: _filteredPins,
+  initialPopupPin: _initialPopupPin,
+  layerIndex: _layerIndex,
+  setSelectedPin: _setSelectedPin,
+  setHighlightTarget: _setHighlightTarget,
+  period: _period,
+  activeTimestamp: _activeTimestamp,
 }: {
   iconType: IconType
   type: string
@@ -793,8 +785,6 @@ const Map: React.FC<Props> = ({
 
   const filteredPinsByType = (type: HappinessKey) =>
     pinData.filter((pin) => {
-      // For happiness-all data, check if pin type matches and has value > 0
-      // For happiness-me data, check if the specified happiness type has value > 0
       const happinessValues = {
         happiness1: pin.answer1,
         happiness2: pin.answer2,
