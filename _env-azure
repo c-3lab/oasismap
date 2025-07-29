@@ -33,3 +33,4 @@ REVERSE_GEOCODING_URL="https://nominatim.openstreetmap.org/reverse"
 
 # Cluster configuration
 NEXT_PUBLIC_MAX_CLUSTER_RADIUS=200
+USE_MOCK_DATA=true

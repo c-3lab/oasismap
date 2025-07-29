@@ -35,3 +35,4 @@ GOOGLE_PASSWORD='CHANGE_TO_PASSWORD'  # 特殊記号がある場合はシング�
 
 # Cluster configuration
 NEXT_PUBLIC_MAX_CLUSTER_RADIUS=200
+USE_MOCK_DATA=true
