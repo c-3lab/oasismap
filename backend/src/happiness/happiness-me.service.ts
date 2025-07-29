@@ -19,34 +19,31 @@ export class HappinessMeService {
   ];
 
   async findHappinessMe(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     userAttribute: UserAttribute,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     start: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     end: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     limit: string,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     offset: string,
   ): Promise<HappinessMeResponse> {
-    // Commented out real API call - using mock data instead
-    // const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
-    // const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
-    // const query = `nickname==${userAttribute.nickname};timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;
-    // const happinessEntities = await this.getHappinessEntities(
-    //   query,
-    //   limit,
-    //   offset,
-    // );
+    // Check if we should use mock data based on environment variable
+    if (process.env.USE_MOCK_DATA === 'true') {
+      return mockHappinessMeResponse;
+    }
 
-    // return {
-    //   count: happinessEntities.length,
-    //   data: this.toHappinessMeResponse(happinessEntities),
-    // };
+    // Real API call logic
+    const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
+    const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
+    const query = `nickname==${userAttribute.nickname};timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;
+    const happinessEntities = await this.getHappinessEntities(
+      query,
+      limit,
+      offset,
+    );
 
-    // Return mock data instead of calling real API
-    return mockHappinessMeResponse;
+    return {
+      count: happinessEntities.length,
+      data: this.toHappinessMeResponse(happinessEntities),
+    };
   }
 
   private async getHappinessEntities(
