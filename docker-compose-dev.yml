@@ -153,8 +153,6 @@ services:
       - "KC_DB_URL=jdbc:postgresql://postgres:5432/postgres"
       - "KC_DB_USERNAME=${POSTGREUSER}"
       - "KC_DB_PASSWORD=${POSTGREPASSWORD}"
-      - "KC_HOSTNAME_URL=${KC_HOSTNAME_URL}"
-      - "KC_HOSTNAME_ADMIN_URL=${KC_HOSTNAME_ADMIN_URL}"
       - "TZ=Asia/Tokyo"
     command: start-dev --hostname ${KC_HOSTNAME_URL} --hostname-admin ${KC_HOSTNAME_ADMIN_URL}
     volumes:
