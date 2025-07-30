@@ -36,7 +36,7 @@ services:
       - backend-network
 
   frontend:
-    image: node:20.10.0
+    image: node:22-slim
     hostname: frontend
     container_name: frontend
     working_dir: /app/frontend
