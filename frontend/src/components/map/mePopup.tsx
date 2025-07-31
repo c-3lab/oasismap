@@ -1,4 +1,3 @@
-import { ControllablePopup } from './controllablePopup'
 import { mapColors } from '@/theme/color'
 import { questionTitles } from '@/libs/constants'
 import { Pin } from '@/types/pin'
@@ -6,7 +5,6 @@ import { HappinessTitle } from '../happiness/happiness-title'
 
 export const MePopup = ({
   pin,
-  initialPopupPin,
   setSelectedPin,
 }: {
   pin: Pin
@@ -14,10 +12,7 @@ export const MePopup = ({
   setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
 }) => {
   return (
-    <ControllablePopup
-      isOpened={pin.id === initialPopupPin?.id}
-      position={[pin.latitude, pin.longitude]}
-    >
+    <div>
       <HappinessTitle
         type="popup"
         title={questionTitles.happiness1}
@@ -86,6 +81,6 @@ export const MePopup = ({
           {pin.timestamp}
         </div>
       )}
-    </ControllablePopup>
+    </div>
   )
 }
