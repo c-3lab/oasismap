@@ -12,7 +12,10 @@ type Props = {
 
 const PreviewMap: React.FC<Props> = ({ latitude, longitude, answer }) => {
   const previewIcon = () => {
-    for (const [key, value] of Object.entries(answer) as [HappinessKey, number][]) {
+    for (const [key, value] of Object.entries(answer) as [
+      HappinessKey,
+      number,
+    ][]) {
       if (value === 1) {
         return getIconByType('pin', key, value, true)
       }

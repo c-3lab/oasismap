@@ -1,0 +1,130 @@
+name: Container Security Scan
+
+on:
+  pull_request:
+    branches:
+      - develop
+  schedule:
+    # Run daily at JST 00:00 (UTC 15:00)
+    - cron: '0 15 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  container-scan:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        compose_file: [docker-compose.yml, docker-compose-dev.yml, docker-compose-azure.yml]
+        include:
+          - compose_file: docker-compose.yml
+            summary_file: docker_compose_summary.md
+          - compose_file: docker-compose-dev.yml
+            summary_file: docker_compose_dev_summary.md
+          - compose_file: docker-compose-azure.yml
+            summary_file: docker_compose_azure_summary.md
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Trivy Setup
+        uses: aquasecurity/setup-trivy@v0.2.0
+        with:
+          cache: true
+          version: v0.64.1
+
+      - name: Copy environment file for docker-compose
+        run: |
+          # Copy _env file to .env for docker-compose
+          cp _env .env
+
+      - name: Scan ${{ matrix.compose_file }} images
+        if: hashFiles(matrix.compose_file)
+        run: |
+          echo "=== Scanning ${{ matrix.compose_file }} ==="
+
+          # Pull and build images from compose file
+          echo "Pulling and building ${{ matrix.compose_file }} images..."
+          docker compose -f ${{ matrix.compose_file }} pull
+          docker compose -f ${{ matrix.compose_file }} build
+
+          # Also get built images
+          docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" > images.txt
+
+          # Remove duplicates
+          sort -u images.txt > images_unique.txt
+          mv images_unique.txt images.txt
+
+          echo "Images from ${{ matrix.compose_file }}:"
+          cat images.txt
+
+          # Initialize summary file
+          echo "# ${{ matrix.compose_file }} Scan Results" > ${{ matrix.summary_file }}
+          echo "" >> ${{ matrix.summary_file }}
+
+          # Scan each image for CRITICAL and HIGH vulnerabilities
+          has_vulnerabilities=false
+
+          while IFS= read -r image; do
+            if [ -n "$image" ]; then
+              echo "Scanning image: $image"
+
+              # Get total Critical + High vulnerabilities
+              severity_template='{{- $total := 0 }}{{- range . }}{{- range .Vulnerabilities }}{{- if or (eq .Severity "CRITICAL") (eq .Severity "HIGH") }}{{- $total = add $total 1 }}{{- end }}{{- end }}{{- end }}{{ $total }}'
+              total_vulnerabilities=$(trivy image --quiet --scanners vuln --severity CRITICAL,HIGH --format template --template "$severity_template" "$image")
+
+              if [ $total_vulnerabilities -eq 0 ]; then
+                # No vulnerabilities found
+                echo "✅ $image - No CRITICAL or HIGH vulnerabilities found"
+                echo "## ✅ $image" >> ${{ matrix.summary_file }} 
+                echo "**No CRITICAL or HIGH vulnerabilities found**" >> ${{ matrix.summary_file }}
+                echo "" >> ${{ matrix.summary_file }}
+              else
+                # Vulnerabilities found
+                echo "❌ $image - CRITICAL/HIGH vulnerabilities found! ($total_vulnerabilities total)"
+                has_vulnerabilities=true
+                echo "## ❌ $image" >> ${{ matrix.summary_file }}
+                echo "**CRITICAL/HIGH vulnerabilities found ($total_vulnerabilities total)**" >> ${{ matrix.summary_file }}
+                echo "" >> ${{ matrix.summary_file }}
+                echo "### Vulnerability Details:" >> ${{ matrix.summary_file }}
+                echo '```' >> ${{ matrix.summary_file }}
+                trivy image --quiet --scanners vuln --severity CRITICAL,HIGH --format table "$image" >> ${{ matrix.summary_file }} 2>&1 || echo "Failed to get detailed results" >> ${{ matrix.summary_file }}
+                echo '```' >> ${{ matrix.summary_file }}
+                echo "" >> ${{ matrix.summary_file }}
+              fi
+
+              # Clean up current image after scanning
+              docker rmi "$image" 2>/dev/null || true
+            fi
+          done < images.txt
+
+          # Fail workflow immediately if vulnerabilities found
+          if [ "$has_vulnerabilities" = true ]; then
+            echo "🚨 CRITICAL/HIGH vulnerabilities detected! Failing workflow..."
+            exit 1
+          fi
+
+          echo "✅ All images in ${{ matrix.compose_file }} passed security scan!"
+
+          # Final cleanup
+          echo "Final cleanup for ${{ matrix.compose_file }}..."
+          docker compose -f ${{ matrix.compose_file }} down
+          docker image prune -f
+
+      - name: Report scan results for ${{ matrix.compose_file }}
+        if: always()
+        run: |
+          echo "=== Scan Report for ${{ matrix.compose_file }} ==="
+          
+          if [ -f "${{ matrix.summary_file }}" ]; then
+            echo "📊 Scan Summary:"
+            echo "=================="
+            cat "${{ matrix.summary_file }}"
+          else
+            echo "⚠️ No scan summary file found for ${{ matrix.compose_file }}"
+          fi

@@ -101,13 +101,12 @@ const BarGraph = (props: any) => {
                               !highlightTarget.xAxisValue ||
                               Number(data.timestamp) ===
                                 highlightTarget.xAxisValue
-                                  ? color[happinessIndex]
-                                  : 'grey'
+                                ? color[happinessIndex]
+                                : 'grey'
                             }
                           />
                         )
-                      )
-                    }
+                      )}
                   </Bar>
                 )
               }

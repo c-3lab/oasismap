@@ -3,6 +3,7 @@ import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from './../src/app.module';
 import { AuthService } from './../src/auth/auth';
+import axios from 'axios';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -18,6 +19,33 @@ describe('AppController (e2e)', () => {
   };
 
   beforeAll(async () => {
+    // Nominatim地理コーディングAPIのみをモック化、Orionデータベースは除外
+    const originalAxiosGet = axios.get;
+    jest.spyOn(axios, 'get').mockImplementation((url: string, config?: any) => {
+      // Nominatimの呼び出しのみをモック化
+      if (url.includes('nominatim.openstreetmap.org')) {
+        // モックレスポンス：固定の住所データを返す
+        return Promise.resolve({
+          data: {
+            features: [
+              {
+                properties: {
+                  geocoding: {
+                    admin: {
+                      level4: '東京都',
+                      level7: '品川区',
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        });
+      }
+      // その他の呼び出し（Orionデータベースなど）は元のaxiosを使用
+      return originalAxiosGet.call(axios, url, config);
+    });
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
