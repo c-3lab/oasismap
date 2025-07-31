@@ -10,7 +10,8 @@ import { HAPPINESS_KEYS, questionTitles } from '@/libs/constants'
 import { LineChart, Legend, Line } from 'recharts'
 
 const LineGraph = (props: any) => {
-  const { title, plotdata, color, xTickFormatter, isLoaded, selectedLayers } = props
+  const { title, plotdata, color, xTickFormatter, isLoaded, selectedLayers } =
+    props
   const isEmptyData = !plotdata || plotdata.length === 0
 
   return (
