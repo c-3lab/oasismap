@@ -141,10 +141,7 @@ const HappinessMe: React.FC = () => {
         try {
           const newPins = GetPin(data['data'])
 
-          setPinData((prevPinData: Pin[]) => {
-            const updatedPinData = [...prevPinData, ...newPins]
-            return updatedPinData
-          })
+          setPinData((prevPinData: Pin[]) => [...prevPinData, ...newPins])
         } catch (error) {
           console.error('Error in GetPin or setPinData:', error)
         }
