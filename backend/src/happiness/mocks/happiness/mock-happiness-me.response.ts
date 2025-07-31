@@ -1,8 +1,11 @@
-import { HappinessMeResponse } from 'src/happiness/interface/happiness-me.response';
+import {
+  HappinessMeResponse,
+  Data,
+} from 'src/happiness/interface/happiness-me.response';
 
 // Generate pins using the same logic as the service
 const generatePinsFromBase = (count: number) => {
-  const pins = [];
+  const pins: Data[] = [];
 
   const baseLat = 35.6762;
   const baseLng = 139.6503;
