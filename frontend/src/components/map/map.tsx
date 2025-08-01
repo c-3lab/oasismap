@@ -37,6 +37,7 @@ import { HighlightTarget } from '@/types/highlight-target'
 import { HappinessKey } from '@/types/happiness-key'
 import { PeriodType } from '@/types/period'
 import { AllModal } from '../happiness/all-modal'
+import 'leaflet.vectorgrid'
 
 const AllPopupWrapper = ({
   pin,
@@ -655,6 +656,77 @@ const Bounds = ({
   return null
 }
 
+const GSIVectorLayer = () => {
+  const map = useMap()
+
+  useEffect(() => {
+    try {
+      // @ts-ignore - leaflet.vectorgrid extends L with vectorGrid property
+      const vectorGrid = L.vectorGrid
+        .protobuf(
+          'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
+          {
+            attribution:
+              '<a href="https://github.com/gsi-cyberjapan/gsimaps-vector-experiment" target="_blank">国土地理院ベクトルタイル提供実験</a>',
+            maxZoom: 18,
+            minZoom: 5,
+            // @ts-ignore - L.canvas.tile is available in leaflet.vectorgrid
+            rendererFactory: L.canvas.tile,
+            vectorTileLayerStyles: {
+              road: { color: 'gray', weight: 1 },
+              railway: { color: 'green', weight: 2 },
+              river: { color: 'dodgerblue', weight: 1 },
+              lake: { color: 'dodgerblue', weight: 1 },
+              boundary: [],
+              building: [],
+              coastline: [],
+              contour: [],
+              elevation: [],
+              label: [],
+              landforma: [],
+              landforml: [],
+              landformp: [],
+              searoute: [],
+              structurea: [],
+              structurel: [],
+              symbol: [],
+              transp: [],
+              waterarea: [],
+              wstructurea: [],
+            },
+          }
+        )
+        .addTo(map)
+
+      return () => {
+        if (map && vectorGrid) {
+          map.removeLayer(vectorGrid)
+        }
+      }
+    } catch (error) {
+      console.error('Error loading GSI Vector Tiles:', error)
+      // Fallback to regular tiles if vector tiles fail
+      const tileLayer = L.tileLayer(
+        'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
+        {
+          attribution:
+            '<a href="https://maps.gsi.go.jp/development/ichiran.html">出典：地理院タイル</a>',
+          maxZoom: 18,
+          minZoom: 5,
+        }
+      ).addTo(map)
+
+      return () => {
+        if (map && tileLayer) {
+          map.removeLayer(tileLayer)
+        }
+      }
+    }
+  }, [map])
+
+  return null
+}
+
 const Map: React.FC<Props> = ({
   iconType,
   pinData,
@@ -823,13 +895,8 @@ const Map: React.FC<Props> = ({
         <MoveToCurrentPositionControl />
         <ZoomControl position={'bottomleft'} />
         <LayersControl position="topleft">
-          <LayersControl.BaseLayer checked name="標準地図">
-            <TileLayer
-              attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-              url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-              maxZoom={18}
-              minZoom={5}
-            />
+          <LayersControl.BaseLayer checked name="GSI Vector Tiles">
+            <GSIVectorLayer />
           </LayersControl.BaseLayer>
           <LayersControl.BaseLayer name="淡色地図">
             <TileLayer
