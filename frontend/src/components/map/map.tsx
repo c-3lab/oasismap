@@ -9,7 +9,13 @@ import {
   useMapEvents,
   Popup,
 } from 'react-leaflet'
-import React, { useState, useEffect, useContext, useRef } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+  useCallback,
+} from 'react'
 
 import { useSession } from 'next-auth/react'
 import { LatLng, LatLngTuple, LatLngBounds, divIcon } from 'leaflet'
@@ -37,21 +43,7 @@ import { HighlightTarget } from '@/types/highlight-target'
 import { HappinessKey } from '@/types/happiness-key'
 import { PeriodType } from '@/types/period'
 import { AllModal } from '../happiness/all-modal'
-import 'leaflet.vectorgrid'
-
-const AllPopupWrapper = ({
-  pin,
-  setSelectedPin,
-  session,
-}: {
-  pin: Pin
-  setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
-  session: any
-}) => {
-  return (
-    <AllPopup pin={pin} setSelectedPin={setSelectedPin} session={session} />
-  )
-}
+import { HappinessFields } from '@/types/happiness-set'
 
 // 環境変数の取得に失敗した場合は日本経緯度原点を設定
 const defaultLatitude =
@@ -208,6 +200,71 @@ const convertToTimestampRange = (
   }
 }
 
+// Helper functions for cluster creation
+const getIconSize = (count: number): number => {
+  if (count > 500) return 80
+  if (count > 100) return 70
+  if (count > 50) return 60
+  if (count > 10) return 50
+  return 40
+}
+
+const getPinValue = (pin: Pin): number => {
+  const happinessValues: HappinessFields = {
+    happiness1: pin.answer1,
+    happiness2: pin.answer2,
+    happiness3: pin.answer3,
+    happiness4: pin.answer4,
+    happiness5: pin.answer5,
+    happiness6: pin.answer6,
+  }
+  return happinessValues[pin.type]
+}
+
+const createClusterIcon = ({
+  count,
+  className,
+  backgroundColor,
+  textColor,
+  borderColor,
+  textShadow,
+}: {
+  count: number
+  className: string
+  backgroundColor: string
+  textColor: string
+  borderColor: string
+  textShadow: string
+}) => {
+  const iconSize = getIconSize(count)
+
+  return L.divIcon({
+    html: `<div class="marker-cluster ${className}" style="
+      background-color: ${backgroundColor};
+      color: ${textColor};
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      min-width: ${iconSize}px;
+      min-height: ${iconSize}px;
+      border: 2px solid ${borderColor};
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    ">
+      <div>
+        <span style="
+          color: ${textColor};
+          font-weight: bold;
+          text-shadow: ${textShadow};
+        ">${count}</span>
+      </div>
+    </div>`,
+    className: '',
+    iconSize: L.point(iconSize, iconSize),
+  })
+}
+
 const HybridClusterGroup = ({
   iconType,
   pinData,
@@ -237,164 +294,138 @@ const HybridClusterGroup = ({
     null
   )
 
-  useEffect(() => {
-    // Create happiness clusters
+  // Helper functions for cluster management
+  const getMarkerClusterGroupProps = useCallback(
+    () => ({
+      chunkedLoading: true,
+      maxClusterRadius: loadEnvAsNumber(
+        process.env.NEXT_PUBLIC_MAX_CLUSTER_RADIUS,
+        200
+      ),
+      disableClusteringAtZoom: 12, // Cluster when zoom < 12
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: true,
+      zoomToBoundsOnClick: true,
+      removeOutsideVisibleBounds: true,
+      animate: true,
+      animateAddingMarkers: false,
+    }),
+    []
+  )
+
+  const getHappinessColorPalette = useCallback(
+    (): { [key in HappinessKey]: string } => ({
+      happiness1: '#ff0000', // RED
+      happiness2: '#007fff', // BLUE
+      happiness3: '#4BA724', // GREEN
+      happiness4: '#FF00D8', // YELLOW
+      happiness5: '#ff7f00', // ORANGE
+      happiness6: '#7f00ff', // VIOLET
+    }),
+    []
+  )
+
+  const createHappinessClusters = useCallback(() => {
+    const markerClusterGroupProps = getMarkerClusterGroupProps()
+    const happinessColorPalette = getHappinessColorPalette()
+
     HAPPINESS_KEYS.forEach((happinessType) => {
       if (!happinessClustersRef.current[happinessType]) {
         happinessClustersRef.current[happinessType] = L.markerClusterGroup({
-          chunkedLoading: true,
-          maxClusterRadius: loadEnvAsNumber(
-            process.env.NEXT_PUBLIC_MAX_CLUSTER_RADIUS,
-            200
-          ),
-          disableClusteringAtZoom: 12, // Cluster when zoom < 12
-          spiderfyOnMaxZoom: true,
-          showCoverageOnHover: true,
-          zoomToBoundsOnClick: true,
-          removeOutsideVisibleBounds: true,
-          animate: true,
-          animateAddingMarkers: false,
-          iconCreateFunction: function (cluster) {
+          ...markerClusterGroupProps,
+          iconCreateFunction: (cluster) => {
             const count = cluster.getChildCount()
-
-            // Color based on specific happiness type
             const happinessNumber = happinessType.slice(-1)
-            const className = `cluster-happiness${happinessNumber}`
 
-            // Increase icon size based on marker count
-            let iconSize = 40
-            if (count > 10) iconSize = 50
-            if (count > 50) iconSize = 60
-            if (count > 100) iconSize = 70
-            if (count > 500) iconSize = 80
-
-            return L.divIcon({
-              html: `<div class="marker-cluster ${className}" style="
-                background-color: ${
-                  happinessType === 'happiness1'
-                    ? '#ff0000' // RED
-                    : happinessType === 'happiness2'
-                      ? '#007fff' // BLUE
-                      : happinessType === 'happiness3'
-                        ? '#4BA724' // GREEN
-                        : happinessType === 'happiness4'
-                          ? '#FF00D8' // YELLOW
-                          : happinessType === 'happiness5'
-                            ? '#ff7f00' // ORANGE
-                            : '#7f00ff' // VIOLET (happiness6)
-                };
-                color: white;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                min-width: ${iconSize}px;
-                min-height: ${iconSize}px;
-                border: 2px solid rgba(255, 255, 255, 0.8);
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-              ">
-                <div>
-                  <span style="
-                    color: white;
-                    font-weight: bold;
-                    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-                  ">${count}</span>
-                </div>
-              </div>`,
-              className: '',
-              iconSize: L.point(iconSize, iconSize),
+            return createClusterIcon({
+              count,
+              className: `cluster-happiness${happinessNumber}`,
+              backgroundColor:
+                happinessColorPalette[happinessType] || '#7f00ff',
+              textColor: 'white',
+              borderColor: 'rgba(255, 255, 255, 0.8)',
+              textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
             })
           },
         })
       }
     })
+  }, [getMarkerClusterGroupProps, getHappinessColorPalette])
 
-    // Create super cluster for all pins
+  const createSuperCluster = useCallback(() => {
+    const markerClusterGroupProps = getMarkerClusterGroupProps()
+
     if (!superClusterRef.current) {
       superClusterRef.current = L.markerClusterGroup({
-        chunkedLoading: true,
-        maxClusterRadius: loadEnvAsNumber(
-          process.env.NEXT_PUBLIC_MAX_CLUSTER_RADIUS,
-          200
-        ), // Environment variable for cluster radius
-        disableClusteringAtZoom: 12, // Only cluster when zoom < 12
-        spiderfyOnMaxZoom: true,
-        showCoverageOnHover: true,
-        zoomToBoundsOnClick: true,
-        removeOutsideVisibleBounds: true,
-        animate: true,
-        animateAddingMarkers: false,
-        iconCreateFunction: function (cluster) {
-          const count = cluster.getChildCount()
-
-          // Gray color for super cluster
-          const className = 'cluster-total'
-
-          // Increase icon size based on marker count (same as sub clusters)
-          let iconSize = 40
-          if (count > 10) iconSize = 50
-          if (count > 50) iconSize = 60
-          if (count > 100) iconSize = 70
-          if (count > 500) iconSize = 80
-
-          return L.divIcon({
-            html: `<div class="marker-cluster ${className}" style="
-              background-color: rgba(255, 255, 255, 0.9);
-              color: #333;
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-weight: bold;
-              min-width: ${iconSize}px;
-              min-height: ${iconSize}px;
-              border: 2px solid rgba(0, 0, 0, 0.3);
-              box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-            ">
-              <div>
-                <span style="
-                  color: #333;
-                  font-weight: bold;
-                  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
-                ">${count}</span>
-              </div>
-            </div>`,
-            className: '',
-            iconSize: L.point(iconSize, iconSize),
+        ...markerClusterGroupProps,
+        iconCreateFunction: (cluster) => {
+          return createClusterIcon({
+            count: cluster.getChildCount(),
+            className: 'cluster-total',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            textColor: '#333',
+            borderColor: 'rgba(0, 0, 0, 0.3)',
+            textShadow: '1px 1px 2px rgba(255, 255, 255, 0.5)',
           })
         },
       })
     }
+  }, [getMarkerClusterGroupProps])
 
-    // Function to update cluster display based on zoom level
-    const updateClusters = () => {
-      const zoomLevel = map.getZoom()
+  const createMarkerClickHandler = useCallback(
+    (pin: Pin) => {
+      return () => {
+        // Set popup
+        setPopupPin(pin)
+        setPopupPosition([pin.latitude, pin.longitude])
 
-      if (zoomLevel < 10) {
-        // Zoom out: show super cluster, hide color clusters
-        Object.values(happinessClustersRef.current).forEach((cluster) => {
-          if (map.hasLayer(cluster)) {
-            map.removeLayer(cluster)
+        // Handle highlight
+        if (!setHighlightTarget || !period) return
+        setHighlightTarget((highlightTarget: HighlightTarget) => {
+          const newXAxisValue = convertToXAxisValue(pin, period)
+          if (highlightTarget.xAxisValue === newXAxisValue) {
+            return highlightTarget
+          } else {
+            return { lastUpdateBy: 'Map', xAxisValue: newXAxisValue }
           }
         })
-        if (!map.hasLayer(superClusterRef.current!)) {
-          map.addLayer(superClusterRef.current!)
-        }
-      } else {
-        // Zoom in: show color clusters, hide super cluster
-        if (map.hasLayer(superClusterRef.current!)) {
-          map.removeLayer(superClusterRef.current!)
-        }
-        Object.entries(happinessClustersRef.current).forEach(
-          ([_type, cluster]) => {
-            if (!map.hasLayer(cluster)) {
-              map.addLayer(cluster)
-            }
-          }
-        )
       }
+    },
+    [setHighlightTarget, period, setPopupPin, setPopupPosition]
+  )
+
+  const updateClusters = useCallback(() => {
+    const zoomLevel = map.getZoom()
+
+    if (zoomLevel < 10) {
+      // Zoom out: show super cluster, hide color clusters
+      Object.values(happinessClustersRef.current).forEach((cluster) => {
+        if (map.hasLayer(cluster)) {
+          map.removeLayer(cluster)
+        }
+      })
+      if (!map.hasLayer(superClusterRef.current!)) {
+        map.addLayer(superClusterRef.current!)
+      }
+    } else {
+      // Zoom in: show color clusters, hide super cluster
+      if (map.hasLayer(superClusterRef.current!)) {
+        map.removeLayer(superClusterRef.current!)
+      }
+      Object.entries(happinessClustersRef.current).forEach(
+        ([_type, cluster]) => {
+          if (!map.hasLayer(cluster)) {
+            map.addLayer(cluster)
+          }
+        }
+      )
     }
+  }, [map])
+
+  useEffect(() => {
+    // Initialize clusters
+    createHappinessClusters()
+    createSuperCluster()
 
     if (!map || pinData.length === 0) {
       return
@@ -415,18 +446,9 @@ const HybridClusterGroup = ({
         : pinData
 
     // Add markers to both color clusters and super cluster
-    filteredPins.forEach((pin, _index) => {
+    filteredPins.forEach((pin) => {
       // Check if this pin type has a value > 0 based on pin.type
-      const happinessValues = {
-        happiness1: pin.answer1,
-        happiness2: pin.answer2,
-        happiness3: pin.answer3,
-        happiness4: pin.answer4,
-        happiness5: pin.answer5,
-        happiness6: pin.answer6,
-      }
-      const pinValue = happinessValues[pin.type]
-
+      const pinValue = getPinValue(pin)
       if (pinValue <= 0) {
         return
       }
@@ -441,22 +463,7 @@ const HybridClusterGroup = ({
       })
 
       // Add event handler
-      marker.on('click', () => {
-        // Set popup
-        setPopupPin(pin)
-        setPopupPosition([pin.latitude, pin.longitude])
-
-        // Handle highlight
-        if (!setHighlightTarget || !period) return
-        setHighlightTarget((highlightTarget: HighlightTarget) => {
-          const newXAxisValue = convertToXAxisValue(pin, period)
-          if (highlightTarget.xAxisValue === newXAxisValue) {
-            return highlightTarget
-          } else {
-            return { lastUpdateBy: 'Map', xAxisValue: newXAxisValue }
-          }
-        })
-      })
+      marker.on('click', createMarkerClickHandler(pin))
 
       // Add marker to color cluster based on pin type
       if (happinessClustersRef.current[pin.type]) {
@@ -474,22 +481,7 @@ const HybridClusterGroup = ({
       })
 
       // Add event handler for super marker
-      superMarker.on('click', () => {
-        // Set popup
-        setPopupPin(pin)
-        setPopupPosition([pin.latitude, pin.longitude])
-
-        // Handle highlight
-        if (!setHighlightTarget || !period) return
-        setHighlightTarget((highlightTarget: HighlightTarget) => {
-          const newXAxisValue = convertToXAxisValue(pin, period)
-          if (highlightTarget.xAxisValue === newXAxisValue) {
-            return highlightTarget
-          } else {
-            return { lastUpdateBy: 'Map', xAxisValue: newXAxisValue }
-          }
-        })
-      })
+      superMarker.on('click', createMarkerClickHandler(pin))
 
       if (superClusterRef.current) {
         superClusterRef.current.addLayer(superMarker)
@@ -527,6 +519,10 @@ const HybridClusterGroup = ({
     period,
     setSelectedPin,
     selectedLayers,
+    createHappinessClusters,
+    createSuperCluster,
+    createMarkerClickHandler,
+    updateClusters,
   ])
 
   // Add click handler to close popup when clicking on map
@@ -560,13 +556,9 @@ const HybridClusterGroup = ({
           }}
         >
           {iconType === 'pin' ? (
-            <MePopup
-              pin={popupPin}
-              initialPopupPin={undefined}
-              setSelectedPin={setSelectedPin}
-            />
+            <MePopup pin={popupPin} setSelectedPin={setSelectedPin} />
           ) : (
-            <AllPopupWrapper
+            <AllPopup
               pin={popupPin}
               setSelectedPin={setSelectedPin}
               session={_session}
@@ -637,30 +629,20 @@ const SelectedLayers = ({
   return null
 }
 
-const Bounds = ({
-  setBounds,
-}: {
-  setBounds: React.Dispatch<React.SetStateAction<LatLngBounds | undefined>>
-}) => {
-  const map = useMap()
-
-  useEffect(() => {
-    setBounds(map.getBounds())
-  }, [setBounds, map])
-
-  useMapEvents({
-    moveend: () => {
-      setBounds(map.getBounds())
-    },
-  })
-  return null
-}
-
 const GSIVectorLayer = () => {
   const map = useMap()
 
   useEffect(() => {
     try {
+      // Add blank tile layer as background
+      const blankTileLayer = L.tileLayer(
+        'https://cyberjapandata.gsi.go.jp/xyz/blank/{z}/{x}/{y}.png',
+        {
+          attribution:
+            '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地理院タイル</a>',
+        }
+      ).addTo(map)
+
       // @ts-ignore - leaflet.vectorgrid extends L with vectorGrid property
       const vectorGrid = L.vectorGrid
         .protobuf(
@@ -668,15 +650,29 @@ const GSIVectorLayer = () => {
           {
             attribution:
               '<a href="https://github.com/gsi-cyberjapan/gsimaps-vector-experiment" target="_blank">国土地理院ベクトルタイル提供実験</a>',
-            maxZoom: 18,
-            minZoom: 5,
             // @ts-ignore - L.canvas.tile is available in leaflet.vectorgrid
             rendererFactory: L.canvas.tile,
             vectorTileLayerStyles: {
-              road: { color: 'gray', weight: 1 },
-              railway: { color: 'green', weight: 2 },
-              river: { color: 'dodgerblue', weight: 1 },
-              lake: { color: 'dodgerblue', weight: 1 },
+              road: {
+                color: '#808080',
+                weight: 1,
+                opacity: 1,
+              },
+              railway: {
+                color: '#008000',
+                weight: 2,
+                opacity: 1,
+              },
+              river: {
+                color: '#1E90FF',
+                weight: 1,
+                opacity: 1,
+              },
+              lake: {
+                color: '#1E90FF',
+                weight: 1,
+                opacity: 1,
+              },
               boundary: [],
               building: [],
               coastline: [],
@@ -699,6 +695,9 @@ const GSIVectorLayer = () => {
         .addTo(map)
 
       return () => {
+        if (map && blankTileLayer) {
+          map.removeLayer(blankTileLayer)
+        }
         if (map && vectorGrid) {
           map.removeLayer(vectorGrid)
         }
@@ -724,6 +723,62 @@ const GSIVectorLayer = () => {
     }
   }, [map])
 
+  return null
+}
+
+const GeoJSONPolygonLayer = ({ geojsonUrl }: { geojsonUrl?: string }) => {
+  const map = useMap()
+
+  useEffect(() => {
+    if (!geojsonUrl) return
+
+    // ポリゴンのスタイル設定
+    const polygonStyleOptions = {
+      style: {
+        color: '#810FCB',
+        opacity: 1.0,
+        weight: 2.0,
+        fillColor: '#810FCB',
+        fillOpacity: 0.5,
+      },
+    }
+
+    // GeoJSONファイルの表示
+    fetch(geojsonUrl)
+      .then((response) => response.json())
+      .then((data) => {
+        const geoJSONLayer = L.geoJSON(data, polygonStyleOptions).addTo(map)
+
+        return () => {
+          if (map && geoJSONLayer) {
+            map.removeLayer(geoJSONLayer)
+          }
+        }
+      })
+      .catch((error) => {
+        console.error('Error loading GeoJSON:', error)
+      })
+  }, [map, geojsonUrl])
+
+  return null
+}
+
+const Bounds = ({
+  setBounds,
+}: {
+  setBounds: React.Dispatch<React.SetStateAction<LatLngBounds | undefined>>
+}) => {
+  const map = useMap()
+
+  useEffect(() => {
+    setBounds(map.getBounds())
+  }, [setBounds, map])
+
+  useMapEvents({
+    moveend: () => {
+      setBounds(map.getBounds())
+    },
+  })
   return null
 }
 
@@ -857,17 +912,8 @@ const Map: React.FC<Props> = ({
 
   const filteredPinsByType = (type: HappinessKey) =>
     pinData.filter((pin) => {
-      const happinessValues = {
-        happiness1: pin.answer1,
-        happiness2: pin.answer2,
-        happiness3: pin.answer3,
-        happiness4: pin.answer4,
-        happiness5: pin.answer5,
-        happiness6: pin.answer6,
-      }
-
       // Check if pin type matches the filter type and has value > 0
-      return pin.type === type && happinessValues[type] > 0
+      return pin.type === type && getPinValue(pin) > 0
     })
 
   let initialEntityUuid: string | undefined = undefined
@@ -898,6 +944,14 @@ const Map: React.FC<Props> = ({
           <LayersControl.BaseLayer checked name="GSI Vector Tiles">
             <GSIVectorLayer />
           </LayersControl.BaseLayer>
+          <LayersControl.BaseLayer name="標準地図">
+            <TileLayer
+              attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+              url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+              maxZoom={18}
+              minZoom={5}
+            />
+          </LayersControl.BaseLayer>
           <LayersControl.BaseLayer name="淡色地図">
             <TileLayer
               attribution='&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">出典：地理院タイル</a>'
@@ -917,6 +971,8 @@ const Map: React.FC<Props> = ({
           selectedLayers={selectedLayers}
           _session={session}
         />
+        {/* Optional: Add GeoJSON polygon layer */}
+        {/* <GeoJSONPolygonLayer geojsonUrl="/path/to/your/polygon.geojson" /> */}
 
         {/* Keep LayersControl to display legend but don't create separate cluster */}
         <LayersControl position="topright">
@@ -960,4 +1016,5 @@ const Map: React.FC<Props> = ({
   )
 }
 
+export { GeoJSONPolygonLayer }
 export default Map
