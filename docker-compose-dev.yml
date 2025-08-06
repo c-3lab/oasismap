@@ -78,7 +78,9 @@ services:
       - frontend-network
 
   mongo:
-    image: mongo:6.0.14
+    build:
+      context: ./mongo
+      dockerfile: Dockerfile
     hostname: mongo
     container_name: mongo
     expose:

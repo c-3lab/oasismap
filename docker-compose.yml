@@ -81,7 +81,9 @@ services:
     restart: always
 
   mongo:
-    image: mongo:8.0.4
+    build:
+      context: ./mongo
+      dockerfile: Dockerfile
     hostname: mongo
     container_name: mongo
     expose:
@@ -131,7 +133,9 @@ services:
 
   # "ORION_MONGO_DB=oriondb"や"ORION_FIWARE_SERVICE=Government"を変更した場合、"oriondb-government"も変更すること
   mongo-cli:
-    image: mongo:8.0.4
+    build:
+      context: ./mongo
+      dockerfile: Dockerfile
     hostname: mongo-cli
     container_name: mongo-cli
     depends_on:
