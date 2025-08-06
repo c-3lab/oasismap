@@ -45,20 +45,6 @@ import { PeriodType } from '@/types/period'
 import { AllModal } from '../happiness/all-modal'
 import { HappinessFields } from '@/types/happiness-set'
 
-const AllPopupWrapper = ({
-  pin,
-  setSelectedPin,
-  session,
-}: {
-  pin: Pin
-  setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
-  session: any
-}) => {
-  return (
-    <AllPopup pin={pin} setSelectedPin={setSelectedPin} session={session} />
-  )
-}
-
 // 環境変数の取得に失敗した場合は日本経緯度原点を設定
 const defaultLatitude =
   parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_LATITUDE!) || 35.6581064
@@ -572,7 +558,7 @@ const HybridClusterGroup = ({
           {iconType === 'pin' ? (
             <MePopup pin={popupPin} setSelectedPin={setSelectedPin} />
           ) : (
-            <AllPopupWrapper
+            <AllPopup
               pin={popupPin}
               setSelectedPin={setSelectedPin}
               session={_session}
