@@ -8,7 +8,6 @@ export const MePopup = ({
   setSelectedPin,
 }: {
   pin: Pin
-  initialPopupPin: Pin | undefined
   setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
 }) => {
   return (

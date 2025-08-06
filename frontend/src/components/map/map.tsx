@@ -223,6 +223,18 @@ const getIconSize = (count: number): number => {
   return 40
 }
 
+const getPinValue = (pin: Pin): number => {
+  const happinessValues: HappinessFields = {
+    happiness1: pin.answer1,
+    happiness2: pin.answer2,
+    happiness3: pin.answer3,
+    happiness4: pin.answer4,
+    happiness5: pin.answer5,
+    happiness6: pin.answer6,
+  }
+  return happinessValues[pin.type]
+}
+
 const createClusterIcon = ({
   count,
   className,
@@ -450,15 +462,7 @@ const HybridClusterGroup = ({
     // Add markers to both color clusters and super cluster
     filteredPins.forEach((pin) => {
       // Check if this pin type has a value > 0 based on pin.type
-      const happinessValues: HappinessFields = {
-        happiness1: pin.answer1,
-        happiness2: pin.answer2,
-        happiness3: pin.answer3,
-        happiness4: pin.answer4,
-        happiness5: pin.answer5,
-        happiness6: pin.answer6,
-      }
-      const pinValue = happinessValues[pin.type]
+      const pinValue = getPinValue(pin)
       if (pinValue <= 0) {
         return
       }
@@ -566,11 +570,7 @@ const HybridClusterGroup = ({
           }}
         >
           {iconType === 'pin' ? (
-            <MePopup
-              pin={popupPin}
-              initialPopupPin={undefined}
-              setSelectedPin={setSelectedPin}
-            />
+            <MePopup pin={popupPin} setSelectedPin={setSelectedPin} />
           ) : (
             <AllPopupWrapper
               pin={popupPin}
@@ -792,17 +792,8 @@ const Map: React.FC<Props> = ({
 
   const filteredPinsByType = (type: HappinessKey) =>
     pinData.filter((pin) => {
-      const happinessValues = {
-        happiness1: pin.answer1,
-        happiness2: pin.answer2,
-        happiness3: pin.answer3,
-        happiness4: pin.answer4,
-        happiness5: pin.answer5,
-        happiness6: pin.answer6,
-      }
-
       // Check if pin type matches the filter type and has value > 0
-      return pin.type === type && happinessValues[type] > 0
+      return pin.type === type && getPinValue(pin) > 0
     })
 
   let initialEntityUuid: string | undefined = undefined
