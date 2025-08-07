@@ -37,6 +37,36 @@ import { happinessSet } from '@/types/happiness-set'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
+const getPinColorByHighestPercentage = (pin: Pin): HappinessKey => {
+  const happinessValues = [
+    { key: 'happiness1' as HappinessKey, value: pin.answer1 },
+    { key: 'happiness2' as HappinessKey, value: pin.answer2 },
+    { key: 'happiness3' as HappinessKey, value: pin.answer3 },
+    { key: 'happiness4' as HappinessKey, value: pin.answer4 },
+    { key: 'happiness5' as HappinessKey, value: pin.answer5 },
+    { key: 'happiness6' as HappinessKey, value: pin.answer6 },
+  ]
+
+  happinessValues.sort((a, b) => {
+    if (a.value !== b.value) {
+      return b.value - a.value
+    }
+    const priorityOrder = [
+      'happiness1',
+      'happiness2',
+      'happiness3',
+      'happiness4',
+      'happiness5',
+      'happiness6',
+    ]
+    const aPriority = priorityOrder.indexOf(a.key)
+    const bPriority = priorityOrder.indexOf(b.key)
+    return aPriority - bPriority
+  })
+
+  return happinessValues[0].key
+}
+
 const HappinessAll: React.FC = () => {
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
@@ -152,13 +182,27 @@ const HappinessAll: React.FC = () => {
             allMapData[gridKey] = fetchedMapData
           }
         }
-        setPinData(
-          GetPin(
-            Object.values(allMapData)
-              .map((mapData: MapData) => mapData.data)
-              .flat()
-          )
+        const rawPins = GetPin(
+          Object.values(allMapData)
+            .map((mapData: MapData) => mapData.data)
+            .flat()
         )
+
+        // Update pin colors based on highest happiness percentage
+        const updatedPins = rawPins.map((pin) => ({
+          ...pin,
+          type: getPinColorByHighestPercentage(pin),
+          answer: Math.max(
+            pin.answer1,
+            pin.answer2,
+            pin.answer3,
+            pin.answer4,
+            pin.answer5,
+            pin.answer6
+          ),
+        }))
+
+        setPinData(updatedPins)
 
         for (let i = 0; i < data['graph_data'].length; i++) {
           const existedGraphData = allGraphData[i]
