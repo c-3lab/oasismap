@@ -709,17 +709,8 @@ const Map: React.FC<Props> = ({
   const noticeMessageContext = useContext(messageContext)
 
   useEffect(() => {
-    // Fake location for Tokyo preview - set to true to enable
-    // To enable fake Tokyo location, create .env.local file with:
-    // NEXT_PUBLIC_FAKE_TOKYO_LOCATION=true
-    const fakeTokyoLocation =
-      process.env.NEXT_PUBLIC_FAKE_TOKYO_LOCATION === 'true'
-
-    // For quick testing, you can also uncomment the line below to always fake Tokyo location
-    // const fakeTokyoLocation = true
-
     // geolocation が http に対応していないため固定値を設定
-    if (location.protocol === 'http:' || fakeTokyoLocation) {
+    if (location.protocol === 'http:') {
       setCenter([defaultLatitude, defaultLongitude])
       setCurrentPosition([defaultLatitude, defaultLongitude])
       return
