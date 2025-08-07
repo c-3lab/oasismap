@@ -85,6 +85,7 @@ type Props = {
   highlightTarget?: HighlightTarget
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
   period?: PeriodType
+  forceAllPopup?: boolean
 }
 
 const HighlightListener = ({
@@ -274,6 +275,7 @@ const HybridClusterGroup = ({
   activeTimestamp,
   selectedLayers,
   _session,
+  forceAllPopup = false,
 }: {
   iconType: IconType
   pinData: Pin[]
@@ -283,6 +285,7 @@ const HybridClusterGroup = ({
   activeTimestamp: { start: Date; end: Date } | null
   selectedLayers?: HappinessKey[]
   _session: any
+  forceAllPopup?: boolean
 }) => {
   const map = useMap()
   const happinessClustersRef = useRef<{ [key: string]: L.MarkerClusterGroup }>(
@@ -555,7 +558,7 @@ const HybridClusterGroup = ({
             },
           }}
         >
-          {iconType === 'pin' ? (
+          {iconType === 'pin' && !forceAllPopup ? (
             <MePopup pin={popupPin} setSelectedPin={setSelectedPin} />
           ) : (
             <AllPopup
@@ -695,6 +698,7 @@ const Map: React.FC<Props> = ({
   setBounds,
   entityByEntityId,
   onPopupClose,
+  forceAllPopup = false,
 }) => {
   const { data: session } = useSession()
   const [center, setCenter] = useState<LatLngTuple | null>(null)
@@ -853,6 +857,7 @@ const Map: React.FC<Props> = ({
           activeTimestamp={activeTimestamp}
           selectedLayers={selectedLayers}
           _session={session}
+          forceAllPopup={forceAllPopup}
         />
         {/* Optional: Add GeoJSON polygon layer */}
         {/* <GeoJSONPolygonLayer geojsonUrl="/path/to/your/polygon.geojson" /> */}
