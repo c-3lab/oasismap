@@ -44,6 +44,7 @@ import { HappinessKey } from '@/types/happiness-key'
 import { PeriodType } from '@/types/period'
 import { AllModal } from '../happiness/all-modal'
 import { HappinessFields } from '@/types/happiness-set'
+import GSIVectorLayer from './GSIVectorLayer'
 
 // 環境変数の取得に失敗した場合は日本経緯度原点を設定
 const defaultLatitude =
@@ -629,103 +630,6 @@ const SelectedLayers = ({
   return null
 }
 
-const GSIVectorLayer = () => {
-  const map = useMap()
-
-  useEffect(() => {
-    try {
-      // Add blank tile layer as background
-      const blankTileLayer = L.tileLayer(
-        'https://cyberjapandata.gsi.go.jp/xyz/blank/{z}/{x}/{y}.png',
-        {
-          attribution:
-            '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地理院タイル</a>',
-        }
-      ).addTo(map)
-
-      // @ts-ignore - leaflet.vectorgrid extends L with vectorGrid property
-      const vectorGrid = L.vectorGrid
-        .protobuf(
-          'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
-          {
-            attribution:
-              '<a href="https://github.com/gsi-cyberjapan/gsimaps-vector-experiment" target="_blank">国土地理院ベクトルタイル提供実験</a>',
-            // @ts-ignore - L.canvas.tile is available in leaflet.vectorgrid
-            rendererFactory: L.canvas.tile,
-            vectorTileLayerStyles: {
-              road: {
-                color: '#808080',
-                weight: 1,
-                opacity: 1,
-              },
-              railway: {
-                color: '#008000',
-                weight: 2,
-                opacity: 1,
-              },
-              river: {
-                color: '#1E90FF',
-                weight: 1,
-                opacity: 1,
-              },
-              lake: {
-                color: '#1E90FF',
-                weight: 1,
-                opacity: 1,
-              },
-              boundary: [],
-              building: [],
-              coastline: [],
-              contour: [],
-              elevation: [],
-              label: [],
-              landforma: [],
-              landforml: [],
-              landformp: [],
-              searoute: [],
-              structurea: [],
-              structurel: [],
-              symbol: [],
-              transp: [],
-              waterarea: [],
-              wstructurea: [],
-            },
-          }
-        )
-        .addTo(map)
-
-      return () => {
-        if (map && blankTileLayer) {
-          map.removeLayer(blankTileLayer)
-        }
-        if (map && vectorGrid) {
-          map.removeLayer(vectorGrid)
-        }
-      }
-    } catch (error) {
-      console.error('Error loading GSI Vector Tiles:', error)
-      // Fallback to regular tiles if vector tiles fail
-      const tileLayer = L.tileLayer(
-        'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
-        {
-          attribution:
-            '<a href="https://maps.gsi.go.jp/development/ichiran.html">出典：地理院タイル</a>',
-          maxZoom: 18,
-          minZoom: 5,
-        }
-      ).addTo(map)
-
-      return () => {
-        if (map && tileLayer) {
-          map.removeLayer(tileLayer)
-        }
-      }
-    }
-  }, [map])
-
-  return null
-}
-
 const GeoJSONPolygonLayer = ({ geojsonUrl }: { geojsonUrl?: string }) => {
   const map = useMap()
 
@@ -805,8 +709,17 @@ const Map: React.FC<Props> = ({
   const noticeMessageContext = useContext(messageContext)
 
   useEffect(() => {
+    // Fake location for Tokyo preview - set to true to enable
+    // To enable fake Tokyo location, create .env.local file with:
+    // NEXT_PUBLIC_FAKE_TOKYO_LOCATION=true
+    const fakeTokyoLocation =
+      process.env.NEXT_PUBLIC_FAKE_TOKYO_LOCATION === 'true'
+
+    // For quick testing, you can also uncomment the line below to always fake Tokyo location
+    // const fakeTokyoLocation = true
+
     // geolocation が http に対応していないため固定値を設定
-    if (location.protocol === 'http:') {
+    if (location.protocol === 'http:' || fakeTokyoLocation) {
       setCenter([defaultLatitude, defaultLongitude])
       setCurrentPosition([defaultLatitude, defaultLongitude])
       return
