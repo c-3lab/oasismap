@@ -122,10 +122,22 @@ const HappinessInput: React.FC = () => {
 
     try {
       const rawExif = await exifr.parse(image)
+
+      // Fake Tokyo coordinates for testing
+      const fakeTokyoLocation = true // Set to true to always fake Tokyo location
+
       const exif = {
         timestamp: rawExif?.CreateDate,
-        latitude: isNaN(rawExif?.latitude) ? undefined : rawExif?.latitude,
-        longitude: isNaN(rawExif?.longitude) ? undefined : rawExif?.longitude,
+        latitude: fakeTokyoLocation
+          ? 35.6581064
+          : isNaN(rawExif?.latitude)
+            ? undefined
+            : rawExif?.latitude,
+        longitude: fakeTokyoLocation
+          ? 139.7413637
+          : isNaN(rawExif?.longitude)
+            ? undefined
+            : rawExif?.longitude,
       }
 
       let missingFields: string[] = []

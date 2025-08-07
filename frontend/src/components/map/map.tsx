@@ -1,6 +1,5 @@
 import {
   MapContainer,
-  TileLayer,
   ZoomControl,
   useMap,
   Marker,
@@ -844,27 +843,7 @@ const Map: React.FC<Props> = ({
         {setBounds && <Bounds setBounds={setBounds} />}
         <MoveToCurrentPositionControl />
         <ZoomControl position={'bottomleft'} />
-        <LayersControl position="topleft">
-          <LayersControl.BaseLayer checked name="GSI Vector Tiles">
-            <GSIVectorLayer />
-          </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="標準地図">
-            <TileLayer
-              attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-              url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-              maxZoom={18}
-              minZoom={5}
-            />
-          </LayersControl.BaseLayer>
-          <LayersControl.BaseLayer name="淡色地図">
-            <TileLayer
-              attribution='&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">出典：地理院タイル</a>'
-              url="https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png"
-              maxZoom={18}
-              minZoom={5}
-            />
-          </LayersControl.BaseLayer>
-        </LayersControl>
+        <GSIVectorLayer />
         <HybridClusterGroup
           iconType={iconType}
           pinData={pinData}
