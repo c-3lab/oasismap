@@ -271,7 +271,7 @@ const HybridClusterGroup = ({
   period,
   activeTimestamp,
   selectedLayers,
-  _session,
+  session,
 }: {
   iconType: IconType
   pinData: Pin[]
@@ -280,7 +280,7 @@ const HybridClusterGroup = ({
   period?: PeriodType
   activeTimestamp: { start: Date; end: Date } | null
   selectedLayers?: HappinessKey[]
-  _session: any
+  session: any
 }) => {
   const map = useMap()
   const happinessClustersRef = useRef<{ [key: string]: L.MarkerClusterGroup }>(
@@ -539,7 +539,7 @@ const HybridClusterGroup = ({
     <>
       {popupPin && popupPosition && (
         <Popup
-          autoPan={_session?.user?.type === PROFILE_TYPE.ADMIN ? false : true}
+          autoPan={session?.user?.type === PROFILE_TYPE.ADMIN ? false : true}
           position={popupPosition}
           offset={[0, -20]}
           eventHandlers={{
@@ -555,7 +555,7 @@ const HybridClusterGroup = ({
             <AllPopup
               pin={popupPin}
               setSelectedPin={setSelectedPin}
-              session={_session}
+              session={session}
             />
           )}
         </Popup>
@@ -826,7 +826,7 @@ const Map: React.FC<Props> = ({
           period={period}
           activeTimestamp={activeTimestamp}
           selectedLayers={selectedLayers}
-          _session={session}
+          session={session}
         />
 
         {/* Keep LayersControl to display legend but don't create separate cluster */}
