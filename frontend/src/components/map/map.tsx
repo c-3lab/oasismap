@@ -443,8 +443,7 @@ const HybridClusterGroup = ({
     // Add markers to both color clusters and super cluster
     filteredPins.forEach((pin) => {
       // Check if this pin type has a value > 0 based on pin.type
-      const pinValue = getPinValue(pin)
-      if (pinValue <= 0) {
+      if (getPinValue(pin) <= 0) {
         return
       }
 
