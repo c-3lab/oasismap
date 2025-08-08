@@ -224,14 +224,12 @@ const getPinValue = (pin: Pin): number => {
 
 const createClusterIcon = ({
   count,
-  className,
   backgroundColor,
   textColor,
   borderColor,
   textShadow,
 }: {
   count: number
-  className: string
   backgroundColor: string
   textColor: string
   borderColor: string
@@ -240,7 +238,7 @@ const createClusterIcon = ({
   const iconSize = getIconSize(count)
 
   return L.divIcon({
-    html: `<div class="marker-cluster ${className}" style="
+    html: `<div class="marker-cluster" style="
       background-color: ${backgroundColor};
       color: ${textColor};
       border-radius: 50%;
@@ -338,11 +336,9 @@ const HybridClusterGroup = ({
           ...markerClusterGroupProps,
           iconCreateFunction: (cluster) => {
             const count = cluster.getChildCount()
-            const happinessNumber = happinessType.slice(-1)
 
             return createClusterIcon({
               count,
-              className: `cluster-happiness${happinessNumber}`,
               backgroundColor:
                 happinessColorPalette[happinessType] || '#7f00ff',
               textColor: 'white',
@@ -364,7 +360,6 @@ const HybridClusterGroup = ({
         iconCreateFunction: (cluster) => {
           return createClusterIcon({
             count: cluster.getChildCount(),
-            className: 'cluster-total',
             backgroundColor: 'rgba(255, 255, 255, 0.9)',
             textColor: '#333',
             borderColor: 'rgba(0, 0, 0, 0.3)',
@@ -451,8 +446,7 @@ const HybridClusterGroup = ({
     // Add markers to both color clusters and super cluster
     filteredPins.forEach((pin) => {
       // Check if this pin type has a value > 0 based on pin.type
-      const pinValue = getPinValue(pin)
-      if (pinValue <= 0) {
+      if (getPinValue(pin) <= 0) {
         return
       }
 
