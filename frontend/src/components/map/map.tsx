@@ -447,37 +447,37 @@ const HybridClusterGroup = ({
         return
       }
 
-      const marker = L.marker([pin.latitude, pin.longitude], {
-        icon: getIconByType(
-          iconType,
-          pin.type,
-          pin.answer,
-          pinIsActive(pin, activeTimestamp)
-        ),
-      })
-
-      // Add event handler
-      marker.on('click', createMarkerClickHandler(pin))
-
       // Add marker to color cluster based on pin type
       if (happinessClustersRef.current[pin.type]) {
+        const marker = L.marker([pin.latitude, pin.longitude], {
+          icon: getIconByType(
+            iconType,
+            pin.type,
+            pin.answer,
+            pinIsActive(pin, activeTimestamp)
+          ),
+        })
+
+        // Add event handler
+        marker.on('click', createMarkerClickHandler(pin))
+
         happinessClustersRef.current[pin.type].addLayer(marker)
       }
 
       // Add marker to super cluster (copy)
-      const superMarker = L.marker([pin.latitude, pin.longitude], {
-        icon: getIconByType(
-          iconType,
-          pin.type,
-          pin.answer,
-          pinIsActive(pin, activeTimestamp)
-        ),
-      })
-
-      // Add event handler for super marker
-      superMarker.on('click', createMarkerClickHandler(pin))
-
       if (superClusterRef.current) {
+        const superMarker = L.marker([pin.latitude, pin.longitude], {
+          icon: getIconByType(
+            iconType,
+            pin.type,
+            pin.answer,
+            pinIsActive(pin, activeTimestamp)
+          ),
+        })
+
+        // Add event handler for super marker
+        superMarker.on('click', createMarkerClickHandler(pin))
+
         superClusterRef.current.addLayer(superMarker)
       }
     })
