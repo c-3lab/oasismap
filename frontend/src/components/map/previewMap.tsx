@@ -3,7 +3,7 @@ import 'leaflet/dist/leaflet.css'
 import { MapContainer, Marker, ZoomControl } from 'react-leaflet'
 import { getIconByType } from '@/components/utils/icon'
 import { HappinessKey } from '@/types/happiness-key'
-import GSIVectorLayer from './GSIVectorLayer'
+import GSIVectorLayer from './gsiVectorLayer'
 
 type Props = {
   latitude: number

@@ -43,7 +43,7 @@ import { HappinessKey } from '@/types/happiness-key'
 import { PeriodType } from '@/types/period'
 import { AllModal } from '../happiness/all-modal'
 import { HappinessFields } from '@/types/happiness-set'
-import GSIVectorLayer from './GSIVectorLayer'
+import GSIVectorLayer from './gsiVectorLayer'
 
 // 環境変数の取得に失敗した場合は日本経緯度原点を設定
 const defaultLatitude =
