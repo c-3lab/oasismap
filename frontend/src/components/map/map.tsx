@@ -272,7 +272,7 @@ const HybridClusterGroup = ({
   period,
   activeTimestamp,
   selectedLayers,
-  _session,
+  session,
   forceAllPopup = false,
 }: {
   iconType: IconType
@@ -282,7 +282,7 @@ const HybridClusterGroup = ({
   period?: PeriodType
   activeTimestamp: { start: Date; end: Date } | null
   selectedLayers?: HappinessKey[]
-  _session: any
+  session: any
   forceAllPopup?: boolean
 }) => {
   const map = useMap()
@@ -450,37 +450,37 @@ const HybridClusterGroup = ({
         return
       }
 
-      const marker = L.marker([pin.latitude, pin.longitude], {
-        icon: getIconByType(
-          iconType,
-          pin.type,
-          pin.answer,
-          pinIsActive(pin, activeTimestamp)
-        ),
-      })
-
-      // Add event handler
-      marker.on('click', createMarkerClickHandler(pin))
-
       // Add marker to color cluster based on pin type
       if (happinessClustersRef.current[pin.type]) {
+        const marker = L.marker([pin.latitude, pin.longitude], {
+          icon: getIconByType(
+            iconType,
+            pin.type,
+            pin.answer,
+            pinIsActive(pin, activeTimestamp)
+          ),
+        })
+
+        // Add event handler
+        marker.on('click', createMarkerClickHandler(pin))
+
         happinessClustersRef.current[pin.type].addLayer(marker)
       }
 
       // Add marker to super cluster (copy)
-      const superMarker = L.marker([pin.latitude, pin.longitude], {
-        icon: getIconByType(
-          iconType,
-          pin.type,
-          pin.answer,
-          pinIsActive(pin, activeTimestamp)
-        ),
-      })
-
-      // Add event handler for super marker
-      superMarker.on('click', createMarkerClickHandler(pin))
-
       if (superClusterRef.current) {
+        const superMarker = L.marker([pin.latitude, pin.longitude], {
+          icon: getIconByType(
+            iconType,
+            pin.type,
+            pin.answer,
+            pinIsActive(pin, activeTimestamp)
+          ),
+        })
+
+        // Add event handler for super marker
+        superMarker.on('click', createMarkerClickHandler(pin))
+
         superClusterRef.current.addLayer(superMarker)
       }
     })
@@ -542,7 +542,7 @@ const HybridClusterGroup = ({
     <>
       {popupPin && popupPosition && (
         <Popup
-          autoPan={_session?.user?.type === PROFILE_TYPE.ADMIN ? false : true}
+          autoPan={session?.user?.type === PROFILE_TYPE.ADMIN ? false : true}
           position={popupPosition}
           offset={[0, -20]}
           eventHandlers={{
@@ -558,7 +558,7 @@ const HybridClusterGroup = ({
             <AllPopup
               pin={popupPin}
               setSelectedPin={setSelectedPin}
-              session={_session}
+              session={session}
             />
           )}
         </Popup>
@@ -850,7 +850,7 @@ const Map: React.FC<Props> = ({
           period={period}
           activeTimestamp={activeTimestamp}
           selectedLayers={selectedLayers}
-          _session={session}
+          session={session}
           forceAllPopup={forceAllPopup}
         />
         {/* Optional: Add GeoJSON polygon layer */}
