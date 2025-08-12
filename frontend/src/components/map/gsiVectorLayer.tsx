@@ -13,34 +13,12 @@ const blankTileLayerConfig = {
 }
 
 const vectorGridConfig = {
-  url: 'https://cyberjapandata.gsi.go.jp/xyz/experimental_bvmap/{z}/{x}/{y}.pbf',
+  url: 'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png',
   options: {
     attribution:
-      '<a href="https://github.com/gsi-cyberjapan/gsimaps-vector-experiment" target="_blank">国土地理院ベクトルタイル提供実験</a>',
-    // @ts-ignore - L.canvas.tile is available in leaflet.vectorgrid
-    rendererFactory: L.canvas.tile,
-    vectorTileLayerStyles: {
-      road: { color: '#808080', weight: 1, opacity: 1 },
-      railway: { color: '#008000', weight: 2, opacity: 1 },
-      river: { color: '#1E90FF', weight: 1, opacity: 1 },
-      lake: { color: '#1E90FF', weight: 1, opacity: 1 },
-      boundary: [],
-      building: [],
-      coastline: [],
-      contour: [],
-      elevation: [],
-      label: [],
-      landforma: [],
-      landforml: [],
-      landformp: [],
-      searoute: [],
-      structurea: [],
-      structurel: [],
-      symbol: [],
-      transp: [],
-      waterarea: [],
-      wstructurea: [],
-    },
+      '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地理院タイル</a>',
+    maxZoom: 18,
+    minZoom: 5,
   },
 }
 
@@ -57,7 +35,7 @@ const fallbackTileLayerConfig = {
 const GSIVectorLayer = () => {
   const map = useMap()
   const blankTileLayerRef = useRef<L.TileLayer | null>(null)
-  const vectorGridRef = useRef<any | null>(null)
+  const vectorGridRef = useRef<L.TileLayer | null>(null)
   const fallbackTileLayerRef = useRef<L.TileLayer | null>(null)
 
   useEffect(() => {
@@ -72,10 +50,10 @@ const GSIVectorLayer = () => {
       }
 
       if (!vectorGridRef.current) {
-        // @ts-ignore - leaflet.vectorgrid extends L with vectorGrid property
-        vectorGridRef.current = L.vectorGrid
-          .protobuf(vectorGridConfig.url, vectorGridConfig.options)
-          .addTo(map)
+        vectorGridRef.current = L.tileLayer(
+          vectorGridConfig.url,
+          vectorGridConfig.options
+        ).addTo(map)
       }
     } catch (error) {
       console.error('Error loading GSI Vector Tiles:', error)
