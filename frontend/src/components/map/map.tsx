@@ -552,11 +552,7 @@ const HybridClusterGroup = ({
           {iconType === 'pin' ? (
             <MePopup pin={popupPin} setSelectedPin={setSelectedPin} />
           ) : (
-            <AllPopup
-              pin={popupPin}
-              setSelectedPin={setSelectedPin}
-              session={session}
-            />
+            <AllPopup pin={popupPin} setSelectedPin={setSelectedPin} />
           )}
         </Popup>
       )}

@@ -1,5 +1,4 @@
 import { Box } from '@mui/material'
-import { Session } from 'next-auth'
 import { Pin } from '@/types/pin'
 import { HappinessAllGraph } from '../happiness/happiness-all-graph'
 
@@ -9,7 +8,6 @@ export const AllPopup = ({
 }: {
   pin: Pin
   setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
-  session: Session | null
 }) => {
   if (pin.memos === undefined) {
     return
