@@ -116,7 +116,9 @@ services:
         tag: mongo-cli
 
   postgres-cli:
-    image: postgres:17.2
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
     hostname: postgres-cli
     container_name: postgres-cli
     environment:
