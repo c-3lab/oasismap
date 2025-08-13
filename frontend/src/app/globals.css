@@ -109,13 +109,6 @@ a {
 
 @media (max-width: 768px) {
   .leaflet-marker-icon {
-    width: 45px !important;
-    height: 45px !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .leaflet-marker-icon {
     width: 50px !important;
     height: 50px !important;
   }
