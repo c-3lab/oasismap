@@ -250,13 +250,16 @@ const createClusterIcon = ({
       border: 2px solid ${borderColor};
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     ">
-      <div>
-        <span style="
-          color: ${textColor};
-          font-weight: bold;
-          text-shadow: ${textShadow};
-        ">${count}</span>
-      </div>
+      <span style="
+        color: ${textColor};
+        font-weight: bold;
+        text-shadow: ${textShadow};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+      ">${count}</span>
     </div>`,
     className: '',
     iconSize: L.point(iconSize, iconSize),
