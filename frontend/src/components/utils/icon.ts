@@ -38,9 +38,9 @@ export const getIconByType = (
 
     return new L.Icon({
       iconUrl: svgUrl,
-      iconSize: [32, 32],
-      iconAnchor: [16, 32],
-      popupAnchor: [0, -32],
+      iconSize: [50, 50],
+      iconAnchor: [25, 50],
+      popupAnchor: [0, -50],
       className: isActive ? 'active-pin' : 'inactive-pin',
     })
   }
@@ -85,34 +85,34 @@ const createColoredIcon = (iconType: IconType, color: string): L.DivIcon => {
     case 'pin':
       markerHtmlStyles = `
         background-color: ${myCustomColour};
-        width: 3rem;
-        height: 3rem;
+        width: 50px;
+        height: 50px;
         display: block;
-        left: -1.5rem;
-        top: -1.5rem;
+        left: -25px;
+        top: -25px;
         position: relative;
-        border-radius: 3rem 3rem 0;
+        border-radius: 50px 50px 0;
         transform: rotate(45deg);
         border: 1px solid #FFFFFF`
       break
     case 'heatmap':
       markerHtmlStyles = `
         background: radial-gradient(closest-side, ${myCustomColour}, rgba(255, 255, 255, 0));
-        width: 3rem;
-        height: 3rem;
+        width: 50px;
+        height: 50px;
         display: block;
-        left: -1.5rem;
-        top: -1.5rem;
+        left: -25px;
+        top: -25px;
         position: relative;
-        border-radius: 3rem 3rem 3rem;
+        border-radius: 50px 50px 50px;
         opacity: 0.4`
       break
   }
 
   const divIconOptions: Omit<DivIconOptions, 'labelAnchor'> = {
     className: 'my-custom-pin',
-    iconAnchor: [0, 24],
-    popupAnchor: [0, -36],
+    iconAnchor: [0, 50],
+    popupAnchor: [0, -50],
     html: `<span style="${markerHtmlStyles}" />`,
   }
 
