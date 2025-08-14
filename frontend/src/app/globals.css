@@ -107,11 +107,9 @@ a {
   height: 100%;
 }
 
-@media (max-width: 768px) {
-  .leaflet-marker-icon {
-    width: 50px !important;
-    height: 50px !important;
-  }
+.leaflet-marker-icon {
+  width: 50px !important;
+  height: 50px !important;
 }
 
 /* Marker cluster styling for centered numbers and maintaining circular shape */
