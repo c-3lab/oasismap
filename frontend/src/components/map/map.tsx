@@ -888,7 +888,7 @@ const Map: React.FC<Props> = ({
           />
         )}
       </MapContainer>
-      {iconType === 'pin' ? (
+      {iconType === 'pin' && !forceAllPopup ? (
         <MeModal data={selectedPin} onClose={() => setSelectedPin(null)} />
       ) : (
         <AllModal data={selectedPin} onClose={() => setSelectedPin(null)} />
