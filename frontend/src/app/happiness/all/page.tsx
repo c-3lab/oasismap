@@ -35,6 +35,12 @@ import { LoadingContext } from '@/contexts/loading-context'
 import { Pin } from '@/types/pin'
 import { happinessSet } from '@/types/happiness-set'
 
+// Import component riêng cho user thường
+const HappinessAllUserComponent = dynamic(
+  () => import('@/components/happiness/happiness-all-user'),
+  { ssr: false }
+)
+
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
 const getPinColorByHighestPercentage = (pin: Pin): HappinessKey => {
@@ -267,6 +273,11 @@ const HappinessAll: React.FC = () => {
       )
     }
     return null
+  }
+
+  // Nếu user thường, sử dụng component riêng
+  if (session?.user?.type !== PROFILE_TYPE.ADMIN) {
+    return <HappinessAllUserComponent />
   }
 
   return (
