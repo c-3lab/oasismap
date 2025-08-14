@@ -46,6 +46,28 @@ export class HappinessMeService {
     };
   }
 
+  async findAllHappiness(
+    start: string,
+    end: string,
+    limit: string,
+    offset: string,
+  ): Promise<HappinessMeResponse> {
+    const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
+    const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
+    const query = `timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;
+    const happinessEntities = await this.getHappinessEntities(
+      query,
+      limit,
+      offset,
+    );
+    console.log(happinessEntities);
+
+    return {
+      count: happinessEntities.length,
+      data: this.toHappinessMeResponse(happinessEntities),
+    };
+  }
+
   private async getHappinessEntities(
     query: string,
     limit: string,
