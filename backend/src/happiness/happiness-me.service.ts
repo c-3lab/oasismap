@@ -60,7 +60,6 @@ export class HappinessMeService {
       limit,
       offset,
     );
-    console.log(happinessEntities);
 
     return {
       count: happinessEntities.length,
