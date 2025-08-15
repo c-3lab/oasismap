@@ -35,16 +35,11 @@ import { LoadingContext } from '@/contexts/loading-context'
 import { Pin } from '@/types/pin'
 import { happinessSet } from '@/types/happiness-set'
 
-// Import component riêng cho user thường
 const HappinessAllUserComponent = dynamic(
   () => import('@/components/happiness/happiness-all-user'),
   { ssr: false }
 )
-
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
-
-
-
 const HappinessAll: React.FC = () => {
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
@@ -161,11 +156,13 @@ const HappinessAll: React.FC = () => {
           }
         }
 
-        setPinData(GetPin(
-          Object.values(allMapData)
-            .map((mapData: MapData) => mapData.data)
-            .flat()
-        ))
+        setPinData(
+          GetPin(
+            Object.values(allMapData)
+              .map((mapData: MapData) => mapData.data)
+              .flat()
+          )
+        )
 
         for (let i = 0; i < data['graph_data'].length; i++) {
           const existedGraphData = allGraphData[i]
