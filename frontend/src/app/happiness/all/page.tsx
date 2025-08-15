@@ -301,7 +301,9 @@ const HappinessAll: React.FC = () => {
           pointEntities={[]}
           surfaceEntities={[]}
           fiware={{ servicePath: '', tenant: '' }}
-          iconType="pin"
+          iconType={
+            session?.user?.type === PROFILE_TYPE.ADMIN ? 'heatmap' : 'pin'
+          }
           pinData={pinData}
           forceAllPopup={true}
           setSelectedLayers={
