@@ -5,17 +5,15 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import {
   Box,
-  Checkbox,
   Button,
   Grid,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
   TextField,
   FormControl,
   OutlinedInput,
   FormHelperText,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
 } from '@mui/material'
 
 const PreviewMap = dynamic(() => import('@/components/map/previewMap'), {
@@ -53,16 +51,10 @@ const HappinessInput: React.FC = () => {
   const { postData } = useFetchData()
 
   const [errors, setErrors] = useState<Errors>([])
-  const [checkboxValues, setCheckboxValues] = useState<{
-    [key in HappinessKey]: number
-  }>({
-    happiness1: 0,
-    happiness2: 0,
-    happiness3: 0,
-    happiness4: 0,
-    happiness5: 0,
-    happiness6: 0,
-  })
+
+  const [selectedHappiness, setSelectedHappiness] = useState<HappinessKey | ''>(
+    ''
+  )
   const [memo, setMemo] = useState('')
   const [exif, setExif] = useState<Exif | null>(null)
   const [currentPosition, setCurrentPosition] = useState<{
@@ -87,8 +79,8 @@ const HappinessInput: React.FC = () => {
     }
   }
 
-  // チェックボックスの状態が全て0かどうかをチェック
-  const isAllUnchecked = !Object.values(checkboxValues).some(Boolean)
+  // ラジオボタンの状態が選択されているかどうかをチェック
+  const isAllUnchecked = selectedHappiness === ''
 
   const checkboxLabels: { [key in HappinessKey]: string } = {
     happiness1: '➀ ワクワクする場所です',
@@ -99,9 +91,11 @@ const HappinessInput: React.FC = () => {
     happiness6: '➅ 思い出の場所です',
   }
 
-  // チェックボックスの状態を変更
-  const toggleCheckbox = (key: HappinessKey) => {
-    setCheckboxValues((prev) => ({ ...prev, [key]: prev[key] ? 0 : 1 }))
+  // ラジオボタンの状態を変更
+  const handleHappinessChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setSelectedHappiness(event.target.value as HappinessKey)
   }
 
   // メモの入力内容を変更
@@ -179,11 +173,21 @@ const HappinessInput: React.FC = () => {
 
   const submitForm = async () => {
     try {
+      // Convert selectedHappiness to the format expected by the API
+      const answers = {
+        happiness1: selectedHappiness === 'happiness1' ? 1 : 0,
+        happiness2: selectedHappiness === 'happiness2' ? 1 : 0,
+        happiness3: selectedHappiness === 'happiness3' ? 1 : 0,
+        happiness4: selectedHappiness === 'happiness4' ? 1 : 0,
+        happiness5: selectedHappiness === 'happiness5' ? 1 : 0,
+        happiness6: selectedHappiness === 'happiness6' ? 1 : 0,
+      }
+
       let payload: HappinessRequestBody = {
         latitude: 0,
         longitude: 0,
         memo: memo,
-        answers: checkboxValues,
+        answers: answers,
       }
 
       if (
@@ -247,24 +251,17 @@ const HappinessInput: React.FC = () => {
           />
         </Box>
 
-        <List dense disablePadding>
-          {Object.entries(checkboxValues).map(([key, value]) => (
-            <ListItem key={key} disablePadding>
-              <ListItemButton
-                sx={{ p: 0, height: 40, fontSize: 18 }}
-                onClick={() => toggleCheckbox(key as HappinessKey)}
-              >
-                <ListItemText primary={checkboxLabels[key as HappinessKey]} />
-                <Checkbox
-                  edge="end"
-                  color="default"
-                  sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
-                  checked={value === 1}
-                />
-              </ListItemButton>
-            </ListItem>
+        <RadioGroup value={selectedHappiness} onChange={handleHappinessChange}>
+          {Object.entries(checkboxLabels).map(([key, label]) => (
+            <FormControlLabel
+              key={key}
+              value={key}
+              control={<Radio />}
+              label={label}
+              sx={{ fontSize: 18 }}
+            />
           ))}
-        </List>
+        </RadioGroup>
         <TextField
           id="memo"
           label="メモ"
