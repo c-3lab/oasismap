@@ -155,7 +155,6 @@ const HappinessAll: React.FC = () => {
             allMapData[gridKey] = fetchedMapData
           }
         }
-
         setPinData(
           GetPin(
             Object.values(allMapData)
@@ -229,7 +228,6 @@ const HappinessAll: React.FC = () => {
     return null
   }
 
-  // Nếu user thường, sử dụng component riêng
   if (session?.user?.type !== PROFILE_TYPE.ADMIN) {
     return <HappinessAllUserComponent />
   }
