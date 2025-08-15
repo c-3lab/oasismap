@@ -11,9 +11,9 @@ describe('CreateHappinessDto', () => {
       answers: {
         happiness1: 1,
         happiness2: 0,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
+        happiness3: 0,
+        happiness4: 0,
+        happiness5: 0,
         happiness6: 0,
       },
       timestamp: '2024-12-19T09:00:00.000Z',
@@ -35,9 +35,9 @@ describe('CreateHappinessDto', () => {
       answers: {
         happiness1: 1,
         happiness2: 0,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
+        happiness3: 0,
+        happiness4: 0,
+        happiness5: 0,
         happiness6: 0,
       },
     };
@@ -58,9 +58,9 @@ describe('CreateHappinessDto', () => {
       answers: {
         happiness1: 1,
         happiness2: 0,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
+        happiness3: 0,
+        happiness4: 0,
+        happiness5: 0,
         happiness6: 0,
       },
       timestamp: '2024/12/19T09:00:00.000Z',
@@ -100,6 +100,8 @@ describe('CreateHappinessDto', () => {
     expect(errors.length).toBe(1);
     expect(errors[0].constraints).toEqual({
       isNotAllHappinessZero: 'All happiness values cannot be zero.',
+      isExactlyOneHappinessSelected:
+        'Exactly one happiness value must be selected (value = 1).',
     });
   });
 
@@ -111,9 +113,9 @@ describe('CreateHappinessDto', () => {
       answers: {
         happiness1: 1,
         happiness2: 0,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
+        happiness3: 0,
+        happiness4: 0,
+        happiness5: 0,
         happiness6: 0,
       },
     };
@@ -137,9 +139,9 @@ describe('CreateHappinessDto', () => {
       answers: {
         happiness1: 1,
         happiness2: 0,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
+        happiness3: 0,
+        happiness4: 0,
+        happiness5: 0,
         happiness6: 0,
       },
     };
