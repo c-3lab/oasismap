@@ -28,7 +28,7 @@ import { IconType } from '@/types/icon-type'
 import { messageContext } from '@/contexts/message-context'
 
 import { IconButton } from '@mui/material'
-import MyLocationIcon from '@mui/icons-material/MyLocation'
+import NavigationIcon from '@mui/icons-material/Navigation'
 import CurrentPositionIcon from '@mui/icons-material/RadioButtonChecked'
 import { renderToString } from 'react-dom/server'
 import { MeModal } from '../happiness/me-modal'
@@ -664,7 +664,7 @@ const Map: React.FC<Props> = ({
   }, [])
 
   const currentPositionIconHTML = renderToString(
-    <CurrentPositionIcon style={{ fill: 'blue' }} />
+    <CurrentPositionIcon style={{ fill: '#20B2AA' }} />
   )
   const currentPositionIcon = divIcon({
     html: currentPositionIconHTML,
@@ -688,8 +688,8 @@ const Map: React.FC<Props> = ({
             style={{
               backgroundColor: '#f7f7f7',
               border: '1px solid #ccc',
-              borderRadius: 2,
-              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
+              borderRadius: 100,
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
             }}
             onClick={() => {
               if (currentPosition) {
@@ -697,7 +697,9 @@ const Map: React.FC<Props> = ({
               }
             }}
           >
-            <MyLocationIcon style={{ color: 'blue' }} />
+            <NavigationIcon
+              style={{ color: '#20B2AA', transform: 'rotate(45deg)' }}
+            />
           </IconButton>
         )
 
