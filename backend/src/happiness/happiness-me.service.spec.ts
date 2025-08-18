@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { HappinessMeService } from './happiness-me.service';
 import { mockHappinessMeEntities } from './mocks/orion/mock-happiness-orion.response';
 import { expectedHappinessMeResponse } from './expects/happiness/expected-happiness-me.response';
+import { mockHappinessMeResponse } from './mocks/happiness/mock-happiness-me.response';
 import axios from 'axios';
 import { UserAttribute } from 'src/auth/interface/user-attribute';
 
@@ -21,7 +22,38 @@ describe('HappinessMeService', () => {
   });
 
   describe('findHappinessMe', () => {
-    it('should return happiness entities', async () => {
+    it('should return mock data when USE_MOCK_DATA is true', async () => {
+      // Set environment variable to use mock data
+      process.env.USE_MOCK_DATA = 'true';
+
+      const requestUserAttributes: UserAttribute = {
+        nickname: 'nickname',
+        age: '20代',
+        prefecture: '東京都',
+        city: '文京区',
+      };
+      const start = '2024-01-01T14:30:00+09:00';
+      const end = '2024-03-31T23:59:59+09:00';
+      const limit = '100';
+      const offset = '200';
+
+      const result = await happinessMeService.findHappinessMe(
+        requestUserAttributes,
+        start,
+        end,
+        limit,
+        offset,
+      );
+
+      // Should return mock data without calling API
+      expect(result).toEqual(mockHappinessMeResponse);
+      expect(mockedAxios.get).not.toHaveBeenCalled();
+    });
+
+    it('should return happiness entities from API when USE_MOCK_DATA is false', async () => {
+      // Set environment variable to use real API
+      process.env.USE_MOCK_DATA = 'false';
+
       const spy = mockedAxios.get.mockResolvedValue(mockHappinessMeEntities);
 
       const requestUserAttributes: UserAttribute = {
@@ -34,6 +66,7 @@ describe('HappinessMeService', () => {
       const end = '2024-03-31T23:59:59+09:00';
       const limit = '100';
       const offset = '200';
+
       const result = await happinessMeService.findHappinessMe(
         requestUserAttributes,
         start,

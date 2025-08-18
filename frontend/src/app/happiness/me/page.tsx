@@ -133,12 +133,18 @@ const HappinessMe: React.FC = () => {
           },
           updatedSession?.user?.accessToken!
         )
-        if (data['count'] === 0) break
 
-        setPinData((prevPinData: Pin[]) => [
-          ...prevPinData,
-          ...GetPin(data['data']),
-        ])
+        if (data['count'] === 0 || data['data'].length === 0) {
+          break
+        }
+
+        try {
+          const newPins = GetPin(data['data'])
+          setPinData((prevPinData: Pin[]) => [...prevPinData, ...newPins])
+        } catch (error) {
+          console.error('Error in GetPin or setPinData:', error)
+        }
+
         setMyHappiness((prevHappiness: happinessSet) => {
           const nextHappiness = myHappinessData(data['data'])
           if (Object.keys(prevHappiness).length === 0) return nextHappiness
@@ -173,7 +179,9 @@ const HappinessMe: React.FC = () => {
           })
         }
 
-        offset += data['count']
+        offset += data['data'].length
+
+        break
       }
 
       if (timestamp && Object.keys(entityByEntityId).length === 0) {
