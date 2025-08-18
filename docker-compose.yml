@@ -106,7 +106,9 @@ services:
     restart: always
 
   postgres:
-    image: postgres:17.2
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
     hostname: postgres
     expose:
       - "5432"
@@ -148,7 +150,9 @@ services:
     entrypoint: "mongosh 'mongodb://${MONGOUSERNAME}:${MONGOPASSWORD}@mongo:27017/oriondb-government?authSource=admin' --file '/tmp/scripts/add-mongo-index.js'"
 
   postgres-cli:
-    image: postgres:17.2
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
     hostname: postgres-cli
     container_name: postgres-cli
     depends_on:
