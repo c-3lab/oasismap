@@ -200,7 +200,9 @@ services:
     restart: always
 
   orion:
-    image: fiware/orion:4.1.0
+    build:
+      context: ./fiware/orion
+      dockerfile: Dockerfile
     hostname: orion
     container_name: orion
     expose:
