@@ -561,8 +561,6 @@ const HybridClusterGroup = ({
   )
 }
 
-
-
 const SelectedLayers = ({
   setSelectedLayers,
 }: {
@@ -738,8 +736,6 @@ const Map: React.FC<Props> = ({
   if (center === null || currentPosition === null) {
     return <p>Loading...</p>
   }
-
-
 
   const activeTimestamp: { start: Date; end: Date } | null =
     highlightTarget && period
