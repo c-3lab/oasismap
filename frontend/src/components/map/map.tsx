@@ -1,7 +1,6 @@
 import {
   MapContainer,
   TileLayer,
-  ZoomControl,
   useMap,
   Marker,
   LayersControl,
@@ -798,7 +797,6 @@ const Map: React.FC<Props> = ({
         <SelectedLayers setSelectedLayers={setSelectedLayersState} />
         {setBounds && <Bounds setBounds={setBounds} />}
         <MoveToCurrentPositionControl />
-        <ZoomControl position={'bottomleft'} />
         <LayersControl position="topleft">
           <LayersControl.BaseLayer checked name="標準地図">
             <TileLayer
