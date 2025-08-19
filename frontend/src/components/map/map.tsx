@@ -4,7 +4,6 @@ import {
   useMap,
   Marker,
   LayersControl,
-  LayerGroup,
   useMapEvents,
   Popup,
 } from 'react-leaflet'
@@ -562,33 +561,7 @@ const HybridClusterGroup = ({
   )
 }
 
-const MapOverlay = ({
-  iconType: _iconType,
-  type,
-  filteredPins: _filteredPins,
-  initialPopupPin: _initialPopupPin,
-  layerIndex: _layerIndex,
-  setSelectedPin: _setSelectedPin,
-  setHighlightTarget: _setHighlightTarget,
-  period: _period,
-  activeTimestamp: _activeTimestamp,
-}: {
-  iconType: IconType
-  type: string
-  filteredPins: Pin[]
-  initialPopupPin: Pin | undefined
-  layerIndex: number
-  setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
-  setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
-  period?: PeriodType
-  activeTimestamp: { start: Date; end: Date } | null
-}) => {
-  return (
-    <LayersControl.Overlay checked name={type}>
-      <LayerGroup />
-    </LayersControl.Overlay>
-  )
-}
+
 
 const SelectedLayers = ({
   setSelectedLayers,
@@ -646,9 +619,7 @@ const Map: React.FC<Props> = ({
   highlightTarget,
   setHighlightTarget,
   period,
-  initialEntityId,
   setBounds,
-  entityByEntityId,
   onPopupClose,
 }) => {
   const { data: session } = useSession()
@@ -768,16 +739,7 @@ const Map: React.FC<Props> = ({
     return <p>Loading...</p>
   }
 
-  const filteredPinsByType = (type: HappinessKey) =>
-    pinData.filter((pin) => {
-      // Check if pin type matches the filter type and has value > 0
-      return pin.type === type && getPinValue(pin) > 0
-    })
 
-  let initialEntityUuid: string | undefined = undefined
-  if (initialEntityId) {
-    initialEntityUuid = entityByEntityId?.[initialEntityId]?.id
-  }
 
   const activeTimestamp: { start: Date; end: Date } | null =
     highlightTarget && period
@@ -825,29 +787,6 @@ const Map: React.FC<Props> = ({
           selectedLayers={selectedLayers}
           session={session}
         />
-
-        {/* Keep LayersControl to display legend but don't create separate cluster */}
-        <LayersControl position="topright">
-          {HAPPINESS_KEYS.map((type, index) => {
-            const filteredPins = filteredPinsByType(type)
-            return (
-              <MapOverlay
-                key={type}
-                iconType={iconType}
-                type={questionTitles[type]}
-                filteredPins={filteredPins}
-                initialPopupPin={filteredPins.find(
-                  (pin) => pin.id === initialEntityUuid
-                )}
-                layerIndex={index}
-                setSelectedPin={setSelectedPin}
-                setHighlightTarget={setHighlightTarget}
-                period={period}
-                activeTimestamp={activeTimestamp}
-              />
-            )
-          })}
-        </LayersControl>
         {onPopupClose && <OnPopupClose onPopupClose={onPopupClose} />}
         {currentPosition && (
           <Marker position={currentPosition} icon={currentPositionIcon} />
