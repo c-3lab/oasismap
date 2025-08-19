@@ -78,7 +78,9 @@ services:
       - frontend-network
 
   mongo:
-    image: mongo:6.0.14
+    build:
+      context: ./mongo
+      dockerfile: Dockerfile
     hostname: mongo
     container_name: mongo
     expose:
@@ -95,7 +97,9 @@ services:
     restart: always
 
   postgres:
-    image: postgres:16.1
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
     hostname: postgres
     expose:
       - "5432"
@@ -121,7 +125,9 @@ services:
     restart: always
 
   postgres-cli:
-    image: postgres:16.1
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
     hostname: postgres-cli
     container_name: postgres-cli
     depends_on:

@@ -99,7 +99,9 @@ services:
 
   # "ORION_MONGO_DB=oriondb"や"ORION_FIWARE_SERVICE=Government"を変更した場合、"oriondb-government"も変更すること
   mongo-cli:
-    image: mongo:8.0.4
+    build:
+      context: ./mongo
+      dockerfile: Dockerfile
     hostname: mongo-cli
     container_name: mongo-cli
     volumes:
@@ -116,7 +118,9 @@ services:
         tag: mongo-cli
 
   postgres-cli:
-    image: postgres:17.2
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
     hostname: postgres-cli
     container_name: postgres-cli
     environment:
