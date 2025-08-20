@@ -69,12 +69,35 @@ const HappinessInput: React.FC = () => {
   })
   const [memo, setMemo] = useState('')
   const [exif, setExif] = useState<Exif | null>(null)
+  const [currentPosition, setCurrentPosition] = useState<{
+    latitude: number
+    longitude: number
+  } | null>(null)
 
   // 入力モード選択用ラジオボタンの状態を変更
-  const handleMode = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMode = async (event: React.ChangeEvent<HTMLInputElement>) => {
     setErrors(errors.filter((error) => error.field !== 'image'))
     setExif(null)
-    setMode(event.target.value as 'current' | 'past')
+    const newMode = event.target.value as 'current' | 'past'
+    setMode(newMode)
+
+    // Lấy vị trí hiện tại khi chuyển sang mode past
+    if (newMode === 'past' && !currentPosition) {
+      try {
+        const position = await getCurrentPosition()
+        if (
+          position.latitude !== undefined &&
+          position.longitude !== undefined
+        ) {
+          setCurrentPosition({
+            latitude: position.latitude,
+            longitude: position.longitude,
+          })
+        }
+      } catch (error) {
+        console.error('Error getting current position:', error)
+      }
+    }
   }
 
   // チェックボックスの状態が全て0かどうかをチェック
@@ -116,6 +139,7 @@ const HappinessInput: React.FC = () => {
   const handleImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
     setErrors(errors.filter((error) => error.field !== 'image'))
     setExif(null)
+    setCurrentPosition(null) // Reset current position when new image is selected
 
     const image = event.target.files?.[0]
     if (!image) return
@@ -245,6 +269,20 @@ const HappinessInput: React.FC = () => {
             label="撮影した場所の幸福度を入力"
           />
         </RadioGroup>
+
+        {/* Map display only for past mode */}
+        {mode === 'past' && (
+          <Box
+            sx={{ height: '300px', marginTop: '16px', marginBottom: '16px' }}
+          >
+            <PreviewMap
+              latitude={exif?.latitude ?? currentPosition?.latitude ?? 0}
+              longitude={exif?.longitude ?? currentPosition?.longitude ?? 0}
+              answer={checkboxValues}
+            />
+          </Box>
+        )}
+
         <List dense disablePadding>
           {Object.entries(checkboxValues).map(([key, value]) => (
             <ListItem key={key} disablePadding>
@@ -322,15 +360,6 @@ const HappinessInput: React.FC = () => {
                 <FormHelperText>緯度：{exif?.latitude}</FormHelperText>
                 <FormHelperText>経度：{exif?.longitude}</FormHelperText>
               </>
-            )}
-            {exif?.latitude && exif?.longitude && (
-              <Box sx={{ height: '300px', marginTop: '16px' }}>
-                <PreviewMap
-                  latitude={exif.latitude}
-                  longitude={exif.longitude}
-                  answer={checkboxValues}
-                />
-              </Box>
             )}
           </FormControl>
         )}
