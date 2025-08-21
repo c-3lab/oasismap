@@ -80,8 +80,6 @@ const HappinessInput: React.FC = () => {
     setExif(null)
     const newMode = event.target.value as 'current' | 'past'
     setMode(newMode)
-
-    // Lấy vị trí hiện tại khi chuyển sang mode past
     if (newMode === 'past' && !currentPosition) {
       try {
         const position = await getCurrentPosition()
