@@ -154,17 +154,11 @@ const HappinessInput: React.FC = () => {
 
     try {
       const rawExif = await exifr.parse(image)
-      // const exif = {
-      //   timestamp: rawExif?.CreateDate,
-      //   latitude: isNaN(rawExif?.latitude) ? undefined : rawExif?.latitude,
-      //   longitude: isNaN(rawExif?.longitude) ? undefined : rawExif?.longitude,
-      // }
       const exif = {
-        timestamp: rawExif?.CreateDate || new Date('2024-01-15T10:30:00Z'),
-        latitude: 35.97005, // Tokyo latitude
-        longitude: 139.3981472222222, // Tokyo longitude
+        timestamp: rawExif?.CreateDate,
+        latitude: isNaN(rawExif?.latitude) ? undefined : rawExif?.latitude,
+        longitude: isNaN(rawExif?.longitude) ? undefined : rawExif?.longitude,
       }
-
       let missingFields: string[] = []
       if (exif.timestamp === undefined) missingFields.push('撮影日時')
       if (exif.latitude === undefined) missingFields.push('緯度')
