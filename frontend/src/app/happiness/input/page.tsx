@@ -79,6 +79,19 @@ const HappinessInput: React.FC = () => {
     }
   }
 
+  const createAnswersFromSelected = (
+    selectedHappiness: string
+  ): { [key in HappinessKey]: number } => {
+    return {
+      happiness1: selectedHappiness === 'happiness1' ? 1 : 0,
+      happiness2: selectedHappiness === 'happiness2' ? 1 : 0,
+      happiness3: selectedHappiness === 'happiness3' ? 1 : 0,
+      happiness4: selectedHappiness === 'happiness4' ? 1 : 0,
+      happiness5: selectedHappiness === 'happiness5' ? 1 : 0,
+      happiness6: selectedHappiness === 'happiness6' ? 1 : 0,
+    }
+  }
+
   // ラジオボタンの状態が選択されているかどうかをチェック
   const isAllUnchecked = selectedHappiness === ''
 
@@ -173,15 +186,7 @@ const HappinessInput: React.FC = () => {
 
   const submitForm = async () => {
     try {
-      // Convert selectedHappiness to the format expected by the API
-      const answers = {
-        happiness1: selectedHappiness === 'happiness1' ? 1 : 0,
-        happiness2: selectedHappiness === 'happiness2' ? 1 : 0,
-        happiness3: selectedHappiness === 'happiness3' ? 1 : 0,
-        happiness4: selectedHappiness === 'happiness4' ? 1 : 0,
-        happiness5: selectedHappiness === 'happiness5' ? 1 : 0,
-        happiness6: selectedHappiness === 'happiness6' ? 1 : 0,
-      }
+      const answers = createAnswersFromSelected(selectedHappiness)
 
       let payload: HappinessRequestBody = {
         latitude: 0,
@@ -247,7 +252,7 @@ const HappinessInput: React.FC = () => {
             longitude={
               exif?.longitude ?? currentPosition?.longitude ?? 139.7413637
             }
-            answer={checkboxValues}
+            answer={createAnswersFromSelected(selectedHappiness)}
           />
         </Box>
 
