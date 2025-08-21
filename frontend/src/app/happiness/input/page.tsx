@@ -187,7 +187,6 @@ const HappinessInput: React.FC = () => {
   const submitForm = async () => {
     try {
       const answers = createAnswersFromSelected(selectedHappiness)
-
       let payload: HappinessRequestBody = {
         latitude: 0,
         longitude: 0,
