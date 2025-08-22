@@ -33,7 +33,7 @@ import CurrentPositionIcon from '@mui/icons-material/RadioButtonChecked'
 import { renderToString } from 'react-dom/server'
 import { MeModal } from '../happiness/me-modal'
 import { Pin } from '@/types/pin'
-import { HAPPINESS_KEYS, PROFILE_TYPE, questionTitles } from '@/libs/constants'
+import { HAPPINESS_KEYS, PROFILE_TYPE } from '@/libs/constants'
 import { MePopup } from './mePopup'
 import { AllPopup } from './allPopup'
 import { MessageType } from '@/types/message-type'
@@ -271,7 +271,6 @@ const HybridClusterGroup = ({
   setHighlightTarget,
   period,
   activeTimestamp,
-  selectedLayers,
   session,
 }: {
   iconType: IconType
@@ -280,7 +279,6 @@ const HybridClusterGroup = ({
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
   period?: PeriodType
   activeTimestamp: { start: Date; end: Date } | null
-  selectedLayers?: HappinessKey[]
   session: any
 }) => {
   const map = useMap()
@@ -435,14 +433,8 @@ const HybridClusterGroup = ({
       superClusterRef.current.clearLayers()
     }
 
-    // Filter pins based on selectedLayers
-    const filteredPins =
-      selectedLayers && selectedLayers.length > 0
-        ? pinData.filter((pin) => selectedLayers.includes(pin.type))
-        : pinData
-
     // Add markers to both color clusters and super cluster
-    filteredPins.forEach((pin) => {
+    pinData.forEach((pin) => {
       // Check if this pin type has a value > 0 based on pin.type
       if (getPinValue(pin) <= 0) {
         return
@@ -513,7 +505,6 @@ const HybridClusterGroup = ({
     setHighlightTarget,
     period,
     setSelectedPin,
-    selectedLayers,
     createHappinessClusters,
     createSuperCluster,
     createMarkerClickHandler,
@@ -561,37 +552,6 @@ const HybridClusterGroup = ({
   )
 }
 
-const SelectedLayers = ({
-  setSelectedLayers,
-}: {
-  setSelectedLayers: React.Dispatch<React.SetStateAction<HappinessKey[]>>
-}) => {
-  useMapEvents({
-    overlayadd: (e) => {
-      const targetLayer = HAPPINESS_KEYS.find(
-        (key) => questionTitles[key] === e.name
-      )
-      if (targetLayer) {
-        setSelectedLayers((selectedLayers: HappinessKey[]) => [
-          ...selectedLayers,
-          targetLayer,
-        ])
-      }
-    },
-    overlayremove: (e) => {
-      const targetLayer = HAPPINESS_KEYS.find(
-        (key) => questionTitles[key] === e.name
-      )
-      if (targetLayer) {
-        setSelectedLayers((selectedLayers: HappinessKey[]) =>
-          [...selectedLayers].filter((layer) => layer !== targetLayer)
-        )
-      }
-    },
-  })
-  return null
-}
-
 const Bounds = ({
   setBounds,
 }: {
@@ -627,8 +587,6 @@ const Map: React.FC<Props> = ({
   )
   const [error, setError] = useState<Error | null>(null)
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null)
-  const [selectedLayers, setSelectedLayersState] =
-    useState<HappinessKey[]>(HAPPINESS_KEYS)
   const noticeMessageContext = useContext(messageContext)
 
   useEffect(() => {
@@ -752,7 +710,6 @@ const Map: React.FC<Props> = ({
         maxBounds={maxBounds}
         maxBoundsViscosity={maxBoundsViscosity}
       >
-        <SelectedLayers setSelectedLayers={setSelectedLayersState} />
         {setBounds && <Bounds setBounds={setBounds} />}
         <MoveToCurrentPositionControl />
         <LayersControl position="topleft">
@@ -780,7 +737,6 @@ const Map: React.FC<Props> = ({
           setHighlightTarget={setHighlightTarget}
           period={period}
           activeTimestamp={activeTimestamp}
-          selectedLayers={selectedLayers}
           session={session}
         />
         {onPopupClose && <OnPopupClose onPopupClose={onPopupClose} />}
