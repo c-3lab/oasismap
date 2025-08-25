@@ -288,7 +288,6 @@ const HappinessMe: React.FC = () => {
         />
       </Grid>
       <Grid
-        container
         item
         xs={12}
         md={6}
@@ -297,7 +296,7 @@ const HappinessMe: React.FC = () => {
         justifyContent={'center'}
         sx={{ px: { md: '16px' }, my: { xs: '32px', md: 0 } }}
       >
-        <Grid
+        {/* <Grid
           item
           xs={12}
           md={12}
@@ -316,7 +315,7 @@ const HappinessMe: React.FC = () => {
               setHighlightTarget={setHighlightTarget}
             />
           </ResponsiveContainer>
-        </Grid>
+        </Grid> */}
         <Grid
           container
           justifyContent="center"
