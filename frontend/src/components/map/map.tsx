@@ -416,7 +416,7 @@ const HybridClusterGroup = ({
   const updateClusters = useCallback(() => {
     const zoomLevel = map.getZoom()
 
-    if (zoomLevel < 10) {
+    if (zoomLevel < 0) {
       // Zoom out: show super cluster, hide color clusters
       Object.values(happinessClustersRef.current).forEach((cluster) => {
         if (map.hasLayer(cluster)) {
