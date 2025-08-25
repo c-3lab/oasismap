@@ -409,10 +409,10 @@ const HybridClusterGroup = ({
       return
     }
 
-    // Open popup and fly to the target pin
+    // Open popup and pan to the target pin
     setPopupPin(targetPin)
     setPopupPosition([targetPin.latitude, targetPin.longitude])
-    map.flyTo([targetPin.latitude, targetPin.longitude], 16)
+    map.panTo([targetPin.latitude, targetPin.longitude])
 
     // Handle highlight if period is available
     if (setHighlightTarget && period) {
