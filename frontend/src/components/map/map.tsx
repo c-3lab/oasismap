@@ -272,6 +272,8 @@ const HybridClusterGroup = ({
   period,
   activeTimestamp,
   session,
+  initialEntityId,
+  entityByEntityId,
 }: {
   iconType: IconType
   pinData: Pin[]
@@ -280,6 +282,8 @@ const HybridClusterGroup = ({
   period?: PeriodType
   activeTimestamp: { start: Date; end: Date } | null
   session: any
+  initialEntityId?: string | null
+  entityByEntityId?: EntityByEntityId
 }) => {
   const map = useMap()
   const happinessClustersRef = useRef<{ [key: string]: L.MarkerClusterGroup }>(
@@ -387,6 +391,42 @@ const HybridClusterGroup = ({
     },
     [setHighlightTarget, period, setPopupPin, setPopupPosition]
   )
+
+  // Logic to automatically open popup for initialEntityId
+  useEffect(() => {
+    if (!initialEntityId || !entityByEntityId || !map || pinData.length === 0) {
+      return
+    }
+
+    const targetEntity = entityByEntityId[initialEntityId]
+    if (!targetEntity) {
+      return
+    }
+
+    // Find the pin that matches the initialEntityId
+    const targetPin = pinData.find((pin) => pin.id === targetEntity.id)
+    if (!targetPin) {
+      return
+    }
+
+    // Open popup and fly to the target pin
+    setPopupPin(targetPin)
+    setPopupPosition([targetPin.latitude, targetPin.longitude])
+    map.flyTo([targetPin.latitude, targetPin.longitude], 16)
+
+    // Handle highlight if period is available
+    if (setHighlightTarget && period) {
+      const newXAxisValue = convertToXAxisValue(targetPin, period)
+      setHighlightTarget({ lastUpdateBy: 'Map', xAxisValue: newXAxisValue })
+    }
+  }, [
+    initialEntityId,
+    entityByEntityId,
+    map,
+    pinData,
+    setHighlightTarget,
+    period,
+  ])
 
   const updateClusters = useCallback(() => {
     const zoomLevel = map.getZoom()
@@ -577,7 +617,9 @@ const Map: React.FC<Props> = ({
   highlightTarget,
   setHighlightTarget,
   period,
+  initialEntityId,
   setBounds,
+  entityByEntityId,
   onPopupClose,
 }) => {
   const { data: session } = useSession()
@@ -738,6 +780,8 @@ const Map: React.FC<Props> = ({
           period={period}
           activeTimestamp={activeTimestamp}
           session={session}
+          initialEntityId={initialEntityId}
+          entityByEntityId={entityByEntityId}
         />
         {onPopupClose && <OnPopupClose onPopupClose={onPopupClose} />}
         {currentPosition && (
