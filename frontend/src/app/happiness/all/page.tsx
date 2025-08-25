@@ -36,7 +36,7 @@ import { Pin } from '@/types/pin'
 import { happinessSet } from '@/types/happiness-set'
 
 const HappinessAllUserComponent = dynamic(
-  () => import('@/components/happiness/happiness-all-user'),
+  () => import('@/components/commons/happiness-user'),
   { ssr: false }
 )
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
@@ -228,8 +228,11 @@ const HappinessAll: React.FC = () => {
     return null
   }
 
-  if (session?.user?.type !== PROFILE_TYPE.ADMIN) {
-    return <HappinessAllUserComponent />
+  const isAdmin = session?.user?.type === PROFILE_TYPE.ADMIN
+  const iconType = isAdmin ? 'heatmap' : 'pin'
+
+  if (!isAdmin) {
+    return <HappinessAllUserComponent type="all" />
   }
 
   return (
@@ -253,19 +256,11 @@ const HappinessAll: React.FC = () => {
           pointEntities={[]}
           surfaceEntities={[]}
           fiware={{ servicePath: '', tenant: '' }}
-          iconType={
-            session?.user?.type === PROFILE_TYPE.ADMIN ? 'heatmap' : 'pin'
-          }
+          iconType={iconType}
           pinData={pinData}
           forceAllPopup={true}
-          setSelectedLayers={
-            session?.user?.type === PROFILE_TYPE.ADMIN
-              ? setSelectedLayers
-              : undefined
-          }
-          setBounds={
-            session?.user?.type === PROFILE_TYPE.ADMIN ? setBounds : undefined
-          }
+          setSelectedLayers={isAdmin ? setSelectedLayers : undefined}
+          setBounds={isAdmin ? setBounds : undefined}
         />
       </Grid>
       <Grid

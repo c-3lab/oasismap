@@ -33,13 +33,47 @@ import { LoadingContext } from '@/contexts/loading-context'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
-const HappinessAllUser: React.FC = () => {
+type HappinessUserProps = {
+  type: 'me' | 'all'
+}
+
+function getSnackbarMessage(xAxisValue: number, period: PeriodType) {
+  const date = new Date()
+  let nowYear = date.getFullYear()
+  let nowMonthIndex = date.getMonth()
+  let nowMonth = nowMonthIndex + 1
+  let nowDate = date.getDate()
+  const nowHour = date.getHours()
+  if (xAxisValue < 0) {
+    return ''
+  }
+
+  switch (period) {
+    case PeriodType.Month:
+      // 現在の月数よりも大きい値の月数が指定された場合、指定された月は去年である
+      if (nowMonth < xAxisValue) nowYear -= 1
+      return `${nowYear}年${xAxisValue}月`
+
+    case PeriodType.Day:
+      // 現在の日数よりも大きい値の日数が指定された場合、指定された日にちは先月である
+      if (nowDate < xAxisValue) nowMonthIndex -= 1
+      return `${nowYear}年${nowMonth}月${xAxisValue}日`
+
+    case PeriodType.Time:
+      // 現在の時間よりも大きい値の時間が指定された場合、指定された時間は昨日である
+      if (nowHour < xAxisValue) nowDate -= 1
+      return `${nowYear}年${nowMonth}月${nowDate}日${xAxisValue}時`
+  }
+}
+
+const HappinessUser = ({ type }: HappinessUserProps) => {
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
   const [period, setPeriod] = useState(PeriodType.Month)
   const [pinData, setPinData] = useState<Pin[]>([])
   const [entityByEntityId, setEntityByEntityId] = useState<EntityByEntityId>({})
   const willStop = useRef(false)
+  const isMounted = useRef(false)
   const [MyHappiness, setMyHappiness] = useState<happinessSet>({
     month: [],
     day: [],
@@ -78,7 +112,9 @@ const HappinessAllUser: React.FC = () => {
       setEntityByEntityId({})
       setHighlightTarget({ lastUpdateBy: 'init', xAxisValue: null })
 
-      const url = backendUrl + '/api/happiness/all-users'
+      const url =
+        backendUrl +
+        (type === 'me' ? '/api/happiness/me' : '/api/happiness/all-users')
       const startDateTime = toDateTime(startProps.value).toISO()
       const endDateTime = toDateTime(endProps.value).endOf('minute').toISO()
       // 日付の変換に失敗した場合
@@ -92,7 +128,7 @@ const HappinessAllUser: React.FC = () => {
       while (!willStop.current) {
         // アクセストークンを再取得
         const updatedSession = await update()
-
+        console.log(updatedSession?.user?.accessToken)
         const data = await fetchData(
           url,
           {
@@ -150,6 +186,7 @@ const HappinessAllUser: React.FC = () => {
         }
 
         offset += data['data'].length
+
         break
       }
 
@@ -183,6 +220,14 @@ const HappinessAllUser: React.FC = () => {
   }
 
   useEffect(() => {
+    isMounted.current = true
+
+    return () => {
+      isMounted.current = false
+    }
+  }, [])
+
+  useEffect(() => {
     if (!isTokenFetched) return
     getData()
 
@@ -191,6 +236,16 @@ const HappinessAllUser: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isTokenFetched, updatedPeriod])
+
+  useEffect(() => {
+    if (highlightTarget.xAxisValue && highlightTarget.xAxisValue > 0) {
+      noticeMessageContext.showMessage(
+        `${getSnackbarMessage(highlightTarget.xAxisValue, period)}のデータをハイライトします`,
+        MessageType.Success
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightTarget.xAxisValue])
 
   const renderCustomDayTick = (tickProps: any) => {
     const { x, y, payload } = tickProps
@@ -206,15 +261,7 @@ const HappinessAllUser: React.FC = () => {
   }
 
   return (
-    <Grid
-      container
-      sx={{
-        paddingBottom: {
-          xs: '50px',
-          md: '0px',
-        },
-      }}
-    >
+    <Grid container sx={{ paddingBottom: { xs: '50px', md: '0px' } }}>
       <Grid
         container
         item
@@ -232,7 +279,8 @@ const HappinessAllUser: React.FC = () => {
           entityByEntityId={entityByEntityId}
           onPopupClose={() => {
             // 画面遷移時に発火させないため、マウント時のみクエリパラメータの削除を実行
-            router.replace('/happiness/all')
+            isMounted.current &&
+              router.replace(type === 'me' ? '/happiness/me' : '/happiness/all')
             setInitialEntityId(null)
           }}
           period={period}
@@ -359,7 +407,7 @@ const HappinessAllUser: React.FC = () => {
               color="primary"
               size="large"
               fullWidth
-              onClick={() => router.push('/happiness/input?referral=all')}
+              onClick={() => router.push(`/happiness/input?referral=${type}`)}
             >
               幸福度を入力
             </Button>
@@ -370,4 +418,4 @@ const HappinessAllUser: React.FC = () => {
   )
 }
 
-export default HappinessAllUser
+export default HappinessUser
