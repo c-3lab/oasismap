@@ -26,7 +26,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { getIconByType } from '../utils/icon'
 import { IconType } from '@/types/icon-type'
 import { messageContext } from '@/contexts/message-context'
-import { EntityByEntityId } from '@/types/entityByEntityId'
+
 import { IconButton } from '@mui/material'
 import MyLocationIcon from '@mui/icons-material/MyLocation'
 import CurrentPositionIcon from '@mui/icons-material/RadioButtonChecked'
@@ -42,6 +42,7 @@ import { HappinessKey } from '@/types/happiness-key'
 import { PeriodType } from '@/types/period'
 import { AllModal } from '../happiness/all-modal'
 import { HappinessFields } from '@/types/happiness-set'
+import { Data } from '@/types/happiness-me-response'
 
 // 環境変数の取得に失敗した場合は日本経緯度原点を設定
 const defaultLatitude =
@@ -75,10 +76,8 @@ type Props = {
   }
   iconType: IconType
   pinData: Pin[]
-  initialEntityId?: string | null
-  setSelectedLayers?: React.Dispatch<React.SetStateAction<HappinessKey[]>>
+  targetEntity?: Data
   setBounds?: React.Dispatch<React.SetStateAction<LatLngBounds | undefined>>
-  entityByEntityId?: EntityByEntityId
   onPopupClose?: () => void
   highlightTarget?: HighlightTarget
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
@@ -272,8 +271,7 @@ const HybridClusterGroup = ({
   period,
   activeTimestamp,
   session,
-  initialEntityId,
-  entityByEntityId,
+  targetEntity,
 }: {
   iconType: IconType
   pinData: Pin[]
@@ -282,8 +280,7 @@ const HybridClusterGroup = ({
   period?: PeriodType
   activeTimestamp: { start: Date; end: Date } | null
   session: any
-  initialEntityId?: string | null
-  entityByEntityId?: EntityByEntityId
+  targetEntity?: Data
 }) => {
   const map = useMap()
   const happinessClustersRef = useRef<{ [key: string]: L.MarkerClusterGroup }>(
@@ -392,18 +389,13 @@ const HybridClusterGroup = ({
     [setHighlightTarget, period, setPopupPin, setPopupPosition]
   )
 
-  // Logic to automatically open popup for initialEntityId
+  // Logic to automatically open popup for targetEntity
   useEffect(() => {
-    if (!initialEntityId || !entityByEntityId || !map || pinData.length === 0) {
+    if (!targetEntity || !map || pinData.length === 0) {
       return
     }
 
-    const targetEntity = entityByEntityId[initialEntityId]
-    if (!targetEntity) {
-      return
-    }
-
-    // Find the pin that matches the initialEntityId
+    // Find the pin that matches the targetEntity
     const targetPin = pinData.find((pin) => pin.id === targetEntity.id)
     if (!targetPin) {
       return
@@ -419,14 +411,7 @@ const HybridClusterGroup = ({
       const newXAxisValue = convertToXAxisValue(targetPin, period)
       setHighlightTarget({ lastUpdateBy: 'Map', xAxisValue: newXAxisValue })
     }
-  }, [
-    initialEntityId,
-    entityByEntityId,
-    map,
-    pinData,
-    setHighlightTarget,
-    period,
-  ])
+  }, [targetEntity, map, pinData, setHighlightTarget, period])
 
   const updateClusters = useCallback(() => {
     const zoomLevel = map.getZoom()
@@ -617,9 +602,8 @@ const Map: React.FC<Props> = ({
   highlightTarget,
   setHighlightTarget,
   period,
-  initialEntityId,
+  targetEntity,
   setBounds,
-  entityByEntityId,
   onPopupClose,
 }) => {
   const { data: session } = useSession()
@@ -780,8 +764,7 @@ const Map: React.FC<Props> = ({
           period={period}
           activeTimestamp={activeTimestamp}
           session={session}
-          initialEntityId={initialEntityId}
-          entityByEntityId={entityByEntityId}
+          targetEntity={targetEntity}
         />
         {onPopupClose && <OnPopupClose onPopupClose={onPopupClose} />}
         {currentPosition && (
