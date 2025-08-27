@@ -259,8 +259,8 @@ const HappinessAll: React.FC = () => {
           iconType={iconType}
           pinData={pinData}
           forceAllPopup={true}
-          setSelectedLayers={isAdmin ? setSelectedLayers : undefined}
-          setBounds={isAdmin ? setBounds : undefined}
+          setSelectedLayers={setSelectedLayers}
+          setBounds={setBounds}
         />
       </Grid>
       <Grid
