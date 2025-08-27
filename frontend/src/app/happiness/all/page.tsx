@@ -228,10 +228,7 @@ const HappinessAll: React.FC = () => {
     return null
   }
 
-  const isAdmin = session?.user?.type === PROFILE_TYPE.ADMIN
-  const iconType = isAdmin ? 'heatmap' : 'pin'
-
-  if (!isAdmin) {
+  if (session?.user?.type !== PROFILE_TYPE.ADMIN) {
     return <HappinessAllUserComponent type="all" />
   }
 
@@ -256,7 +253,7 @@ const HappinessAll: React.FC = () => {
           pointEntities={[]}
           surfaceEntities={[]}
           fiware={{ servicePath: '', tenant: '' }}
-          iconType={iconType}
+          iconType="heatmap"
           pinData={pinData}
           forceAllPopup={true}
           setSelectedLayers={setSelectedLayers}
