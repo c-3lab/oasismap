@@ -62,7 +62,6 @@ const HappinessAll: React.FC = () => {
   const [isLoaded, setIsLoaded] = useState(false)
 
   const getBoundsNESW = (): string | undefined => {
-    if (session?.user?.type !== PROFILE_TYPE.ADMIN) return undefined
     if (!bounds) return undefined
 
     const boundsNESW = `${bounds.getNorth()},${bounds.getEast()},${bounds.getSouth()},${bounds.getWest()}`
@@ -237,7 +236,7 @@ const HappinessAll: React.FC = () => {
       container
       sx={{
         paddingBottom: {
-          xs: session?.user?.type === PROFILE_TYPE.GENERAL ? '50px' : '0px',
+          xs: '0px',
           md: '0px',
         },
       }}
@@ -362,29 +361,6 @@ const HappinessAll: React.FC = () => {
               </Button>
             </Grid>
           </Grid>
-          {session?.user?.type === PROFILE_TYPE.GENERAL && (
-            <Grid
-              item
-              md={12}
-              lg={8}
-              sx={{
-                position: { xs: 'fixed', md: 'static' },
-                bottom: { xs: '10px', md: 'auto' },
-                left: { xs: '10px', md: 'auto' },
-                right: { xs: '10px', md: 'auto' },
-              }}
-            >
-              <Button
-                variant="contained"
-                color="primary"
-                size="large"
-                fullWidth
-                onClick={() => router.push('/happiness/input?referral=all')}
-              >
-                幸福度を入力
-              </Button>
-            </Grid>
-          )}
         </Grid>
       </Grid>
     </Grid>
