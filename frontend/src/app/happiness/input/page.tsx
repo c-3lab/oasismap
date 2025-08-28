@@ -105,14 +105,10 @@ const HappinessInput: React.FC = () => {
   }
 
   // 入力モード選択用ラジオボタンの状態を変更
-  const handleMode = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMode = (event: React.ChangeEvent<HTMLInputElement>) => {
     setErrors(errors.filter((error) => error.field !== 'image'))
     setExif(null)
-    const newMode = event.target.value as 'current' | 'past'
-    setMode(newMode)
-    if (!currentPosition) {
-      await updateCurrentPosition()
-    }
+    setMode(event.target.value as 'current' | 'past')
   }
 
   // チェックボックスの状態が全て0かどうかをチェック
@@ -154,7 +150,6 @@ const HappinessInput: React.FC = () => {
   const handleImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
     setErrors(errors.filter((error) => error.field !== 'image'))
     setExif(null)
-    setCurrentPosition(null) // Reset current position when new image is selected
 
     const image = event.target.files?.[0]
     if (!image) return
@@ -214,22 +209,16 @@ const HappinessInput: React.FC = () => {
         memo: memo,
         answers: checkboxValues,
       }
-      if (mode === 'past') {
-        if (
-          exif &&
-          exif.latitude !== undefined &&
-          exif.longitude !== undefined &&
-          exif.timestamp
-        ) {
-          payload.latitude = exif.latitude
-          payload.longitude = exif.longitude
-          payload.timestamp = exif.timestamp.toISOString()
-        } else {
-          const position = await getCurrentPositionForPayload()
-          payload.latitude = position.latitude
-          payload.longitude = position.longitude
-        }
-      } else if (mode === 'current') {
+      if (
+        mode === 'past' &&
+        exif?.latitude !== undefined &&
+        exif?.longitude !== undefined &&
+        exif?.timestamp
+      ) {
+        payload.latitude = exif.latitude
+        payload.longitude = exif.longitude
+        payload.timestamp = exif.timestamp.toISOString()
+      } else {
         const position = await getCurrentPositionForPayload()
         payload.latitude = position.latitude
         payload.longitude = position.longitude
