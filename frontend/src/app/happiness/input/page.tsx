@@ -74,6 +74,11 @@ const HappinessInput: React.FC = () => {
     longitude: number
   } | null>(null)
 
+  // Get current position on component mount
+  React.useEffect(() => {
+    updateCurrentPosition()
+  }, [])
+
   const getCurrentPositionForPayload = async () => {
     const position = await getCurrentPosition()
     if (position.latitude === undefined || position.longitude === undefined)
@@ -84,27 +89,29 @@ const HappinessInput: React.FC = () => {
     }
   }
 
+  // Common function to update current position
+  const updateCurrentPosition = async () => {
+    try {
+      const position = await getCurrentPosition()
+      if (position.latitude !== undefined && position.longitude !== undefined) {
+        setCurrentPosition({
+          latitude: position.latitude,
+          longitude: position.longitude,
+        })
+      }
+    } catch (error) {
+      console.error('Error getting current position:', error)
+    }
+  }
+
   // 入力モード選択用ラジオボタンの状態を変更
   const handleMode = async (event: React.ChangeEvent<HTMLInputElement>) => {
     setErrors(errors.filter((error) => error.field !== 'image'))
     setExif(null)
     const newMode = event.target.value as 'current' | 'past'
     setMode(newMode)
-    if (newMode === 'past' && !currentPosition) {
-      try {
-        const position = await getCurrentPosition()
-        if (
-          position.latitude !== undefined &&
-          position.longitude !== undefined
-        ) {
-          setCurrentPosition({
-            latitude: position.latitude,
-            longitude: position.longitude,
-          })
-        }
-      } catch (error) {
-        console.error('Error getting current position:', error)
-      }
+    if (!currentPosition) {
+      await updateCurrentPosition()
     }
   }
 
@@ -278,18 +285,16 @@ const HappinessInput: React.FC = () => {
           />
         </RadioGroup>
 
-        {/* Map display only for past mode */}
-        {mode === 'past' && (
-          <Box
-            sx={{ height: '300px', marginTop: '16px', marginBottom: '16px' }}
-          >
-            <PreviewMap
-              latitude={exif?.latitude ?? currentPosition?.latitude ?? 0}
-              longitude={exif?.longitude ?? currentPosition?.longitude ?? 0}
-              answer={checkboxValues}
-            />
-          </Box>
-        )}
+        {/* Map display always */}
+        <Box sx={{ height: '300px', marginTop: '16px', marginBottom: '16px' }}>
+          <PreviewMap
+            latitude={exif?.latitude ?? currentPosition?.latitude ?? 35.6581064}
+            longitude={
+              exif?.longitude ?? currentPosition?.longitude ?? 139.7413637
+            }
+            answer={checkboxValues}
+          />
+        </Box>
 
         <List dense disablePadding>
           {Object.entries(checkboxValues).map(([key, value]) => (
