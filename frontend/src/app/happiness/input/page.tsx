@@ -14,6 +14,7 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Typography,
 } from '@mui/material'
 
 const PreviewMap = dynamic(() => import('@/components/map/previewMap'), {
@@ -96,12 +97,12 @@ const HappinessInput: React.FC = () => {
   const isAllUnchecked = selectedHappiness === ''
 
   const checkboxLabels: { [key in HappinessKey]: string } = {
-    happiness1: '➀ ワクワクする場所です',
-    happiness2: '➁ 新たな発見や学びのある場所です',
-    happiness3: '➂ ホッとする場所です',
-    happiness4: '➃ 自分を取り戻せる場所です',
-    happiness5: '➄ 自慢の場所です',
-    happiness6: '➅ 思い出の場所です',
+    happiness1: 'ワクワクする場所です',
+    happiness2: '新たな発見や学びのある場所です',
+    happiness3: 'ホッとする場所です',
+    happiness4: '自分を取り戻せる場所です',
+    happiness5: '自慢の場所です',
+    happiness6: '思い出の場所です',
   }
 
   // ラジオボタンの状態を変更
@@ -254,7 +255,9 @@ const HappinessInput: React.FC = () => {
             answer={createAnswersFromSelected(selectedHappiness)}
           />
         </Box>
-
+        <Typography variant="body1" sx={{ mt: 2, mb: 1 }}>
+          そのスポットで感じた魅力を選択してください
+        </Typography>
         <RadioGroup value={selectedHappiness} onChange={handleHappinessChange}>
           {Object.entries(checkboxLabels).map(([key, label]) => (
             <FormControlLabel
@@ -262,7 +265,12 @@ const HappinessInput: React.FC = () => {
               value={key}
               control={<Radio />}
               label={label}
-              sx={{ fontSize: 18 }}
+              sx={{
+                fontSize: 18,
+                '& .MuiFormControlLabel-label': {
+                  fontWeight: selectedHappiness === key ? 'bold' : 'normal',
+                },
+              }}
             />
           ))}
         </RadioGroup>
