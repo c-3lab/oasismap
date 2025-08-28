@@ -18,8 +18,8 @@ const vectorGridConfig = {
     attribution:
       '<a href="https://github.com/gsi-cyberjapan/gsimaps-vector-experiment" target="_blank">国土地理院ベクトルタイル提供実験</a>',
     rendererFactory: (L as any).canvas.tile,
-    maxZoom: 17,
-    minZoom: 5,
+    maxZoom: 16,
+    minZoom: 8, // Tăng minZoom lên 8 vì zoom 5-7 có thể không có dữ liệu
     vectorTileLayerStyles: {
       road: {
         color: 'gray',
@@ -77,7 +77,7 @@ const GSIVectorLayer = () => {
   const handleZoomChange = () => {
     const currentZoom = map.getZoom()
 
-    if (currentZoom > 17) {
+    if (currentZoom > 16 || currentZoom < 8) {
       if (vectorGridRef.current) {
         map.removeLayer(vectorGridRef.current)
         vectorGridRef.current = null
@@ -104,11 +104,7 @@ const GSIVectorLayer = () => {
 
   useEffect(() => {
     if (!map) return
-    map.setView([35.6727, 139.662], 14)
-
     map.on('zoomend', handleZoomChange)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-
     try {
       if (!blankTileLayerRef.current) {
         blankTileLayerRef.current = L.tileLayer(
@@ -116,23 +112,7 @@ const GSIVectorLayer = () => {
           blankTileLayerConfig.options
         ).addTo(map)
       }
-
-      const currentZoom = map.getZoom()
-      if (currentZoom <= 17) {
-        if (!vectorGridRef.current) {
-          const LWithVectorGrid = L as any
-          vectorGridRef.current = LWithVectorGrid.vectorGrid
-            .protobuf(vectorGridConfig.url, vectorGridConfig.options)
-            .addTo(map)
-        }
-      } else {
-        if (!fallbackTileLayerRef.current) {
-          fallbackTileLayerRef.current = L.tileLayer(
-            fallbackTileLayerConfig.url,
-            fallbackTileLayerConfig.options
-          ).addTo(map)
-        }
-      }
+      handleZoomChange()
     } catch (error) {
       console.error('Error loading GSI Vector Tiles:', error)
       if (!fallbackTileLayerRef.current) {
