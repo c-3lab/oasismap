@@ -83,10 +83,7 @@ const HappinessInput: React.FC = () => {
     const position = await getCurrentPosition()
     if (position.latitude === undefined || position.longitude === undefined)
       throw new Error('Geolocation is not available')
-    return {
-      latitude: position.latitude,
-      longitude: position.longitude,
-    }
+    return position
   }
 
   // Common function to update current position
@@ -94,10 +91,7 @@ const HappinessInput: React.FC = () => {
     try {
       const position = await getCurrentPosition()
       if (position.latitude !== undefined && position.longitude !== undefined) {
-        setCurrentPosition({
-          latitude: position.latitude,
-          longitude: position.longitude,
-        })
+        setCurrentPosition(position)
       }
     } catch (error) {
       console.error('Error getting current position:', error)
