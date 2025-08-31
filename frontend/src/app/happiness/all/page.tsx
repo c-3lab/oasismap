@@ -51,8 +51,7 @@ const HappinessAll: React.FC = () => {
   const { isTokenFetched } = useTokenFetchStatus()
   const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
   const { data: session, update } = useSession()
-  const [selectedLayers, setSelectedLayers] =
-    useState<HappinessKey[]>(HAPPINESS_KEYS)
+  const [selectedLayers] = useState<HappinessKey[]>(HAPPINESS_KEYS)
   const [bounds, setBounds] = useState<LatLngBounds | undefined>(undefined)
   const { isLoading, setIsLoading } = useContext(LoadingContext)
   const { fetchData } = useFetchData()
@@ -248,11 +247,6 @@ const HappinessAll: React.FC = () => {
           fiware={{ servicePath: '', tenant: '' }}
           iconType="heatmap"
           pinData={pinData}
-          setSelectedLayers={
-            session?.user?.type === PROFILE_TYPE.ADMIN
-              ? setSelectedLayers
-              : undefined
-          }
           setBounds={
             session?.user?.type === PROFILE_TYPE.ADMIN ? setBounds : undefined
           }

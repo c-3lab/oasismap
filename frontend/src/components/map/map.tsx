@@ -1,11 +1,9 @@
 import {
   MapContainer,
   TileLayer,
-  ZoomControl,
   useMap,
   Marker,
   LayersControl,
-  LayerGroup,
   useMapEvents,
   Popup,
 } from 'react-leaflet'
@@ -28,14 +26,14 @@ import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { getIconByType } from '../utils/icon'
 import { IconType } from '@/types/icon-type'
 import { messageContext } from '@/contexts/message-context'
-import { EntityByEntityId } from '@/types/entityByEntityId'
+
 import { IconButton } from '@mui/material'
 import MyLocationIcon from '@mui/icons-material/MyLocation'
 import CurrentPositionIcon from '@mui/icons-material/RadioButtonChecked'
 import { renderToString } from 'react-dom/server'
 import { MeModal } from '../happiness/me-modal'
 import { Pin } from '@/types/pin'
-import { HAPPINESS_KEYS, PROFILE_TYPE, questionTitles } from '@/libs/constants'
+import { HAPPINESS_KEYS, PROFILE_TYPE } from '@/libs/constants'
 import { MePopup } from './mePopup'
 import { AllPopup } from './allPopup'
 import { MessageType } from '@/types/message-type'
@@ -44,6 +42,7 @@ import { HappinessKey } from '@/types/happiness-key'
 import { PeriodType } from '@/types/period'
 import { AllModal } from '../happiness/all-modal'
 import { HappinessFields } from '@/types/happiness-set'
+import { Data } from '@/types/happiness-me-response'
 
 // 環境変数の取得に失敗した場合は日本経緯度原点を設定
 const defaultLatitude =
@@ -77,10 +76,8 @@ type Props = {
   }
   iconType: IconType
   pinData: Pin[]
-  initialEntityId?: string | null
-  setSelectedLayers?: React.Dispatch<React.SetStateAction<HappinessKey[]>>
+  targetEntity?: Data
   setBounds?: React.Dispatch<React.SetStateAction<LatLngBounds | undefined>>
-  entityByEntityId?: EntityByEntityId
   onPopupClose?: () => void
   highlightTarget?: HighlightTarget
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
@@ -273,8 +270,8 @@ const HybridClusterGroup = ({
   setHighlightTarget,
   period,
   activeTimestamp,
-  selectedLayers,
   session,
+  targetEntity,
 }: {
   iconType: IconType
   pinData: Pin[]
@@ -282,8 +279,8 @@ const HybridClusterGroup = ({
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
   period?: PeriodType
   activeTimestamp: { start: Date; end: Date } | null
-  selectedLayers?: HappinessKey[]
   session: any
+  targetEntity?: Data
 }) => {
   const map = useMap()
   const happinessClustersRef = useRef<{ [key: string]: L.MarkerClusterGroup }>(
@@ -392,6 +389,30 @@ const HybridClusterGroup = ({
     [setHighlightTarget, period, setPopupPin, setPopupPosition]
   )
 
+  // Logic to automatically open popup for targetEntity
+  useEffect(() => {
+    if (!targetEntity || !map || pinData.length === 0) {
+      return
+    }
+
+    // Find the pin that matches the targetEntity
+    const targetPin = pinData.find((pin) => pin.id === targetEntity.id)
+    if (!targetPin) {
+      return
+    }
+
+    // Open popup and pan to the target pin
+    setPopupPin(targetPin)
+    setPopupPosition([targetPin.latitude, targetPin.longitude])
+    map.panTo([targetPin.latitude, targetPin.longitude])
+
+    // Handle highlight if period is available
+    if (setHighlightTarget && period) {
+      const newXAxisValue = convertToXAxisValue(targetPin, period)
+      setHighlightTarget({ lastUpdateBy: 'Map', xAxisValue: newXAxisValue })
+    }
+  }, [targetEntity, map, pinData, setHighlightTarget, period])
+
   const updateClusters = useCallback(() => {
     const zoomLevel = map.getZoom()
 
@@ -437,14 +458,8 @@ const HybridClusterGroup = ({
       superClusterRef.current.clearLayers()
     }
 
-    // Filter pins based on selectedLayers
-    const filteredPins =
-      selectedLayers && selectedLayers.length > 0
-        ? pinData.filter((pin) => selectedLayers.includes(pin.type))
-        : pinData
-
     // Add markers to both color clusters and super cluster
-    filteredPins.forEach((pin) => {
+    pinData.forEach((pin) => {
       // Check if this pin type has a value > 0 based on pin.type
       if (getPinValue(pin) <= 0) {
         return
@@ -515,7 +530,6 @@ const HybridClusterGroup = ({
     setHighlightTarget,
     period,
     setSelectedPin,
-    selectedLayers,
     createHappinessClusters,
     createSuperCluster,
     createMarkerClickHandler,
@@ -563,65 +577,6 @@ const HybridClusterGroup = ({
   )
 }
 
-const MapOverlay = ({
-  iconType: _iconType,
-  type,
-  filteredPins: _filteredPins,
-  initialPopupPin: _initialPopupPin,
-  layerIndex: _layerIndex,
-  setSelectedPin: _setSelectedPin,
-  setHighlightTarget: _setHighlightTarget,
-  period: _period,
-  activeTimestamp: _activeTimestamp,
-}: {
-  iconType: IconType
-  type: string
-  filteredPins: Pin[]
-  initialPopupPin: Pin | undefined
-  layerIndex: number
-  setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
-  setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
-  period?: PeriodType
-  activeTimestamp: { start: Date; end: Date } | null
-}) => {
-  return (
-    <LayersControl.Overlay checked name={type}>
-      <LayerGroup />
-    </LayersControl.Overlay>
-  )
-}
-
-const SelectedLayers = ({
-  setSelectedLayers,
-}: {
-  setSelectedLayers: React.Dispatch<React.SetStateAction<HappinessKey[]>>
-}) => {
-  useMapEvents({
-    overlayadd: (e) => {
-      const targetLayer = HAPPINESS_KEYS.find(
-        (key) => questionTitles[key] === e.name
-      )
-      if (targetLayer) {
-        setSelectedLayers((selectedLayers: HappinessKey[]) => [
-          ...selectedLayers,
-          targetLayer,
-        ])
-      }
-    },
-    overlayremove: (e) => {
-      const targetLayer = HAPPINESS_KEYS.find(
-        (key) => questionTitles[key] === e.name
-      )
-      if (targetLayer) {
-        setSelectedLayers((selectedLayers: HappinessKey[]) =>
-          [...selectedLayers].filter((layer) => layer !== targetLayer)
-        )
-      }
-    },
-  })
-  return null
-}
-
 const Bounds = ({
   setBounds,
 }: {
@@ -647,9 +602,8 @@ const Map: React.FC<Props> = ({
   highlightTarget,
   setHighlightTarget,
   period,
-  initialEntityId,
+  targetEntity,
   setBounds,
-  entityByEntityId,
   onPopupClose,
 }) => {
   const { data: session } = useSession()
@@ -659,8 +613,6 @@ const Map: React.FC<Props> = ({
   )
   const [error, setError] = useState<Error | null>(null)
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null)
-  const [selectedLayers, setSelectedLayersState] =
-    useState<HappinessKey[]>(HAPPINESS_KEYS)
   const noticeMessageContext = useContext(messageContext)
 
   useEffect(() => {
@@ -769,17 +721,6 @@ const Map: React.FC<Props> = ({
     return <p>Loading...</p>
   }
 
-  const filteredPinsByType = (type: HappinessKey) =>
-    pinData.filter((pin) => {
-      // Check if pin type matches the filter type and has value > 0
-      return pin.type === type && getPinValue(pin) > 0
-    })
-
-  let initialEntityUuid: string | undefined = undefined
-  if (initialEntityId) {
-    initialEntityUuid = entityByEntityId?.[initialEntityId]?.id
-  }
-
   const activeTimestamp: { start: Date; end: Date } | null =
     highlightTarget && period
       ? convertToTimestampRange(highlightTarget.xAxisValue, period)
@@ -795,10 +736,8 @@ const Map: React.FC<Props> = ({
         maxBounds={maxBounds}
         maxBoundsViscosity={maxBoundsViscosity}
       >
-        <SelectedLayers setSelectedLayers={setSelectedLayersState} />
         {setBounds && <Bounds setBounds={setBounds} />}
         <MoveToCurrentPositionControl />
-        <ZoomControl position={'bottomleft'} />
         <LayersControl position="topleft">
           <LayersControl.BaseLayer checked name="標準地図">
             <TileLayer
@@ -824,32 +763,9 @@ const Map: React.FC<Props> = ({
           setHighlightTarget={setHighlightTarget}
           period={period}
           activeTimestamp={activeTimestamp}
-          selectedLayers={selectedLayers}
           session={session}
+          targetEntity={targetEntity}
         />
-
-        {/* Keep LayersControl to display legend but don't create separate cluster */}
-        <LayersControl position="topright">
-          {HAPPINESS_KEYS.map((type, index) => {
-            const filteredPins = filteredPinsByType(type)
-            return (
-              <MapOverlay
-                key={type}
-                iconType={iconType}
-                type={questionTitles[type]}
-                filteredPins={filteredPins}
-                initialPopupPin={filteredPins.find(
-                  (pin) => pin.id === initialEntityUuid
-                )}
-                layerIndex={index}
-                setSelectedPin={setSelectedPin}
-                setHighlightTarget={setHighlightTarget}
-                period={period}
-                activeTimestamp={activeTimestamp}
-              />
-            )
-          })}
-        </LayersControl>
         {onPopupClose && <OnPopupClose onPopupClose={onPopupClose} />}
         {currentPosition && (
           <Marker position={currentPosition} icon={currentPositionIcon} />
