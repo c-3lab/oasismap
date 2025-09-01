@@ -77,36 +77,10 @@ type Props = {
   iconType: IconType
   pinData: Pin[]
   targetEntity?: Data
-  setBounds?: React.Dispatch<React.SetStateAction<LatLngBounds | undefined>>
   onPopupClose?: () => void
-  highlightTarget?: HighlightTarget
+  _highlightTarget?: HighlightTarget
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
   period?: PeriodType
-}
-
-const HighlightListener = ({
-  highlightTarget,
-  setHighlightTarget,
-}: {
-  highlightTarget: HighlightTarget
-  setHighlightTarget: React.Dispatch<React.SetStateAction<HighlightTarget>>
-}) => {
-  // グラフクリックによってハイライト状態が変更された場合はポップアップを閉じる
-  const map = useMap()
-
-  useEffect(() => {
-    if (highlightTarget.lastUpdateBy === 'Graph') {
-      map.closePopup()
-    }
-  }, [highlightTarget.lastUpdateBy, map])
-
-  // マップ上のpin以外の箇所をクリックした場合、全体のハイライトを解除
-  useMapEvents({
-    click() {
-      setHighlightTarget({ lastUpdateBy: 'Map', xAxisValue: null })
-    },
-  })
-  return null
 }
 
 const OnPopupClose = ({ onPopupClose }: { onPopupClose: () => void }) => {
@@ -116,85 +90,6 @@ const OnPopupClose = ({ onPopupClose }: { onPopupClose: () => void }) => {
     },
   })
   return null
-}
-
-const pinIsActive = (
-  pin: Pin,
-  activeTimestamp: { start: Date; end: Date } | null
-) => {
-  if (!pin.timestamp || !activeTimestamp) return true
-  const timestamp = new Date(pin.timestamp)
-  return activeTimestamp.start <= timestamp && timestamp <= activeTimestamp.end
-}
-
-const convertToXAxisValue = (pin: Pin, period: PeriodType): number | null => {
-  if (!pin || !pin.timestamp) return null
-
-  // 現在からdays日前 よりも 指定したdate が未来にあれば true
-  function isWithinDays(date: Date, days: number): boolean {
-    return new Date(Date.now() - days * 24 * 60 * 60 * 1000) < date
-  }
-
-  // グラフの範囲外を初期値とする
-  let xAxisValue: number = -1
-  const date = new Date(pin.timestamp)
-  if (period === PeriodType.Month && isWithinDays(date, 365)) {
-    xAxisValue = date.getMonth() + 1
-  }
-
-  if (period === PeriodType.Day && isWithinDays(date, 30)) {
-    xAxisValue = date.getDate()
-  }
-
-  if (period === PeriodType.Time && isWithinDays(date, 1)) {
-    xAxisValue = date.getHours()
-  }
-
-  return xAxisValue
-}
-
-const convertToTimestampRange = (
-  xAxisValue: number | null,
-  period: PeriodType
-) => {
-  if (xAxisValue === null) return null
-  const date = new Date()
-  let nowYear = date.getFullYear()
-  let nowMonthIndex = date.getMonth()
-  let nowMonth = nowMonthIndex + 1
-  let nowDate = date.getDate()
-  const nowHour = date.getHours()
-
-  if (xAxisValue < 0) {
-    // ハイライト対象がグラフ外の値の場合、タイムスタンプをあり得ない値(未来)に設定する
-    nowYear += 100
-  }
-
-  switch (period) {
-    case PeriodType.Month:
-      // 現在の月数よりも大きい値の月数が指定された場合、指定された月は去年である
-      if (nowMonth < xAxisValue) nowYear -= 1
-      return {
-        start: new Date(nowYear, xAxisValue - 1, 1),
-        end: new Date(nowYear, xAxisValue, 0, 23, 59, 59),
-      }
-
-    case PeriodType.Day:
-      // 現在の日数よりも大きい値の日数が指定された場合、指定された日にちは先月である
-      if (nowDate < xAxisValue) nowMonthIndex -= 1
-      return {
-        start: new Date(nowYear, nowMonthIndex, xAxisValue, 0, 0, 0),
-        end: new Date(nowYear, nowMonthIndex, xAxisValue, 23, 59, 59),
-      }
-
-    case PeriodType.Time:
-      // 現在の時間よりも大きい値の時間が指定された場合、指定された時間は昨日である
-      if (nowHour < xAxisValue) nowDate -= 1
-      return {
-        start: new Date(nowYear, nowMonthIndex, nowDate, xAxisValue, 0, 0),
-        end: new Date(nowYear, nowMonthIndex, nowDate, xAxisValue, 59, 59),
-      }
-  }
 }
 
 // Helper functions for cluster creation
@@ -269,7 +164,6 @@ const HybridClusterGroup = ({
   setSelectedPin,
   setHighlightTarget,
   period,
-  activeTimestamp,
   session,
   targetEntity,
 }: {
@@ -373,20 +267,9 @@ const HybridClusterGroup = ({
         // Set popup
         setPopupPin(pin)
         setPopupPosition([pin.latitude, pin.longitude])
-
-        // Handle highlight
-        if (!setHighlightTarget || !period) return
-        setHighlightTarget((highlightTarget: HighlightTarget) => {
-          const newXAxisValue = convertToXAxisValue(pin, period)
-          if (highlightTarget.xAxisValue === newXAxisValue) {
-            return highlightTarget
-          } else {
-            return { lastUpdateBy: 'Map', xAxisValue: newXAxisValue }
-          }
-        })
       }
     },
-    [setHighlightTarget, period, setPopupPin, setPopupPosition]
+    [setPopupPin, setPopupPosition]
   )
 
   // Logic to automatically open popup for targetEntity
@@ -468,12 +351,7 @@ const HybridClusterGroup = ({
       // Add marker to color cluster based on pin type
       if (happinessClustersRef.current[pin.type]) {
         const marker = L.marker([pin.latitude, pin.longitude], {
-          icon: getIconByType(
-            iconType,
-            pin.type,
-            pin.answer,
-            pinIsActive(pin, activeTimestamp)
-          ),
+          icon: getIconByType(iconType, pin.type, pin.answer, true),
         })
 
         // Add event handler
@@ -485,12 +363,7 @@ const HybridClusterGroup = ({
       // Add marker to super cluster (copy)
       if (superClusterRef.current) {
         const superMarker = L.marker([pin.latitude, pin.longitude], {
-          icon: getIconByType(
-            iconType,
-            pin.type,
-            pin.answer,
-            pinIsActive(pin, activeTimestamp)
-          ),
+          icon: getIconByType(iconType, pin.type, pin.answer, true),
         })
 
         // Add event handler for super marker
@@ -526,7 +399,6 @@ const HybridClusterGroup = ({
     map,
     pinData,
     iconType,
-    activeTimestamp,
     setHighlightTarget,
     period,
     setSelectedPin,
@@ -577,20 +449,32 @@ const HybridClusterGroup = ({
   )
 }
 
-const Bounds = ({
-  setBounds,
+const SelectedLayers = ({
+  setSelectedLayers,
 }: {
-  setBounds: React.Dispatch<React.SetStateAction<LatLngBounds | undefined>>
+  setSelectedLayers: React.Dispatch<React.SetStateAction<HappinessKey[]>>
 }) => {
-  const map = useMap()
-
-  useEffect(() => {
-    setBounds(map.getBounds())
-  }, [setBounds, map])
-
   useMapEvents({
-    moveend: () => {
-      setBounds(map.getBounds())
+    overlayadd: (e) => {
+      const targetLayer = HAPPINESS_KEYS.find(
+        (key) => questionTitles[key] === e.name
+      )
+      if (targetLayer) {
+        setSelectedLayers((selectedLayers: HappinessKey[]) => [
+          ...selectedLayers,
+          targetLayer,
+        ])
+      }
+    },
+    overlayremove: (e) => {
+      const targetLayer = HAPPINESS_KEYS.find(
+        (key) => questionTitles[key] === e.name
+      )
+      if (targetLayer) {
+        setSelectedLayers((selectedLayers: HappinessKey[]) =>
+          [...selectedLayers].filter((layer) => layer !== targetLayer)
+        )
+      }
     },
   })
   return null
@@ -599,11 +483,10 @@ const Bounds = ({
 const Map: React.FC<Props> = ({
   iconType,
   pinData,
-  highlightTarget,
+  _highlightTarget,
   setHighlightTarget,
   period,
   targetEntity,
-  setBounds,
   onPopupClose,
 }) => {
   const { data: session } = useSession()
@@ -727,11 +610,6 @@ const Map: React.FC<Props> = ({
     return <p>Loading...</p>
   }
 
-  const activeTimestamp: { start: Date; end: Date } | null =
-    highlightTarget && period
-      ? convertToTimestampRange(highlightTarget.xAxisValue, period)
-      : null
-
   return (
     <>
       <MapContainer
@@ -742,7 +620,6 @@ const Map: React.FC<Props> = ({
         maxBounds={maxBounds}
         maxBoundsViscosity={maxBoundsViscosity}
       >
-        {setBounds && <Bounds setBounds={setBounds} />}
         <MoveToCurrentPositionControl />
         <LayersControl position="topleft">
           <LayersControl.BaseLayer checked name="標準地図">
@@ -768,19 +645,12 @@ const Map: React.FC<Props> = ({
           setSelectedPin={setSelectedPin}
           setHighlightTarget={setHighlightTarget}
           period={period}
-          activeTimestamp={activeTimestamp}
           session={session}
           targetEntity={targetEntity}
         />
         {onPopupClose && <OnPopupClose onPopupClose={onPopupClose} />}
         {currentPosition && (
           <Marker position={currentPosition} icon={currentPositionIcon} />
-        )}
-        {highlightTarget && setHighlightTarget && (
-          <HighlightListener
-            highlightTarget={highlightTarget}
-            setHighlightTarget={setHighlightTarget}
-          />
         )}
       </MapContainer>
       {iconType === 'pin' ? (

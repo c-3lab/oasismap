@@ -6,10 +6,8 @@ import { signOut, useSession } from 'next-auth/react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { MessageType } from '@/types/message-type'
-import { ResponsiveContainer } from 'recharts'
 const Map = dynamic(() => import('@/components/map/map'), { ssr: false })
 import { GetPin } from '@/components/utils/pin'
-import { graphColors } from '@/theme/color'
 import {
   DateTimeTextbox,
   useDateTimeProps,
@@ -17,50 +15,16 @@ import {
 import { EntityByEntityId } from '@/types/entityByEntityId'
 import { Data } from '@/types/happiness-me-response'
 
-const BarGraph = dynamic(() => import('@/components/happiness/bar-graph'), {
-  ssr: false,
-})
-import { myHappinessData, sumByTimestamp } from '@/libs/graph'
 import { messageContext } from '@/contexts/message-context'
 import { ERROR_TYPE } from '@/libs/constants'
 import { useFetchData } from '@/libs/fetch'
 import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
-import { happinessSet } from '@/types/happiness-set'
-import { HighlightTarget } from '@/types/highlight-target'
+
 import { Pin } from '@/types/pin'
 import { LoadingContext } from '@/contexts/loading-context'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
-
-function getSnackbarMessage(xAxisValue: number, period: PeriodType) {
-  const date = new Date()
-  let nowYear = date.getFullYear()
-  let nowMonthIndex = date.getMonth()
-  let nowMonth = nowMonthIndex + 1
-  let nowDate = date.getDate()
-  const nowHour = date.getHours()
-  if (xAxisValue < 0) {
-    return ''
-  }
-
-  switch (period) {
-    case PeriodType.Month:
-      // 現在の月数よりも大きい値の月数が指定された場合、指定された月は去年である
-      if (nowMonth < xAxisValue) nowYear -= 1
-      return `${nowYear}年${xAxisValue}月`
-
-    case PeriodType.Day:
-      // 現在の日数よりも大きい値の日数が指定された場合、指定された日にちは先月である
-      if (nowDate < xAxisValue) nowMonthIndex -= 1
-      return `${nowYear}年${nowMonth}月${xAxisValue}日`
-
-    case PeriodType.Time:
-      // 現在の時間よりも大きい値の時間が指定された場合、指定された時間は昨日である
-      if (nowHour < xAxisValue) nowDate -= 1
-      return `${nowYear}年${nowMonth}月${nowDate}日${xAxisValue}時`
-  }
-}
 
 const HappinessMe: React.FC = () => {
   const noticeMessageContext = useContext(messageContext)
@@ -70,11 +34,7 @@ const HappinessMe: React.FC = () => {
   const [entityByEntityId, setEntityByEntityId] = useState<EntityByEntityId>({})
   const willStop = useRef(false)
   const isMounted = useRef(false)
-  const [MyHappiness, setMyHappiness] = useState<happinessSet>({
-    month: [],
-    day: [],
-    time: [],
-  })
+
   const { isTokenFetched } = useTokenFetchStatus()
   const searchParams = useSearchParams()
   const searchEntityId = searchParams.get('entityId')
@@ -86,12 +46,7 @@ const HappinessMe: React.FC = () => {
   const { update } = useSession()
   const { isLoading, setIsLoading } = useContext(LoadingContext)
   const { fetchData } = useFetchData()
-  const [isLoaded, setIsLoaded] = useState(false)
 
-  const [highlightTarget, setHighlightTarget] = useState<HighlightTarget>({
-    lastUpdateBy: 'init',
-    xAxisValue: null,
-  })
   const [initialEntityId, setInitialEntityId] = useState<
     string | null | undefined
   >(undefined)
@@ -105,9 +60,8 @@ const HappinessMe: React.FC = () => {
       setIsLoading(true)
       willStop.current = false
       setPinData([])
-      setMyHappiness({ month: [], day: [], time: [] })
+
       setEntityByEntityId({})
-      setHighlightTarget({ lastUpdateBy: 'init', xAxisValue: null })
 
       const url = backendUrl + '/api/happiness/me'
       const startDateTime = toDateTime(startProps.value).toISO()
@@ -145,25 +99,6 @@ const HappinessMe: React.FC = () => {
         } catch (error) {
           console.error('Error in GetPin or setPinData:', error)
         }
-
-        setMyHappiness((prevHappiness: happinessSet) => {
-          const nextHappiness = myHappinessData(data['data'])
-          if (Object.keys(prevHappiness).length === 0) return nextHappiness
-          return {
-            month: sumByTimestamp([
-              ...prevHappiness['month'],
-              ...nextHappiness['month'],
-            ]),
-            day: sumByTimestamp([
-              ...prevHappiness['day'],
-              ...nextHappiness['day'],
-            ]),
-            time: sumByTimestamp([
-              ...prevHappiness['time'],
-              ...nextHappiness['time'],
-            ]),
-          }
-        })
 
         if (
           initialEntityId &&
@@ -210,7 +145,6 @@ const HappinessMe: React.FC = () => {
       }
     } finally {
       setIsLoading(false)
-      setIsLoaded(true)
     }
   }
 
@@ -233,33 +167,10 @@ const HappinessMe: React.FC = () => {
   }, [isTokenFetched, updatedPeriod])
 
   useEffect(() => {
-    if (highlightTarget.xAxisValue && highlightTarget.xAxisValue > 0) {
-      noticeMessageContext.showMessage(
-        `${getSnackbarMessage(highlightTarget.xAxisValue, period)}のデータをハイライトします`,
-        MessageType.Success
-      )
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [highlightTarget.xAxisValue])
-
-  useEffect(() => {
     if (initialEntityId && entityByEntityId) {
       setTargetEntity(entityByEntityId[initialEntityId])
     }
   }, [initialEntityId, entityByEntityId])
-
-  const renderCustomDayTick = (tickProps: any) => {
-    const { x, y, payload } = tickProps
-    const hour = payload.value
-    if (hour % 2 === 0) {
-      return (
-        <text x={x} y={y} dy={16} fill="#666" textAnchor="middle">
-          {hour}
-        </text>
-      )
-    }
-    return null
-  }
 
   return (
     <Grid container sx={{ paddingBottom: { xs: '50px', md: '0px' } }}>
@@ -283,8 +194,6 @@ const HappinessMe: React.FC = () => {
             setInitialEntityId(null)
           }}
           period={period}
-          highlightTarget={highlightTarget}
-          setHighlightTarget={setHighlightTarget}
         />
       </Grid>
       <Grid
@@ -296,26 +205,6 @@ const HappinessMe: React.FC = () => {
         justifyContent={'center'}
         sx={{ px: { md: '16px' }, my: { xs: '32px', md: 0 } }}
       >
-        {/* <Grid
-          item
-          xs={12}
-          md={12}
-          sx={{
-            backgroundColor: '#FFFFFF',
-            minHeight: '300px',
-          }}
-        >
-          <ResponsiveContainer width="100%" height={300}>
-            <BarGraph
-              plotdata={MyHappiness[period]}
-              color={graphColors}
-              xTickFormatter={renderCustomDayTick}
-              isLoaded={isLoaded}
-              highlightTarget={highlightTarget}
-              setHighlightTarget={setHighlightTarget}
-            />
-          </ResponsiveContainer>
-        </Grid> */}
         <Grid
           container
           justifyContent="center"
