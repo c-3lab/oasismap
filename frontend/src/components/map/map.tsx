@@ -698,7 +698,11 @@ const Map: React.FC<Props> = ({
             }}
           >
             <NavigationIcon
-              style={{ color: '#20B2AA', transform: 'rotate(45deg)' }}
+              style={{
+                color: '#20B2AA',
+                transform: 'rotate(45deg)',
+                fontSize: 45,
+              }}
             />
           </IconButton>
         )
