@@ -1,6 +1,6 @@
 'use client'
 import dynamic from 'next/dynamic'
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import {
@@ -13,10 +13,7 @@ import {
   ListItemButton,
   ListItemText,
   TextField,
-  RadioGroup,
-  Radio,
   FormControl,
-  FormControlLabel,
   OutlinedInput,
   FormHelperText,
 } from '@mui/material'
@@ -56,7 +53,6 @@ const HappinessInput: React.FC = () => {
   const { postData } = useFetchData()
 
   const [errors, setErrors] = useState<Errors>([])
-  const [mode, setMode] = useState<'current' | 'past'>('current')
   const [checkboxValues, setCheckboxValues] = useState<{
     [key in HappinessKey]: number
   }>({
@@ -75,16 +71,9 @@ const HappinessInput: React.FC = () => {
   } | null>(null)
 
   // Get current position on component mount
-  React.useEffect(() => {
+  useEffect(() => {
     updateCurrentPosition()
   }, [])
-
-  const getCurrentPositionForPayload = async () => {
-    const position = await getCurrentPosition()
-    if (position.latitude === undefined || position.longitude === undefined)
-      throw new Error('Geolocation is not available')
-    return position
-  }
 
   // Common function to update current position
   const updateCurrentPosition = async () => {
@@ -96,13 +85,6 @@ const HappinessInput: React.FC = () => {
     } catch (error) {
       console.error('Error getting current position:', error)
     }
-  }
-
-  // 入力モード選択用ラジオボタンの状態を変更
-  const handleMode = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setErrors(errors.filter((error) => error.field !== 'image'))
-    setExif(null)
-    setMode(event.target.value as 'current' | 'past')
   }
 
   // チェックボックスの状態が全て0かどうかをチェック
@@ -203,8 +185,8 @@ const HappinessInput: React.FC = () => {
         memo: memo,
         answers: checkboxValues,
       }
+
       if (
-        mode === 'past' &&
         exif?.latitude !== undefined &&
         exif?.longitude !== undefined &&
         exif?.timestamp
@@ -213,9 +195,8 @@ const HappinessInput: React.FC = () => {
         payload.longitude = exif.longitude
         payload.timestamp = exif.timestamp.toISOString()
       } else {
-        const position = await getCurrentPositionForPayload()
-        payload.latitude = position.latitude
-        payload.longitude = position.longitude
+        payload.latitude = currentPosition?.latitude ?? 0
+        payload.longitude = currentPosition?.longitude ?? 0
       }
 
       const url = backendUrl + '/api/happiness'
@@ -255,19 +236,6 @@ const HappinessInput: React.FC = () => {
       sx={{ p: '32px', marginBottom: '64px' }}
     >
       <Grid item xs={12} md={8}>
-        <RadioGroup value={mode} onChange={handleMode} row>
-          <FormControlLabel
-            value="current"
-            control={<Radio />}
-            label="現在の幸福度を入力"
-          />
-          <FormControlLabel
-            value="past"
-            control={<Radio />}
-            label="撮影した場所の幸福度を入力"
-          />
-        </RadioGroup>
-
         {/* Map display always */}
         <Box sx={{ height: '300px', marginTop: '16px', marginBottom: '16px' }}>
           <PreviewMap
@@ -316,49 +284,47 @@ const HappinessInput: React.FC = () => {
           error={errors.some((error) => error.field === 'memo')}
           helperText={errors.find((error) => error.field === 'memo')?.message}
         />
-        {mode === 'past' && (
-          <FormControl id="image" fullWidth>
-            <OutlinedInput
-              type="file"
-              onChange={handleImage}
-              error={errors.some((error) => error.field === 'image')}
-              inputProps={{
-                accept: 'image/*',
-              }}
-              sx={{
-                marginTop: '16px',
-                input: {
-                  paddingBottom: '12px',
-                  paddingTop: '7px',
-                },
-              }}
-            />
-            <FormHelperText
-              error={errors.some((error) => error.field === 'image')}
-            >
-              {errors.find((error) => error.field === 'image')?.message}
-            </FormHelperText>
-            {!exif ? (
-              <>
-                <FormHelperText>過去の写真を選択してください。</FormHelperText>
-                <FormHelperText>
-                  選択した写真から取得した撮影日時・緯度・経度を利用して幸福度を登録します。
-                </FormHelperText>
-                <FormHelperText>選択した写真は保存されません。</FormHelperText>
-              </>
-            ) : (
-              <>
-                <FormHelperText>
-                  撮影日時：
-                  {exif?.timestamp &&
-                    timestampToDateTime(exif.timestamp.toISOString())}
-                </FormHelperText>
-                <FormHelperText>緯度：{exif?.latitude}</FormHelperText>
-                <FormHelperText>経度：{exif?.longitude}</FormHelperText>
-              </>
-            )}
-          </FormControl>
-        )}
+        <FormControl id="image" fullWidth>
+          <OutlinedInput
+            type="file"
+            onChange={handleImage}
+            error={errors.some((error) => error.field === 'image')}
+            inputProps={{
+              accept: 'image/*',
+            }}
+            sx={{
+              marginTop: '16px',
+              input: {
+                paddingBottom: '12px',
+                paddingTop: '7px',
+              },
+            }}
+          />
+          <FormHelperText
+            error={errors.some((error) => error.field === 'image')}
+          >
+            {errors.find((error) => error.field === 'image')?.message}
+          </FormHelperText>
+          {!exif ? (
+            <>
+              <FormHelperText>過去の写真を選択してください。</FormHelperText>
+              <FormHelperText>
+                選択した写真から取得した撮影日時・緯度・経度を利用して幸福度を登録します。
+              </FormHelperText>
+              <FormHelperText>選択した写真は保存されません。</FormHelperText>
+            </>
+          ) : (
+            <>
+              <FormHelperText>
+                撮影日時：
+                {exif?.timestamp &&
+                  timestampToDateTime(exif.timestamp.toISOString())}
+              </FormHelperText>
+              <FormHelperText>緯度：{exif?.latitude}</FormHelperText>
+              <FormHelperText>経度：{exif?.longitude}</FormHelperText>
+            </>
+          )}
+        </FormControl>
       </Grid>
       <Grid
         item
