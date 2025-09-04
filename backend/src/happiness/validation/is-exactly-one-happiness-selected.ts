@@ -8,6 +8,7 @@ export function IsExactlyOneHappinessSelected() {
       propertyName,
       validator: {
         validate(value: any) {
+          console.log('value', value);
           if (!value || typeof value !== 'object') {
             return false;
           }

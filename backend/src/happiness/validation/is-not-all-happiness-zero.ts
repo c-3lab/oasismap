@@ -8,6 +8,10 @@ export function IsNotAllHappinessZero() {
       propertyName,
       validator: {
         validate(value: any) {
+          if (!value || typeof value !== 'object') {
+            return false;
+          }
+
           return Object.values(value).some((val) => val !== 0);
         },
         defaultMessage() {
