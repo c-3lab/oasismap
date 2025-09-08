@@ -17,7 +17,6 @@ import {
 import { messageContext } from '@/contexts/message-context'
 import { useFetchData } from '@/libs/fetch'
 import { ERROR_TYPE, PROFILE_TYPE, HAPPINESS_KEYS } from '@/libs/constants'
-import { HappinessKey } from '@/types/happiness-key'
 import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 import {

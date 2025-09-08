@@ -172,7 +172,6 @@ const HybridClusterGroup = ({
   setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
   period?: PeriodType
-  activeTimestamp: { start: Date; end: Date } | null
   session: any
   targetEntity?: Data
 }) => {
@@ -288,13 +287,7 @@ const HybridClusterGroup = ({
     setPopupPin(targetPin)
     setPopupPosition([targetPin.latitude, targetPin.longitude])
     map.panTo([targetPin.latitude, targetPin.longitude])
-
-    // Handle highlight if period is available
-    if (setHighlightTarget && period) {
-      const newXAxisValue = convertToXAxisValue(targetPin, period)
-      setHighlightTarget({ lastUpdateBy: 'Map', xAxisValue: newXAxisValue })
-    }
-  }, [targetEntity, map, pinData, setHighlightTarget, period])
+  }, [targetEntity, map, pinData, period])
 
   const updateClusters = useCallback(() => {
     const zoomLevel = map.getZoom()
@@ -447,37 +440,6 @@ const HybridClusterGroup = ({
       )}
     </>
   )
-}
-
-const SelectedLayers = ({
-  setSelectedLayers,
-}: {
-  setSelectedLayers: React.Dispatch<React.SetStateAction<HappinessKey[]>>
-}) => {
-  useMapEvents({
-    overlayadd: (e) => {
-      const targetLayer = HAPPINESS_KEYS.find(
-        (key) => questionTitles[key] === e.name
-      )
-      if (targetLayer) {
-        setSelectedLayers((selectedLayers: HappinessKey[]) => [
-          ...selectedLayers,
-          targetLayer,
-        ])
-      }
-    },
-    overlayremove: (e) => {
-      const targetLayer = HAPPINESS_KEYS.find(
-        (key) => questionTitles[key] === e.name
-      )
-      if (targetLayer) {
-        setSelectedLayers((selectedLayers: HappinessKey[]) =>
-          [...selectedLayers].filter((layer) => layer !== targetLayer)
-        )
-      }
-    },
-  })
-  return null
 }
 
 const Map: React.FC<Props> = ({
