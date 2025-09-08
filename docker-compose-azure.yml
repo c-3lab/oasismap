@@ -213,7 +213,9 @@ services:
         tag: orion
 
   cygnus:
-    image: fiware/cygnus-ngsi:3.15.0
+    build:
+      context: ./fiware/cygnus
+      dockerfile: Dockerfile
     hostname: cygnus
     container_name: cygnus
     environment:
