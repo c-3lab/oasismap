@@ -117,6 +117,20 @@ export class HappinessController {
     );
   }
 
+  @Get('/all-users')
+  async getAllUsersHappiness(
+    @Headers('Authorization') authorization: string,
+    @Query() getHappinessMeDto: GetHappinessMeDto,
+  ): Promise<HappinessMeResponse> {
+    await this.authService.verifyAuthorization(authorization);
+    return this.happinessMeService.findAllHappiness(
+      getHappinessMeDto.start,
+      getHappinessMeDto.end,
+      getHappinessMeDto.limit,
+      getHappinessMeDto.offset,
+    );
+  }
+
   @Get('/export')
   async exportHappiness(
     @Headers('Authorization') authorization: string,
