@@ -82,6 +82,7 @@ type Props = {
   highlightTarget?: HighlightTarget
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
   period?: PeriodType
+  forceAllPopup?: boolean
 }
 
 const HighlightListener = ({
@@ -272,6 +273,7 @@ const HybridClusterGroup = ({
   activeTimestamp,
   session,
   targetEntity,
+  forceAllPopup = false,
 }: {
   iconType: IconType
   pinData: Pin[]
@@ -281,6 +283,7 @@ const HybridClusterGroup = ({
   activeTimestamp: { start: Date; end: Date } | null
   session: any
   targetEntity?: Data
+  forceAllPopup?: boolean
 }) => {
   const map = useMap()
   const happinessClustersRef = useRef<{ [key: string]: L.MarkerClusterGroup }>(
@@ -566,7 +569,7 @@ const HybridClusterGroup = ({
             },
           }}
         >
-          {iconType === 'pin' ? (
+          {iconType === 'pin' && !forceAllPopup ? (
             <MePopup pin={popupPin} setSelectedPin={setSelectedPin} />
           ) : (
             <AllPopup pin={popupPin} setSelectedPin={setSelectedPin} />
@@ -605,6 +608,7 @@ const Map: React.FC<Props> = ({
   targetEntity,
   setBounds,
   onPopupClose,
+  forceAllPopup = false,
 }) => {
   const { data: session } = useSession()
   const [center, setCenter] = useState<LatLngTuple | null>(null)
@@ -771,6 +775,7 @@ const Map: React.FC<Props> = ({
           activeTimestamp={activeTimestamp}
           session={session}
           targetEntity={targetEntity}
+          forceAllPopup={forceAllPopup}
         />
         {onPopupClose && <OnPopupClose onPopupClose={onPopupClose} />}
         {currentPosition && (
@@ -783,7 +788,7 @@ const Map: React.FC<Props> = ({
           />
         )}
       </MapContainer>
-      {iconType === 'pin' ? (
+      {iconType === 'pin' && !forceAllPopup ? (
         <MeModal data={selectedPin} onClose={() => setSelectedPin(null)} />
       ) : (
         <AllModal data={selectedPin} onClose={() => setSelectedPin(null)} />

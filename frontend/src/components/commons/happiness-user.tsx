@@ -1,8 +1,7 @@
 'use client'
 import dynamic from 'next/dynamic'
 import { useState, useEffect, useContext, useRef } from 'react'
-import { LatLngBounds } from 'leaflet'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
@@ -15,75 +14,107 @@ import {
   DateTimeTextbox,
   useDateTimeProps,
 } from '@/components/fields/date-time-textbox'
+import { EntityByEntityId } from '@/types/entityByEntityId'
+import { Data } from '@/types/happiness-me-response'
 
-const LineGraph = dynamic(() => import('@/components/happiness/line-graph'), {
+const BarGraph = dynamic(() => import('@/components/happiness/bar-graph'), {
   ssr: false,
 })
-import { ourHappinessData } from '@/libs/graph'
+import { myHappinessData, sumByTimestamp } from '@/libs/graph'
 import { messageContext } from '@/contexts/message-context'
+import { ERROR_TYPE } from '@/libs/constants'
 import { useFetchData } from '@/libs/fetch'
-import { ERROR_TYPE, PROFILE_TYPE, HAPPINESS_KEYS } from '@/libs/constants'
-import { HappinessKey } from '@/types/happiness-key'
 import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
-import {
-  HappinessAllResponse,
-  MapData,
-  MapDataItem,
-} from '@/types/happiness-all-response'
-import { LoadingContext } from '@/contexts/loading-context'
-import { Pin } from '@/types/pin'
 import { happinessSet } from '@/types/happiness-set'
+import { HighlightTarget } from '@/types/highlight-target'
+import { Pin } from '@/types/pin'
+import { LoadingContext } from '@/contexts/loading-context'
 
-const HappinessAllUserComponent = dynamic(
-  () => import('@/components/commons/happiness-user'),
-  { ssr: false }
-)
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
-const HappinessAll: React.FC = () => {
+
+type HappinessUserProps = {
+  type: 'me' | 'all'
+}
+
+function getSnackbarMessage(xAxisValue: number, period: PeriodType) {
+  const date = new Date()
+  let nowYear = date.getFullYear()
+  let nowMonthIndex = date.getMonth()
+  let nowMonth = nowMonthIndex + 1
+  let nowDate = date.getDate()
+  const nowHour = date.getHours()
+  if (xAxisValue < 0) {
+    return ''
+  }
+
+  switch (period) {
+    case PeriodType.Month:
+      // 現在の月数よりも大きい値の月数が指定された場合、指定された月は去年である
+      if (nowMonth < xAxisValue) nowYear -= 1
+      return `${nowYear}年${xAxisValue}月`
+
+    case PeriodType.Day:
+      // 現在の日数よりも大きい値の日数が指定された場合、指定された日にちは先月である
+      if (nowDate < xAxisValue) nowMonthIndex -= 1
+      return `${nowYear}年${nowMonth}月${xAxisValue}日`
+
+    case PeriodType.Time:
+      // 現在の時間よりも大きい値の時間が指定された場合、指定された時間は昨日である
+      if (nowHour < xAxisValue) nowDate -= 1
+      return `${nowYear}年${nowMonth}月${nowDate}日${xAxisValue}時`
+  }
+}
+
+const HappinessUser = ({ type }: HappinessUserProps) => {
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
   const [period, setPeriod] = useState(PeriodType.Month)
   const [pinData, setPinData] = useState<Pin[]>([])
+  const [entityByEntityId, setEntityByEntityId] = useState<EntityByEntityId>({})
   const willStop = useRef(false)
-  const [OurHappiness, setOurHappiness] = useState<happinessSet>({
+  const isMounted = useRef(false)
+  const [MyHappiness, setMyHappiness] = useState<happinessSet>({
     month: [],
     day: [],
     time: [],
   })
   const { isTokenFetched } = useTokenFetchStatus()
-  const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
-  const { data: session, update } = useSession()
-  const [selectedLayers, setSelectedLayers] =
-    useState<HappinessKey[]>(HAPPINESS_KEYS)
-  const [bounds, setBounds] = useState<LatLngBounds | undefined>(undefined)
+  const searchParams = useSearchParams()
+  const searchEntityId = searchParams.get('entityId')
+  const timestamp = searchParams.get('timestamp')
+  const { startProps, endProps, updatedPeriod } = useDateTimeProps(
+    period,
+    timestamp
+  )
+  const { update } = useSession()
   const { isLoading, setIsLoading } = useContext(LoadingContext)
   const { fetchData } = useFetchData()
   const [isLoaded, setIsLoaded] = useState(false)
 
-  const getBoundsNESW = (): string | undefined => {
-    if (!bounds) return undefined
-
-    const boundsNESW = `${bounds.getNorth()},${bounds.getEast()},${bounds.getSouth()},${bounds.getWest()}`
-
-    // 画面上部・画面下部の緯度、左端・右端の経度が全て取得できている事を確認する
-    if (!/^[\d.-]+,[\d.-]+,[\d.-]+,[\d.-]+$/.test(boundsNESW)) {
-      console.error('Invalid boundsNESW format:', boundsNESW)
-      return undefined
-    }
-
-    return boundsNESW
+  const [highlightTarget, setHighlightTarget] = useState<HighlightTarget>({
+    lastUpdateBy: 'init',
+    xAxisValue: null,
+  })
+  const [initialEntityId, setInitialEntityId] = useState<
+    string | null | undefined
+  >(undefined)
+  if (searchEntityId && initialEntityId === undefined) {
+    setInitialEntityId(searchEntityId)
   }
 
   const getData = async () => {
-    if (isLoading) return
     try {
       setIsLoading(true)
       willStop.current = false
       setPinData([])
-      setOurHappiness({ month: [], day: [], time: [] })
+      setMyHappiness({ month: [], day: [], time: [] })
+      setEntityByEntityId({})
+      setHighlightTarget({ lastUpdateBy: 'init', xAxisValue: null })
 
-      const url = backendUrl + '/api/happiness/all'
+      const url =
+        backendUrl +
+        (type === 'me' ? '/api/happiness/me' : '/api/happiness/all-users')
       const startDateTime = toDateTime(startProps.value).toISO()
       const endDateTime = toDateTime(endProps.value).endOf('minute').toISO()
       // 日付の変換に失敗した場合
@@ -94,94 +125,78 @@ const HappinessAll: React.FC = () => {
 
       const limit = 1000
       let offset = 0
-      const allMapData: HappinessAllResponse['map_data'] = {}
-      const allGraphData: HappinessAllResponse['graph_data'] = []
-
-      const boundsNESW: string | undefined = getBoundsNESW()
-
       while (!willStop.current) {
         // アクセストークンを再取得
         const updatedSession = await update()
-
-        const data: HappinessAllResponse = await fetchData(
+        console.log(updatedSession?.user?.accessToken)
+        const data = await fetchData(
           url,
           {
             start: startDateTime,
             end: endDateTime,
             limit: limit,
             offset: offset,
-            period: period,
-            zoomLevel:
-              parseInt(
-                process.env.NEXT_PUBLIC_DEFAULT_ZOOM_FOR_COLLECTION_RANGE!
-              ) || 14,
-            boundsNESW: boundsNESW,
           },
           updatedSession?.user?.accessToken!
         )
-        if (data['count'] === 0) break
 
-        for (const [gridKey, fetchedMapData] of Object.entries(
-          data['map_data']
-        )) {
-          const existedMapData = allMapData[gridKey]
-          if (existedMapData) {
-            const existedAnswers = existedMapData['data'][0].answers
-            const fetchedAnswers = fetchedMapData['data'][0].answers
-            const newAnswers: MapDataItem['answers'] = {
-              happiness1: 0,
-              happiness2: 0,
-              happiness3: 0,
-              happiness4: 0,
-              happiness5: 0,
-              happiness6: 0,
-            }
-
-            HAPPINESS_KEYS.forEach((type) => {
-              const totalAnswerByType =
-                existedAnswers[type] * existedMapData['count'] +
-                fetchedAnswers[type] * fetchedMapData['count']
-              const totalCount =
-                existedMapData['count'] + fetchedMapData['count']
-              newAnswers[type] = totalAnswerByType / totalCount
-            })
-            allMapData[gridKey]['data'].forEach((data: MapDataItem) => {
-              data.answers = { ...newAnswers }
-              data.memos = data.memos.concat(fetchedMapData['data'][0].memos)
-            })
-            allMapData[gridKey]['count'] += fetchedMapData['count']
-          } else {
-            allMapData[gridKey] = fetchedMapData
-          }
+        if (data['count'] === 0 || data['data'].length === 0) {
+          break
         }
-        setPinData(
-          GetPin(
-            Object.values(allMapData)
-              .map((mapData: MapData) => mapData.data)
-              .flat()
-          )
+
+        try {
+          const newPins = GetPin(data['data'])
+          setPinData((prevPinData: Pin[]) => [...prevPinData, ...newPins])
+        } catch (error) {
+          console.error('Error in GetPin or setPinData:', error)
+        }
+
+        setMyHappiness((prevHappiness: happinessSet) => {
+          const nextHappiness = myHappinessData(data['data'])
+          if (Object.keys(prevHappiness).length === 0) return nextHappiness
+          return {
+            month: sumByTimestamp([
+              ...prevHappiness['month'],
+              ...nextHappiness['month'],
+            ]),
+            day: sumByTimestamp([
+              ...prevHappiness['day'],
+              ...nextHappiness['day'],
+            ]),
+            time: sumByTimestamp([
+              ...prevHappiness['time'],
+              ...nextHappiness['time'],
+            ]),
+          }
+        })
+
+        if (
+          initialEntityId &&
+          timestamp &&
+          Object.keys(entityByEntityId).length === 0
+        ) {
+          setEntityByEntityId((prevEntityByEntityId: EntityByEntityId) => {
+            const nextEntityByEntityId = { ...prevEntityByEntityId }
+            data['data'].forEach((entity: Data) => {
+              if (entity.answers[entity.type] === 0) return
+              nextEntityByEntityId[entity['entityId']] = entity
+            })
+            return nextEntityByEntityId
+          })
+        }
+
+        offset += data['data'].length
+
+        break
+      }
+
+      if (timestamp && Object.keys(entityByEntityId).length === 0) {
+        noticeMessageContext.showMessage(
+          startProps.value.date.replace(/-/g, '/') +
+            ' ' +
+            'のデータを表示しました',
+          MessageType.Success
         )
-
-        for (let i = 0; i < data['graph_data'].length; i++) {
-          const existedGraphData = allGraphData[i]
-          const fetchedGraphData = data['graph_data'][i]
-          if (existedGraphData) {
-            if (fetchedGraphData['count'] === 0) continue
-
-            HAPPINESS_KEYS.forEach((key) => {
-              allGraphData[i][key] =
-                (existedGraphData[key] * existedGraphData['count'] +
-                  fetchedGraphData[key] * fetchedGraphData['count']) /
-                (existedGraphData['count'] + fetchedGraphData['count'])
-            })
-            allGraphData[i]['count'] += fetchedGraphData['count']
-          } else {
-            allGraphData.push(fetchedGraphData)
-          }
-        }
-        setOurHappiness(ourHappinessData(allGraphData))
-
-        offset += data['count']
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -205,6 +220,14 @@ const HappinessAll: React.FC = () => {
   }
 
   useEffect(() => {
+    isMounted.current = true
+
+    return () => {
+      isMounted.current = false
+    }
+  }, [])
+
+  useEffect(() => {
     if (!isTokenFetched) return
     getData()
 
@@ -212,7 +235,17 @@ const HappinessAll: React.FC = () => {
       willStop.current = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTokenFetched, updatedPeriod, bounds])
+  }, [isTokenFetched, updatedPeriod])
+
+  useEffect(() => {
+    if (highlightTarget.xAxisValue && highlightTarget.xAxisValue > 0) {
+      noticeMessageContext.showMessage(
+        `${getSnackbarMessage(highlightTarget.xAxisValue, period)}のデータをハイライトします`,
+        MessageType.Success
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [highlightTarget.xAxisValue])
 
   const renderCustomDayTick = (tickProps: any) => {
     const { x, y, payload } = tickProps
@@ -227,20 +260,8 @@ const HappinessAll: React.FC = () => {
     return null
   }
 
-  if (session?.user?.type !== PROFILE_TYPE.ADMIN) {
-    return <HappinessAllUserComponent type="all" />
-  }
-
   return (
-    <Grid
-      container
-      sx={{
-        paddingBottom: {
-          xs: '0px',
-          md: '0px',
-        },
-      }}
-    >
+    <Grid container sx={{ paddingBottom: { xs: '50px', md: '0px' } }}>
       <Grid
         container
         item
@@ -252,11 +273,19 @@ const HappinessAll: React.FC = () => {
           pointEntities={[]}
           surfaceEntities={[]}
           fiware={{ servicePath: '', tenant: '' }}
-          iconType="heatmap"
+          iconType="pin"
           pinData={pinData}
-          forceAllPopup={true}
-          setSelectedLayers={setSelectedLayers}
-          setBounds={setBounds}
+          initialEntityId={initialEntityId}
+          entityByEntityId={entityByEntityId}
+          onPopupClose={() => {
+            // 画面遷移時に発火させないため、マウント時のみクエリパラメータの削除を実行
+            isMounted.current &&
+              router.replace(type === 'me' ? '/happiness/me' : '/happiness/all')
+            setInitialEntityId(null)
+          }}
+          period={period}
+          highlightTarget={highlightTarget}
+          setHighlightTarget={setHighlightTarget}
         />
       </Grid>
       <Grid
@@ -279,12 +308,13 @@ const HappinessAll: React.FC = () => {
           }}
         >
           <ResponsiveContainer width="100%" height={300}>
-            <LineGraph
-              plotdata={OurHappiness[period]}
+            <BarGraph
+              plotdata={MyHappiness[period]}
               color={graphColors}
               xTickFormatter={renderCustomDayTick}
               isLoaded={isLoaded}
-              selectedLayers={selectedLayers}
+              highlightTarget={highlightTarget}
+              setHighlightTarget={setHighlightTarget}
             />
           </ResponsiveContainer>
         </Grid>
@@ -361,10 +391,31 @@ const HappinessAll: React.FC = () => {
               </Button>
             </Grid>
           </Grid>
+          <Grid
+            item
+            md={12}
+            lg={8}
+            sx={{
+              position: { xs: 'fixed', md: 'static' },
+              bottom: { xs: '10px', md: 'auto' },
+              left: { xs: '10px', md: 'auto' },
+              right: { xs: '10px', md: 'auto' },
+            }}
+          >
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
+              fullWidth
+              onClick={() => router.push(`/happiness/input?referral=${type}`)}
+            >
+              幸福度を入力
+            </Button>
+          </Grid>
         </Grid>
       </Grid>
     </Grid>
   )
 }
 
-export default HappinessAll
+export default HappinessUser
