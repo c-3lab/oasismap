@@ -95,6 +95,7 @@ const HappinessMe: React.FC = () => {
   const [initialEntityId, setInitialEntityId] = useState<
     string | null | undefined
   >(undefined)
+  const [targetEntity, setTargetEntity] = useState<Data | undefined>(undefined)
   if (searchEntityId && initialEntityId === undefined) {
     setInitialEntityId(searchEntityId)
   }
@@ -133,12 +134,18 @@ const HappinessMe: React.FC = () => {
           },
           updatedSession?.user?.accessToken!
         )
-        if (data['count'] === 0) break
 
-        setPinData((prevPinData: Pin[]) => [
-          ...prevPinData,
-          ...GetPin(data['data']),
-        ])
+        if (data['count'] === 0 || data['data'].length === 0) {
+          break
+        }
+
+        try {
+          const newPins = GetPin(data['data'])
+          setPinData((prevPinData: Pin[]) => [...prevPinData, ...newPins])
+        } catch (error) {
+          console.error('Error in GetPin or setPinData:', error)
+        }
+
         setMyHappiness((prevHappiness: happinessSet) => {
           const nextHappiness = myHappinessData(data['data'])
           if (Object.keys(prevHappiness).length === 0) return nextHappiness
@@ -173,7 +180,9 @@ const HappinessMe: React.FC = () => {
           })
         }
 
-        offset += data['count']
+        offset += data['data'].length
+
+        break
       }
 
       if (timestamp && Object.keys(entityByEntityId).length === 0) {
@@ -233,6 +242,12 @@ const HappinessMe: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highlightTarget.xAxisValue])
 
+  useEffect(() => {
+    if (initialEntityId && entityByEntityId) {
+      setTargetEntity(entityByEntityId[initialEntityId])
+    }
+  }, [initialEntityId, entityByEntityId])
+
   const renderCustomDayTick = (tickProps: any) => {
     const { x, y, payload } = tickProps
     const hour = payload.value
@@ -261,8 +276,7 @@ const HappinessMe: React.FC = () => {
           fiware={{ servicePath: '', tenant: '' }}
           iconType="pin"
           pinData={pinData}
-          initialEntityId={initialEntityId}
-          entityByEntityId={entityByEntityId}
+          targetEntity={targetEntity}
           onPopupClose={() => {
             // 画面遷移時に発火させないため、マウント時のみクエリパラメータの削除を実行
             isMounted.current && router.replace('/happiness/me')

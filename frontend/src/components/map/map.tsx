@@ -1,29 +1,39 @@
 import {
   MapContainer,
   TileLayer,
-  ZoomControl,
   useMap,
   Marker,
   LayersControl,
-  LayerGroup,
   useMapEvents,
+  Popup,
 } from 'react-leaflet'
-import React, { useState, useEffect, useContext } from 'react'
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+  useCallback,
+} from 'react'
+
+import { useSession } from 'next-auth/react'
 import { LatLng, LatLngTuple, LatLngBounds, divIcon } from 'leaflet'
 import L from 'leaflet'
 import { createRoot } from 'react-dom/client'
 import 'leaflet/dist/leaflet.css'
+import 'leaflet.markercluster'
+import 'leaflet.markercluster/dist/MarkerCluster.css'
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { getIconByType } from '../utils/icon'
 import { IconType } from '@/types/icon-type'
 import { messageContext } from '@/contexts/message-context'
-import { EntityByEntityId } from '@/types/entityByEntityId'
+
 import { IconButton } from '@mui/material'
-import MyLocationIcon from '@mui/icons-material/MyLocation'
+import NavigationIcon from '@mui/icons-material/Navigation'
 import CurrentPositionIcon from '@mui/icons-material/RadioButtonChecked'
 import { renderToString } from 'react-dom/server'
 import { MeModal } from '../happiness/me-modal'
 import { Pin } from '@/types/pin'
-import { HAPPINESS_KEYS, questionTitles } from '@/libs/constants'
+import { HAPPINESS_KEYS, PROFILE_TYPE } from '@/libs/constants'
 import { MePopup } from './mePopup'
 import { AllPopup } from './allPopup'
 import { MessageType } from '@/types/message-type'
@@ -31,6 +41,8 @@ import { HighlightTarget } from '@/types/highlight-target'
 import { HappinessKey } from '@/types/happiness-key'
 import { PeriodType } from '@/types/period'
 import { AllModal } from '../happiness/all-modal'
+import { HappinessFields } from '@/types/happiness-set'
+import { Data } from '@/types/happiness-me-response'
 
 // 環境変数の取得に失敗した場合は日本経緯度原点を設定
 const defaultLatitude =
@@ -64,10 +76,8 @@ type Props = {
   }
   iconType: IconType
   pinData: Pin[]
-  initialEntityId?: string | null
-  setSelectedLayers?: React.Dispatch<React.SetStateAction<HappinessKey[]>>
+  targetEntity?: Data
   setBounds?: React.Dispatch<React.SetStateAction<LatLngBounds | undefined>>
-  entityByEntityId?: EntityByEntityId
   onPopupClose?: () => void
   highlightTarget?: HighlightTarget
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
@@ -187,100 +197,384 @@ const convertToTimestampRange = (
   }
 }
 
-const MapOverlay = ({
+// Helper functions for cluster creation
+const getIconSize = (count: number): number => {
+  if (count > 500) return 80
+  if (count > 100) return 70
+  if (count > 50) return 60
+  if (count > 10) return 50
+  return 40
+}
+
+const getPinValue = (pin: Pin): number => {
+  const happinessValues: HappinessFields = {
+    happiness1: pin.answer1,
+    happiness2: pin.answer2,
+    happiness3: pin.answer3,
+    happiness4: pin.answer4,
+    happiness5: pin.answer5,
+    happiness6: pin.answer6,
+  }
+  return happinessValues[pin.type]
+}
+
+const createClusterIcon = ({
+  count,
+  backgroundColor,
+  textColor,
+  borderColor,
+  textShadow,
+}: {
+  count: number
+  backgroundColor: string
+  textColor: string
+  borderColor: string
+  textShadow: string
+}) => {
+  const iconSize = getIconSize(count)
+
+  return L.divIcon({
+    html: `<div class="marker-cluster" style="
+      background-color: ${backgroundColor};
+      color: ${textColor};
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      min-width: ${iconSize}px;
+      min-height: ${iconSize}px;
+      border: 2px solid ${borderColor};
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    ">
+      <span style="
+        color: ${textColor};
+        font-weight: bold;
+        text-shadow: ${textShadow};
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+      ">${count}</span>
+    </div>`,
+    className: '',
+    iconSize: L.point(iconSize, iconSize),
+  })
+}
+
+const HybridClusterGroup = ({
   iconType,
-  type,
-  filteredPins,
-  initialPopupPin,
-  layerIndex,
+  pinData,
   setSelectedPin,
   setHighlightTarget,
   period,
   activeTimestamp,
+  session,
+  targetEntity,
 }: {
   iconType: IconType
-  type: string
-  filteredPins: Pin[]
-  initialPopupPin: Pin | undefined
-  layerIndex: number
+  pinData: Pin[]
   setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
   period?: PeriodType
   activeTimestamp: { start: Date; end: Date } | null
-}) => (
-  <LayersControl.Overlay checked name={type}>
-    <LayerGroup>
-      {filteredPins.map((pin, index) => (
-        <Marker
-          key={index}
-          position={[pin.latitude, pin.longitude]}
-          icon={getIconByType(
+  session: any
+  targetEntity?: Data
+}) => {
+  const map = useMap()
+  const happinessClustersRef = useRef<{ [key: string]: L.MarkerClusterGroup }>(
+    {}
+  )
+  const superClusterRef = useRef<L.MarkerClusterGroup | null>(null)
+  const [popupPin, setPopupPin] = useState<Pin | null>(null)
+  const [popupPosition, setPopupPosition] = useState<[number, number] | null>(
+    null
+  )
+
+  // Helper functions for cluster management
+  const getMarkerClusterGroupProps = useCallback(
+    () => ({
+      chunkedLoading: true,
+      maxClusterRadius: loadEnvAsNumber(
+        process.env.NEXT_PUBLIC_MAX_CLUSTER_RADIUS,
+        200
+      ),
+      disableClusteringAtZoom: 12, // Cluster when zoom < 12
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: true,
+      zoomToBoundsOnClick: true,
+      removeOutsideVisibleBounds: true,
+      animate: true,
+      animateAddingMarkers: false,
+    }),
+    []
+  )
+
+  const getHappinessColorPalette = useCallback(
+    (): { [key in HappinessKey]: string } => ({
+      happiness1: '#ff0000', // RED
+      happiness2: '#007fff', // BLUE
+      happiness3: '#4BA724', // GREEN
+      happiness4: '#FF00D8', // YELLOW
+      happiness5: '#ff7f00', // ORANGE
+      happiness6: '#7f00ff', // VIOLET
+    }),
+    []
+  )
+
+  const createHappinessClusters = useCallback(() => {
+    const markerClusterGroupProps = getMarkerClusterGroupProps()
+    const happinessColorPalette = getHappinessColorPalette()
+
+    HAPPINESS_KEYS.forEach((happinessType) => {
+      if (!happinessClustersRef.current[happinessType]) {
+        happinessClustersRef.current[happinessType] = L.markerClusterGroup({
+          ...markerClusterGroupProps,
+          iconCreateFunction: (cluster) => {
+            const count = cluster.getChildCount()
+
+            return createClusterIcon({
+              count,
+              backgroundColor:
+                happinessColorPalette[happinessType] || '#7f00ff',
+              textColor: 'white',
+              borderColor: 'rgba(255, 255, 255, 0.8)',
+              textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
+            })
+          },
+        })
+      }
+    })
+  }, [getMarkerClusterGroupProps, getHappinessColorPalette])
+
+  const createSuperCluster = useCallback(() => {
+    const markerClusterGroupProps = getMarkerClusterGroupProps()
+
+    if (!superClusterRef.current) {
+      superClusterRef.current = L.markerClusterGroup({
+        ...markerClusterGroupProps,
+        iconCreateFunction: (cluster) => {
+          return createClusterIcon({
+            count: cluster.getChildCount(),
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            textColor: '#333',
+            borderColor: 'rgba(0, 0, 0, 0.3)',
+            textShadow: '1px 1px 2px rgba(255, 255, 255, 0.5)',
+          })
+        },
+      })
+    }
+  }, [getMarkerClusterGroupProps])
+
+  const createMarkerClickHandler = useCallback(
+    (pin: Pin) => {
+      return () => {
+        // Set popup
+        setPopupPin(pin)
+        setPopupPosition([pin.latitude, pin.longitude])
+
+        // Handle highlight
+        if (!setHighlightTarget || !period) return
+        setHighlightTarget((highlightTarget: HighlightTarget) => {
+          const newXAxisValue = convertToXAxisValue(pin, period)
+          if (highlightTarget.xAxisValue === newXAxisValue) {
+            return highlightTarget
+          } else {
+            return { lastUpdateBy: 'Map', xAxisValue: newXAxisValue }
+          }
+        })
+      }
+    },
+    [setHighlightTarget, period, setPopupPin, setPopupPosition]
+  )
+
+  // Logic to automatically open popup for targetEntity
+  useEffect(() => {
+    if (!targetEntity || !map || pinData.length === 0) {
+      return
+    }
+
+    // Find the pin that matches the targetEntity
+    const targetPin = pinData.find((pin) => pin.id === targetEntity.id)
+    if (!targetPin) {
+      return
+    }
+
+    // Open popup and pan to the target pin
+    setPopupPin(targetPin)
+    setPopupPosition([targetPin.latitude, targetPin.longitude])
+    map.panTo([targetPin.latitude, targetPin.longitude])
+
+    // Handle highlight if period is available
+    if (setHighlightTarget && period) {
+      const newXAxisValue = convertToXAxisValue(targetPin, period)
+      setHighlightTarget({ lastUpdateBy: 'Map', xAxisValue: newXAxisValue })
+    }
+  }, [targetEntity, map, pinData, setHighlightTarget, period])
+
+  const updateClusters = useCallback(() => {
+    const zoomLevel = map.getZoom()
+
+    if (zoomLevel < 10) {
+      // Zoom out: show super cluster, hide color clusters
+      Object.values(happinessClustersRef.current).forEach((cluster) => {
+        if (map.hasLayer(cluster)) {
+          map.removeLayer(cluster)
+        }
+      })
+      if (!map.hasLayer(superClusterRef.current!)) {
+        map.addLayer(superClusterRef.current!)
+      }
+    } else {
+      // Zoom in: show color clusters, hide super cluster
+      if (map.hasLayer(superClusterRef.current!)) {
+        map.removeLayer(superClusterRef.current!)
+      }
+      Object.entries(happinessClustersRef.current).forEach(
+        ([_type, cluster]) => {
+          if (!map.hasLayer(cluster)) {
+            map.addLayer(cluster)
+          }
+        }
+      )
+    }
+  }, [map])
+
+  useEffect(() => {
+    // Initialize clusters
+    createHappinessClusters()
+    createSuperCluster()
+
+    if (!map || pinData.length === 0) {
+      return
+    }
+
+    // Clear old markers from all cluster groups
+    Object.values(happinessClustersRef.current).forEach((clusterGroup) => {
+      clusterGroup.clearLayers()
+    })
+    if (superClusterRef.current) {
+      superClusterRef.current.clearLayers()
+    }
+
+    // Add markers to both color clusters and super cluster
+    pinData.forEach((pin) => {
+      // Check if this pin type has a value > 0 based on pin.type
+      if (getPinValue(pin) <= 0) {
+        return
+      }
+
+      // Add marker to color cluster based on pin type
+      if (happinessClustersRef.current[pin.type]) {
+        const marker = L.marker([pin.latitude, pin.longitude], {
+          icon: getIconByType(
             iconType,
             pin.type,
             pin.answer,
             pinIsActive(pin, activeTimestamp)
-          )}
-          zIndexOffset={-layerIndex}
+          ),
+        })
+
+        // Add event handler
+        marker.on('click', createMarkerClickHandler(pin))
+
+        happinessClustersRef.current[pin.type].addLayer(marker)
+      }
+
+      // Add marker to super cluster (copy)
+      if (superClusterRef.current) {
+        const superMarker = L.marker([pin.latitude, pin.longitude], {
+          icon: getIconByType(
+            iconType,
+            pin.type,
+            pin.answer,
+            pinIsActive(pin, activeTimestamp)
+          ),
+        })
+
+        // Add event handler for super marker
+        superMarker.on('click', createMarkerClickHandler(pin))
+
+        superClusterRef.current.addLayer(superMarker)
+      }
+    })
+
+    // Update initial cluster display
+    updateClusters()
+
+    // Listen to zoom events to update clusters
+    map.on('zoomend', updateClusters)
+
+    return () => {
+      // Remove event listener
+      map.off('zoomend', updateClusters)
+
+      // Remove all cluster groups
+      Object.values(happinessClustersRef.current).forEach((clusterGroup) => {
+        if (map.hasLayer(clusterGroup)) {
+          map.removeLayer(clusterGroup)
+        }
+      })
+      if (superClusterRef.current && map.hasLayer(superClusterRef.current)) {
+        map.removeLayer(superClusterRef.current)
+      }
+      happinessClustersRef.current = {}
+      superClusterRef.current = null
+    }
+  }, [
+    map,
+    pinData,
+    iconType,
+    activeTimestamp,
+    setHighlightTarget,
+    period,
+    setSelectedPin,
+    createHappinessClusters,
+    createSuperCluster,
+    createMarkerClickHandler,
+    updateClusters,
+  ])
+
+  // Add click handler to close popup when clicking on map
+  useEffect(() => {
+    if (!map) return
+
+    const handleMapClick = () => {
+      setPopupPin(null)
+      setPopupPosition(null)
+    }
+
+    map.on('click', handleMapClick)
+
+    return () => {
+      map.off('click', handleMapClick)
+    }
+  }, [map])
+
+  return (
+    <>
+      {popupPin && popupPosition && (
+        <Popup
+          autoPan={session?.user?.type === PROFILE_TYPE.ADMIN ? false : true}
+          position={popupPosition}
+          offset={[0, -20]}
           eventHandlers={{
-            click: () => {
-              if (!setHighlightTarget || !period) return
-              setHighlightTarget((highlightTarget: HighlightTarget) => {
-                const newXAxisValue = convertToXAxisValue(pin, period)
-                // ハイライト中のピンをクリックした場合は何もしない。
-                // => 全体のハイライト解除はグラフクリックによって行う。
-                if (highlightTarget.xAxisValue === newXAxisValue) {
-                  return highlightTarget
-                } else {
-                  return { lastUpdateBy: 'Map', xAxisValue: newXAxisValue }
-                }
-              })
+            remove: () => {
+              setPopupPin(null)
+              setPopupPosition(null)
             },
           }}
         >
           {iconType === 'pin' ? (
-            <MePopup
-              pin={pin}
-              initialPopupPin={initialPopupPin}
-              setSelectedPin={setSelectedPin}
-            />
+            <MePopup pin={popupPin} setSelectedPin={setSelectedPin} />
           ) : (
-            <AllPopup pin={pin} setSelectedPin={setSelectedPin} />
+            <AllPopup pin={popupPin} setSelectedPin={setSelectedPin} />
           )}
-        </Marker>
-      ))}
-    </LayerGroup>
-  </LayersControl.Overlay>
-)
-
-const SelectedLayers = ({
-  setSelectedLayers,
-}: {
-  setSelectedLayers: React.Dispatch<React.SetStateAction<HappinessKey[]>>
-}) => {
-  useMapEvents({
-    overlayadd: (e) => {
-      const targetLayer = HAPPINESS_KEYS.find(
-        (key) => questionTitles[key] === e.name
-      )
-      if (targetLayer) {
-        setSelectedLayers((selectedLayers: HappinessKey[]) => [
-          ...selectedLayers,
-          targetLayer,
-        ])
-      }
-    },
-    overlayremove: (e) => {
-      const targetLayer = HAPPINESS_KEYS.find(
-        (key) => questionTitles[key] === e.name
-      )
-      if (targetLayer) {
-        setSelectedLayers((selectedLayers: HappinessKey[]) =>
-          [...selectedLayers].filter((layer) => layer !== targetLayer)
-        )
-      }
-    },
-  })
-  return null
+        </Popup>
+      )}
+    </>
+  )
 }
 
 const Bounds = ({
@@ -308,12 +602,11 @@ const Map: React.FC<Props> = ({
   highlightTarget,
   setHighlightTarget,
   period,
-  initialEntityId,
-  setSelectedLayers,
+  targetEntity,
   setBounds,
-  entityByEntityId,
   onPopupClose,
 }) => {
+  const { data: session } = useSession()
   const [center, setCenter] = useState<LatLngTuple | null>(null)
   const [currentPosition, setCurrentPosition] = useState<LatLngTuple | null>(
     null
@@ -371,7 +664,7 @@ const Map: React.FC<Props> = ({
   }, [])
 
   const currentPositionIconHTML = renderToString(
-    <CurrentPositionIcon style={{ fill: 'blue' }} />
+    <CurrentPositionIcon style={{ fill: '#20B2AA' }} />
   )
   const currentPositionIcon = divIcon({
     html: currentPositionIconHTML,
@@ -395,8 +688,8 @@ const Map: React.FC<Props> = ({
             style={{
               backgroundColor: '#f7f7f7',
               border: '1px solid #ccc',
-              borderRadius: 2,
-              boxShadow: '0 2px 6px rgba(0, 0, 0, 0.3)',
+              borderRadius: 100,
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
             }}
             onClick={() => {
               if (currentPosition) {
@@ -404,7 +697,13 @@ const Map: React.FC<Props> = ({
               }
             }}
           >
-            <MyLocationIcon style={{ color: 'blue' }} />
+            <NavigationIcon
+              style={{
+                color: '#20B2AA',
+                transform: 'rotate(45deg)',
+                fontSize: 45,
+              }}
+            />
           </IconButton>
         )
 
@@ -428,14 +727,6 @@ const Map: React.FC<Props> = ({
     return <p>Loading...</p>
   }
 
-  const filteredPinsByType = (type: HappinessKey) =>
-    pinData.filter((pin) => pin.type === type)
-
-  let initialEntityUuid: string | undefined = undefined
-  if (initialEntityId) {
-    initialEntityUuid = entityByEntityId?.[initialEntityId]?.id
-  }
-
   const activeTimestamp: { start: Date; end: Date } | null =
     highlightTarget && period
       ? convertToTimestampRange(highlightTarget.xAxisValue, period)
@@ -451,12 +742,8 @@ const Map: React.FC<Props> = ({
         maxBounds={maxBounds}
         maxBoundsViscosity={maxBoundsViscosity}
       >
-        {setSelectedLayers && (
-          <SelectedLayers setSelectedLayers={setSelectedLayers} />
-        )}
         {setBounds && <Bounds setBounds={setBounds} />}
         <MoveToCurrentPositionControl />
-        <ZoomControl position={'bottomleft'} />
         <LayersControl position="topleft">
           <LayersControl.BaseLayer checked name="標準地図">
             <TileLayer
@@ -475,27 +762,16 @@ const Map: React.FC<Props> = ({
             />
           </LayersControl.BaseLayer>
         </LayersControl>
-        <LayersControl position="topright">
-          {HAPPINESS_KEYS.map((type, index) => {
-            const filteredPins = filteredPinsByType(type)
-            return (
-              <MapOverlay
-                key={type}
-                iconType={iconType}
-                type={questionTitles[type]}
-                layerIndex={index}
-                filteredPins={filteredPins}
-                initialPopupPin={filteredPins.find(
-                  (pin) => pin.id === initialEntityUuid
-                )}
-                setSelectedPin={setSelectedPin}
-                setHighlightTarget={setHighlightTarget}
-                period={period}
-                activeTimestamp={activeTimestamp}
-              />
-            )
-          })}
-        </LayersControl>
+        <HybridClusterGroup
+          iconType={iconType}
+          pinData={pinData}
+          setSelectedPin={setSelectedPin}
+          setHighlightTarget={setHighlightTarget}
+          period={period}
+          activeTimestamp={activeTimestamp}
+          session={session}
+          targetEntity={targetEntity}
+        />
         {onPopupClose && <OnPopupClose onPopupClose={onPopupClose} />}
         {currentPosition && (
           <Marker position={currentPosition} icon={currentPositionIcon} />

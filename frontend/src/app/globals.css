@@ -105,4 +105,33 @@ a {
   position: relative;
   width: 100%;
   height: 100%;
+  touch-action: manipulation;
+}
+
+.leaflet-marker-icon {
+  width: 50px !important;
+  height: 50px !important;
+}
+
+/* Marker cluster styling for centered numbers and maintaining circular shape */
+.marker-cluster {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border-radius: 50%;
+  aspect-ratio: 1;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.marker-cluster span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-weight: bold;
+  line-height: 1;
+  text-align: center;
 }

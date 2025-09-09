@@ -22,6 +22,16 @@ export default withAuth({
   },
   callbacks: {
     authorized: ({ token, req }) => {
+      // Allow access to static assets
+      if (
+        req.nextUrl.pathname.startsWith('/_next/') ||
+        req.nextUrl.pathname.includes('.') ||
+        req.nextUrl.pathname.startsWith('/happy') ||
+        req.nextUrl.pathname.startsWith('/assets/')
+      ) {
+        return true
+      }
+
       if (!Object.keys(paths).includes(req.nextUrl.pathname)) {
         return false
       }
