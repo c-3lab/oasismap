@@ -54,8 +54,7 @@ const HappinessAll: React.FC = () => {
   const { isTokenFetched } = useTokenFetchStatus()
   const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
   const { data: session, update } = useSession()
-  const [selectedLayers, setSelectedLayers] =
-    useState<HappinessKey[]>(HAPPINESS_KEYS)
+  const [selectedLayers] = useState<HappinessKey[]>(HAPPINESS_KEYS)
   const [bounds, setBounds] = useState<LatLngBounds | undefined>(undefined)
   const { isLoading, setIsLoading } = useContext(LoadingContext)
   const { fetchData } = useFetchData()
@@ -255,7 +254,6 @@ const HappinessAll: React.FC = () => {
           iconType="heatmap"
           pinData={pinData}
           forceAllPopup={true}
-          setSelectedLayers={setSelectedLayers}
           setBounds={setBounds}
         />
       </Grid>

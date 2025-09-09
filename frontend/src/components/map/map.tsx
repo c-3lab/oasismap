@@ -43,6 +43,7 @@ import { PeriodType } from '@/types/period'
 import { AllModal } from '../happiness/all-modal'
 import { HappinessFields } from '@/types/happiness-set'
 import { Data } from '@/types/happiness-me-response'
+import { EntityByEntityId } from '@/types/entityByEntityId'
 
 // 環境変数の取得に失敗した場合は日本経緯度原点を設定
 const defaultLatitude =
@@ -83,6 +84,8 @@ type Props = {
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
   period?: PeriodType
   forceAllPopup?: boolean
+  initialEntityId?: string | null
+  entityByEntityId?: EntityByEntityId
 }
 
 const HighlightListener = ({
@@ -274,6 +277,8 @@ const HybridClusterGroup = ({
   session,
   targetEntity,
   forceAllPopup = false,
+  initialEntityId,
+  entityByEntityId,
 }: {
   iconType: IconType
   pinData: Pin[]
@@ -284,6 +289,8 @@ const HybridClusterGroup = ({
   session: any
   targetEntity?: Data
   forceAllPopup?: boolean
+  initialEntityId?: string | null
+  entityByEntityId?: EntityByEntityId
 }) => {
   const map = useMap()
   const happinessClustersRef = useRef<{ [key: string]: L.MarkerClusterGroup }>(
@@ -415,6 +422,43 @@ const HybridClusterGroup = ({
       setHighlightTarget({ lastUpdateBy: 'Map', xAxisValue: newXAxisValue })
     }
   }, [targetEntity, map, pinData, setHighlightTarget, period])
+
+  // Logic to automatically open popup for initialEntityId
+  useEffect(() => {
+    if (!initialEntityId || !entityByEntityId || !map || pinData.length === 0) {
+      return
+    }
+
+    // Find the entity data for the initialEntityId
+    const entityData = entityByEntityId[initialEntityId]
+    if (!entityData) {
+      return
+    }
+
+    // Find the pin that matches the entityData
+    const targetPin = pinData.find((pin) => pin.id === entityData.id)
+    if (!targetPin) {
+      return
+    }
+
+    // Open popup and pan to the target pin
+    setPopupPin(targetPin)
+    setPopupPosition([targetPin.latitude, targetPin.longitude])
+    map.panTo([targetPin.latitude, targetPin.longitude])
+
+    // Handle highlight if period is available
+    if (setHighlightTarget && period) {
+      const newXAxisValue = convertToXAxisValue(targetPin, period)
+      setHighlightTarget({ lastUpdateBy: 'Map', xAxisValue: newXAxisValue })
+    }
+  }, [
+    initialEntityId,
+    entityByEntityId,
+    map,
+    pinData,
+    setHighlightTarget,
+    period,
+  ])
 
   const updateClusters = useCallback(() => {
     const zoomLevel = map.getZoom()
@@ -609,6 +653,8 @@ const Map: React.FC<Props> = ({
   setBounds,
   onPopupClose,
   forceAllPopup = false,
+  initialEntityId,
+  entityByEntityId,
 }) => {
   const { data: session } = useSession()
   const [center, setCenter] = useState<LatLngTuple | null>(null)
@@ -776,6 +822,8 @@ const Map: React.FC<Props> = ({
           session={session}
           targetEntity={targetEntity}
           forceAllPopup={forceAllPopup}
+          initialEntityId={initialEntityId}
+          entityByEntityId={entityByEntityId}
         />
         {onPopupClose && <OnPopupClose onPopupClose={onPopupClose} />}
         {currentPosition && (
