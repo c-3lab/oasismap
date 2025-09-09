@@ -137,6 +137,7 @@ const HappinessInput: React.FC = () => {
         latitude: isNaN(rawExif?.latitude) ? undefined : rawExif?.latitude,
         longitude: isNaN(rawExif?.longitude) ? undefined : rawExif?.longitude,
       }
+
       let missingFields: string[] = []
       if (exif.timestamp === undefined) missingFields.push('撮影日時')
       if (exif.latitude === undefined) missingFields.push('緯度')
