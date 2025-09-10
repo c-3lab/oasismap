@@ -95,6 +95,7 @@ const HappinessMe: React.FC = () => {
   const [initialEntityId, setInitialEntityId] = useState<
     string | null | undefined
   >(undefined)
+  const [targetEntity, setTargetEntity] = useState<Data | undefined>(undefined)
   if (searchEntityId && initialEntityId === undefined) {
     setInitialEntityId(searchEntityId)
   }
@@ -241,6 +242,12 @@ const HappinessMe: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [highlightTarget.xAxisValue])
 
+  useEffect(() => {
+    if (initialEntityId && entityByEntityId) {
+      setTargetEntity(entityByEntityId[initialEntityId])
+    }
+  }, [initialEntityId, entityByEntityId])
+
   const renderCustomDayTick = (tickProps: any) => {
     const { x, y, payload } = tickProps
     const hour = payload.value
@@ -269,8 +276,7 @@ const HappinessMe: React.FC = () => {
           fiware={{ servicePath: '', tenant: '' }}
           iconType="pin"
           pinData={pinData}
-          initialEntityId={initialEntityId}
-          entityByEntityId={entityByEntityId}
+          targetEntity={targetEntity}
           onPopupClose={() => {
             // 画面遷移時に発火させないため、マウント時のみクエリパラメータの削除を実行
             isMounted.current && router.replace('/happiness/me')
