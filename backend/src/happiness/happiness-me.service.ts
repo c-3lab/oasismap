@@ -5,6 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { DateTime } from 'luxon';
 import { Injectable } from '@nestjs/common';
 import { UserAttribute } from 'src/auth/interface/user-attribute';
+import { mockHappinessMeResponse } from './mocks/happiness/mock-happiness-me.response';
 
 @Injectable()
 export class HappinessMeService {
@@ -24,6 +25,12 @@ export class HappinessMeService {
     limit: string,
     offset: string,
   ): Promise<HappinessMeResponse> {
+    // Check if we should use mock data based on environment variable
+    if (process.env.USE_MOCK_DATA === 'true') {
+      return mockHappinessMeResponse;
+    }
+
+    // Real API call logic
     const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
     const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
     const query = `nickname==${userAttribute.nickname};timestamp>=${startAsUTC};timestamp<=${endAsUTC}`;

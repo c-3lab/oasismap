@@ -94,7 +94,9 @@ services:
     restart: always
 
   mongo:
-    image: mongo:8.0.4
+    build:
+      context: ./mongo
+      dockerfile: Dockerfile
     hostname: mongo
     container_name: mongo
     expose:
@@ -117,7 +119,9 @@ services:
     restart: always
 
   postgres:
-    image: postgres:17.2
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
     hostname: postgres
     expose:
       - "5432"
@@ -144,7 +148,9 @@ services:
 
   # "ORION_MONGO_DB=oriondb"や"ORION_FIWARE_SERVICE=Government"を変更した場合、"oriondb-government"も変更すること
   mongo-cli:
-    image: mongo:8.0.4
+    build:
+      context: ./mongo
+      dockerfile: Dockerfile
     hostname: mongo-cli
     container_name: mongo-cli
     depends_on:
@@ -157,7 +163,9 @@ services:
     entrypoint: "mongosh 'mongodb://${MONGOUSERNAME}:${MONGOPASSWORD}@mongo:27017/oriondb-government?authSource=admin' --file '/tmp/scripts/add-mongo-index.js'"
 
   postgres-cli:
-    image: postgres:17.2
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
     hostname: postgres-cli
     container_name: postgres-cli
     depends_on:
@@ -174,7 +182,7 @@ services:
     entrypoint: ["sh", "/home/postgrescli/scripts/add-column.sh"]
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.1.0
+    image: quay.io/keycloak/keycloak:26.3.1
     hostname: keycloak
     container_name: keycloak
     ports:

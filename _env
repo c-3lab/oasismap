@@ -32,3 +32,7 @@ REVERSE_GEOCODING_URL=https://nominatim.openstreetmap.org/reverse
 GOOGLE_MFA_SECRET_KEY=CHANGE_TO_MFA_SECRET_KEY   # 参考サイトより長くてKOCPで始まるやつだった
 GOOGLE_EMAIL=CHANGE_TO_EMAIL_ADDRESS
 GOOGLE_PASSWORD='CHANGE_TO_PASSWORD'  # 特殊記号がある場合はシングルクォートで囲む方が安全か
+
+# Cluster configuration
+NEXT_PUBLIC_MAX_CLUSTER_RADIUS=200
+USE_MOCK_DATA=true

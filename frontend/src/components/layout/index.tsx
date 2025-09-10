@@ -23,18 +23,18 @@ const Layout: React.FC<LayoutProps> = ({ simple = false, children }) => {
   }, [pathname])
 
   return (
-    <ThemeProvider theme={theme}>
-      {simple ? (
-        <Box sx={{ display: 'flex' }}>
-          <CssBaseline />
-          <Header simple={true} />
-          <Box sx={{ width: 1 }}>
-            <Toolbar />
-            {children}
+    <SessionProvider refetchOnWindowFocus={false}>
+      <ThemeProvider theme={theme}>
+        {simple ? (
+          <Box sx={{ display: 'flex' }}>
+            <CssBaseline />
+            <Header simple={true} />
+            <Box sx={{ width: 1 }}>
+              <Toolbar />
+              {children}
+            </Box>
           </Box>
-        </Box>
-      ) : (
-        <SessionProvider refetchOnWindowFocus={false}>
+        ) : (
           <Box sx={{ display: 'flex' }}>
             <CssBaseline />
             <Header
@@ -53,9 +53,9 @@ const Layout: React.FC<LayoutProps> = ({ simple = false, children }) => {
               }}
             />
           </Box>
-        </SessionProvider>
-      )}
-    </ThemeProvider>
+        )}
+      </ThemeProvider>
+    </SessionProvider>
   )
 }
 

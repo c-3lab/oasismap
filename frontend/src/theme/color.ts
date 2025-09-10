@@ -1,5 +1,5 @@
 export const mapColors = {
-  "RED": [
+  RED: [
     '#ff0000',
     '#ff7070',
     '#ff6666',
@@ -11,7 +11,7 @@ export const mapColors = {
     '#ff2323',
     '#ff1919',
   ],
-  "BLUE": [
+  BLUE: [
     '#007fff',
     '#70b7ff',
     '#66b2ff',
@@ -23,7 +23,7 @@ export const mapColors = {
     '#2893ff',
     '#1e8eff',
   ],
-  "GREEN": [
+  GREEN: [
     '#4BA724',
     '#3DCB00',
     '#3EC704',
@@ -35,7 +35,7 @@ export const mapColors = {
     '#48AF1C',
     '#4AAB20',
   ],
-  "YELLOW": [
+  YELLOW: [
     '#FF00D8',
     '#FFCCF7',
     '#FC9BEE',
@@ -47,7 +47,7 @@ export const mapColors = {
     '#FF65E8',
     '#FF32E0',
   ],
-  "ORANGE": [
+  ORANGE: [
     '#ff7f00',
     '#ffb770',
     '#ffb266',
@@ -59,7 +59,7 @@ export const mapColors = {
     '#ff9328',
     '#ff8e1e',
   ],
-  "VIOLET": [
+  VIOLET: [
     '#7f00ff',
     '#b770ff',
     '#b266ff',
@@ -74,10 +74,10 @@ export const mapColors = {
 }
 
 export const graphColors = [
-  mapColors["BLUE"][0],//'#007fff'
-  mapColors["GREEN"][0],//'#4BA724',
-  mapColors["VIOLET"][0],//'#7f00ff',
-  mapColors["YELLOW"][0],//'#FF00D8',
-  mapColors["ORANGE"][0],//'#ff7f00',
-  mapColors["RED"][0],//'#ff0000',
+  mapColors['BLUE'][0], //'#007fff'
+  mapColors['GREEN'][0], //'#4BA724',
+  mapColors['VIOLET'][0], //'#7f00ff',
+  mapColors['YELLOW'][0], //'#FF00D8',
+  mapColors['ORANGE'][0], //'#ff7f00',
+  mapColors['RED'][0], //'#ff0000',
 ]

@@ -36,48 +36,71 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 
 ## 単体テスト
+
 ### パッケージインストール
+
 ```bash
 npm ci
 ```
+
 ### テスト実行
+
 ```bash
 npm run test
 ```
+
 ### テスト実行（カバレッジ）
+
 ```bash
 npm run test:cov
 ```
+
 ## e2eテスト実行方法
+
 ### e2eテスト内で、一般ユーザーのログインに利用するGoogleアカウントを設定する
+
 - .envに以下を追記
 - GOOGLE_MFA_SECRET_KEYの取得は、[こちらの記事](https://dev.classmethod.jp/articles/playwright-e2e-otp-mfa/)を参考。
 - MFAを設定していないGoogleアカウントであれば、GOOGLE_MFA_SECRET_KEYを空にしておく
+
 ```
 GOOGLE_MFA_SECRET_KEY=CHANGE_TO_MFA_SECRET_KEY   # MFAを設定していない場合は空にしておく
 GOOGLE_EMAIL=CHANGE_TO_EMAIL_ADDRESS
 GOOGLE_PASSWORD='CHANGE_TO_PASSWORD'  # 特殊記号がある場合はシングルクォートで囲む方が安全か
 ```
+
 ### 環境起動
+
 ```bash
 docker compose -f docker-compose-dev.yml up -d
 ```
+
 ### パッケージインストール
+
 frontendコンテナ内で実行
+
 ```bash
 npm ci
 ```
+
 ### e2eテストに利用するブラウザ、OSパッケージインストール
+
 frontendコンテナ内で実行
+
 ```bash
 npm run test:e2e:prepare
 ```
+
 ### e2eテスト実行
+
 frontendコンテナ内で実行
+
 ```bash
 npm run test:e2e
 ```
+
 ## e2eテスト実装に対する懸念点
+
 - e2eテストで使用するテスト用のGoogleアカウントを取得するべき
   - 自動認証や認証失敗が続くと怪しく思われる可能性があるため
 - 実際のブラウザを起動してテストを行っているため、CIの時に問題となる可能性
