@@ -131,7 +131,7 @@ export class HappinessImportService {
   private async validateHappinessCsvRows(
     rows: HappinessCsvRow[],
   ): Promise<void> {
-    await Promise.all(
+    const validationResults = await Promise.all(
       rows.map(async (row, index) => {
         try {
           const answer = new Answer();
@@ -149,12 +149,31 @@ export class HappinessImportService {
           happiness.memo = row['メモ'];
           happiness.answers = answer;
           await validateOrReject(happiness);
+          return null;
         } catch (error) {
-          console.debug(`Validation error at row ${index + 2}: ${error}`);
-          throw error;
+          const errorMessage = this.formatValidationError(error);
+          return `Row ${index + 2}: ${errorMessage}`;
         }
       }),
     );
+
+    const errors = validationResults.filter((error) => error !== null);
+    if (errors.length > 0) {
+      throw errors.join('\n');
+    }
+  }
+
+  private formatValidationError(error: any): string {
+    if (Array.isArray(error)) {
+      return error
+        .map((err) =>
+          err.constraints
+            ? Object.values(err.constraints).join(', ')
+            : err.toString(),
+        )
+        .join('; ');
+    }
+    return error.toString();
   }
 
   private toPostEntities(rows: HappinessCsvRow[]): HappinessEntity[] {
