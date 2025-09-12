@@ -498,27 +498,4 @@ describe('HappinessImportService', () => {
       ).resolves.not.toThrow();
     });
   });
-
-  describe('formatValidationError', () => {
-    it('should format non-array error correctly', () => {
-      const error = 'Simple error message';
-      const result = happinessImportService['formatValidationError'](error);
-      expect(result).toBe('Simple error message');
-    });
-
-    it('should format array error correctly', () => {
-      const error = [
-        { constraints: { isNotEmpty: 'should not be empty' } },
-        { constraints: { isIn: 'should be in valid values' } },
-      ];
-      const result = happinessImportService['formatValidationError'](error);
-      expect(result).toBe('should not be empty; should be in valid values');
-    });
-
-    it('should handle error without constraints', () => {
-      const error = [{ toString: () => 'No constraints error' }];
-      const result = happinessImportService['formatValidationError'](error);
-      expect(result).toBe('No constraints error');
-    });
-  });
 });

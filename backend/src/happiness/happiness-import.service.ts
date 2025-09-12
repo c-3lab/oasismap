@@ -9,7 +9,8 @@ import { Repository } from 'typeorm';
 import Papa from 'papaparse';
 import { HappinessImportResponse } from './interface/happiness-import.response';
 import { Answer, ImportHappinessDto } from './dto/create-happiness.dto';
-import { validateOrReject } from 'class-validator';
+import { validateOrReject, ValidationError } from 'class-validator';
+import { ValidationErrorUtil } from './utils/validation-error.util';
 
 const expectedHeaders = [
   'ニックネーム',
@@ -151,7 +152,9 @@ export class HappinessImportService {
           await validateOrReject(happiness);
           return null;
         } catch (error) {
-          const errorMessage = this.formatValidationError(error);
+          const errorMessage = ValidationErrorUtil.formatValidationError(
+            error as ValidationError,
+          );
           return `Row ${index + 2}: ${errorMessage}`;
         }
       }),
@@ -161,19 +164,6 @@ export class HappinessImportService {
     if (errors.length > 0) {
       throw errors.join('\n');
     }
-  }
-
-  private formatValidationError(error: any): string {
-    if (Array.isArray(error)) {
-      return error
-        .map((err) =>
-          err.constraints
-            ? Object.values(err.constraints).join(', ')
-            : err.toString(),
-        )
-        .join('; ');
-    }
-    return error.toString();
   }
 
   private toPostEntities(rows: HappinessCsvRow[]): HappinessEntity[] {
