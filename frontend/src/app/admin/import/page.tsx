@@ -6,6 +6,7 @@ import {
   Grid,
   Typography,
   styled,
+  Box,
 } from '@mui/material'
 import { useContext, useState } from 'react'
 import { MessageType } from '@/types/message-type'
@@ -25,6 +26,7 @@ const Import: React.FC = () => {
   const [isRefresh, setIsRefresh] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [importError, setImportError] = useState('') // Add state for import errors
   const { update } = useSession()
   const { upload } = useFetchData()
 
@@ -40,6 +42,7 @@ const Import: React.FC = () => {
 
     setFile(file)
     setFileName(file.name)
+    setImportError('') // Clear import error when selecting new file
   }
 
   const VisuallyHiddenInput = styled('input')({
@@ -55,6 +58,7 @@ const Import: React.FC = () => {
       return
     }
     setIsUploading(true)
+    setImportError('') // Clear previous import errors
 
     try {
       // アクセストークンを再取得
@@ -87,6 +91,10 @@ const Import: React.FC = () => {
           'データのインポートに失敗しました',
           MessageType.Error
         )
+
+        if (error instanceof Error) {
+          setImportError(error.message)
+        }
       }
     } finally {
       setIsUploading(false)
@@ -147,6 +155,34 @@ const Import: React.FC = () => {
           </Button>
         </Grid>
       </Grid>
+      {/* Display import errors below the form */}
+      {importError && (
+        <Grid item xs={12} sx={{ mt: 2 }}>
+          <Box
+            sx={{
+              p: 2,
+              m: 2,
+              backgroundColor: '#ffebee',
+              border: '1px solid #f44336',
+              borderRadius: 1,
+              maxHeight: '400px',
+              maxWidth: '750px',
+              overflow: 'auto',
+            }}
+          >
+            <Typography
+              variant="body2"
+              color="error"
+              component="pre"
+              sx={{ whiteSpace: 'pre-wrap' }}
+            >
+              インポートに失敗しました。CSVファイルを修正してください。
+              <br />
+              {importError}
+            </Typography>
+          </Box>
+        </Grid>
+      )}
     </Grid>
   )
 }
