@@ -53,7 +53,7 @@ describe('HappinessImportService', () => {
       const header =
         'ニックネーム,年代,住所,送信日時,緯度,経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6';
       const csvData =
-        'nickname,30代,東京都新宿区,2023-06-27 12:34:56,35.6895,139.6917,東京都渋谷区,1,0,1,1,1,0';
+        'nickname,30代,東京都新宿区,2023-06-27 12:34:56,35.6895,139.6917,東京都渋谷区,1,0,0,0,0,0';
       const csvString = header + '\n' + csvData;
       const csvFile = { buffer: Buffer.from(csvString) } as Express.Multer.File;
 
@@ -115,9 +115,9 @@ describe('HappinessImportService', () => {
               type: 'happiness',
               happiness1: { type: 'Number', value: 1 },
               happiness2: { type: 'Number', value: 0 },
-              happiness3: { type: 'Number', value: 1 },
-              happiness4: { type: 'Number', value: 1 },
-              happiness5: { type: 'Number', value: 1 },
+              happiness3: { type: 'Number', value: 0 },
+              happiness4: { type: 'Number', value: 0 },
+              happiness5: { type: 'Number', value: 0 },
               happiness6: { type: 'Number', value: 0 },
               timestamp: {
                 type: 'DateTime',
@@ -167,7 +167,7 @@ describe('HappinessImportService', () => {
       const header =
         'ニックネーム,年代,住所,送信日時,緯度,経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6,メモ';
       const csvData =
-        'nickname,30代,東京都新宿区,2023-06-27 12:34:56,35.6895,139.6917,東京都渋谷区,1,0,1,1,1,0,ダミーメモ';
+        'nickname,30代,東京都新宿区,2023-06-27 12:34:56,35.6895,139.6917,東京都渋谷区,1,0,0,0,0,0,ダミーメモ';
       const csvString = header + '\n' + csvData;
       const csvFile = { buffer: Buffer.from(csvString) } as Express.Multer.File;
 
@@ -229,9 +229,9 @@ describe('HappinessImportService', () => {
               type: 'happiness',
               happiness1: { type: 'Number', value: 1 },
               happiness2: { type: 'Number', value: 0 },
-              happiness3: { type: 'Number', value: 1 },
-              happiness4: { type: 'Number', value: 1 },
-              happiness5: { type: 'Number', value: 1 },
+              happiness3: { type: 'Number', value: 0 },
+              happiness4: { type: 'Number', value: 0 },
+              happiness5: { type: 'Number', value: 0 },
               happiness6: { type: 'Number', value: 0 },
               timestamp: {
                 type: 'DateTime',
@@ -286,7 +286,7 @@ describe('HappinessImportService', () => {
       const header =
         'ニックネーム,年代,住所,送信日時,緯度,経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6,メモ';
       const csvData =
-        'nickname,30代,東京都新宿区,abc,35.6895,139.6917,東京都渋谷区,1,0,1,1,1,0,ダミーメモ';
+        'nickname,30代,東京都新宿区,abc,35.6895,139.6917,東京都渋谷区,1,0,0,0,0,0,ダミーメモ';
       const csvString = header + '\n' + csvData;
       const errorCsvFile = {
         buffer: Buffer.from(csvString),
