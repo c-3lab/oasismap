@@ -44,7 +44,23 @@ services:
     restart: always
 
   frontend:
-    image: node:22.13.1
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXTAUTH_URL: "${NEXTAUTH_URL}"
+        NEXTAUTH_SECRET: "${NEXTAUTH_SECRET}"
+        NEXT_PUBLIC_MAP_DEFAULT_LATITUDE: "${MAP_DEFAULT_LATITUDE}"
+        NEXT_PUBLIC_MAP_DEFAULT_LONGITUDE: "${MAP_DEFAULT_LONGITUDE}"
+        NEXT_PUBLIC_MAP_DEFAULT_ZOOM: "${MAP_DEFAULT_ZOOM}"
+        NEXT_PUBLIC_DEFAULT_ZOOM_FOR_COLLECTION_RANGE: "${DEFAULT_ZOOM_FOR_COLLECTION_RANGE}"
+        NEXT_PUBLIC_DATASET_LIST_BY: "${DATASET_LIST_BY}"
+        NEXT_PUBLIC_BACKEND_URL: "${BACKEND_URL}"
+        GENERAL_USER_KEYCLOAK_CLIENT_ID: "${GENERAL_USER_KEYCLOAK_CLIENT_ID}"
+        GENERAL_USER_KEYCLOAK_CLIENT_SECRET: "${GENERAL_USER_KEYCLOAK_CLIENT_SECRET}"
+        ADMIN_KEYCLOAK_CLIENT_ID: "${ADMIN_KEYCLOAK_CLIENT_ID}"
+        ADMIN_KEYCLOAK_CLIENT_SECRET: "${ADMIN_KEYCLOAK_CLIENT_SECRET}"
+        KEYCLOAK_CLIENT_ISSUER: "${KEYCLOAK_CLIENT_ISSUER}"
     hostname: frontend
     container_name: frontend
     working_dir: /app/frontend
@@ -53,13 +69,6 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    command: >
-      sh -c "
-      cd /app/frontend/ &&
-      npm ci && 
-      npm run build && 
-      npm run start &&
-      sleep 30"
     environment:
       - "NEXTAUTH_URL=${NEXTAUTH_URL}"
       - "NEXTAUTH_SECRET=${NEXTAUTH_SECRET}"
@@ -74,10 +83,14 @@ services:
       - "ADMIN_KEYCLOAK_CLIENT_ID=${ADMIN_KEYCLOAK_CLIENT_ID}"
       - "ADMIN_KEYCLOAK_CLIENT_SECRET=${ADMIN_KEYCLOAK_CLIENT_SECRET}"
       - "KEYCLOAK_CLIENT_ISSUER=${KEYCLOAK_CLIENT_ISSUER}"
-    volumes:
-      - ./frontend/:/app/frontend/
     networks:
       - frontend-network
+    healthcheck:
+      test: "curl -f http://frontend:3000"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     restart: always
 
   mongo:
