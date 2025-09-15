@@ -3,7 +3,5 @@ export class GetHappinessAllDto {
   readonly offset: string;
   readonly start: string;
   readonly end: string;
-  readonly period: 'time' | 'day' | 'month';
   readonly zoomLevel: number;
-  readonly boundsNESW?: string;
 }

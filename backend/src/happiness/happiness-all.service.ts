@@ -1,14 +1,13 @@
 import axios from 'axios';
 import { HappinessEntity } from './interface/happiness-entity';
 import { v4 as uuidv4 } from 'uuid';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
-  GraphData,
   HappinessAllResponse,
   MapData,
   MapDataItem,
 } from './interface/happiness-all.response';
-import { DateTime, DurationLikeObject } from 'luxon';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class HappinessAllService {
@@ -28,9 +27,7 @@ export class HappinessAllService {
     end: string,
     limit: string,
     offset: string,
-    period: 'time' | 'day' | 'month',
     zoomLevel: number,
-    boundsNESW?: string,
   ): Promise<HappinessAllResponse> {
     const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
     const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
@@ -46,55 +43,16 @@ export class HappinessAllService {
       happinessEntities,
     );
 
-    let happinessEntitiesByBounds: HappinessEntity[] | undefined = undefined;
-    if (boundsNESW) {
-      const coords: string = this.getCoords(boundsNESW);
-
-      happinessEntitiesByBounds = await this.getHappinessEntities(
-        query,
-        limit,
-        offset,
-        'coveredBy',
-        'polygon',
-        coords,
-      );
-    }
-
     return {
       count: happinessEntities.length,
       map_data: this.toHappinessAllMapData(gridEntities),
-      graph_data: this.calculateGraphData(
-        happinessEntitiesByBounds || happinessEntities,
-        startAsUTC,
-        endAsUTC,
-        period,
-      ),
     };
-  }
-
-  // "北,東,南,西"の座標をもとに四角形の各頂点座標を作成し、
-  // 地図上の四角形範囲を示す座標列を返す。
-  private getCoords(boundsNESW: string): string {
-    const [north, east, south, west] = boundsNESW.split(',').map(Number);
-    if (isNaN(north) || isNaN(east) || isNaN(south) || isNaN(west)) {
-      throw new BadRequestException('Invalid bounds');
-    }
-
-    const boundsNE = `${north},${east}`; // 北東
-    const boundsNW = `${north},${west}`; // 北西
-    const boundsSE = `${south},${east}`; // 南東
-    const boundsSW = `${south},${west}`; // 南西
-
-    return `${boundsNW};${boundsNE};${boundsSE};${boundsSW};${boundsNW}`;
   }
 
   private async getHappinessEntities(
     query: string,
     limit: string,
     offset: string,
-    georel?: string,
-    geometry?: string,
-    coords?: string,
   ): Promise<HappinessEntity[]> {
     const response = await axios.get(`${process.env.ORION_URI}/v2/entities`, {
       headers: {
@@ -106,9 +64,6 @@ export class HappinessAllService {
         limit: limit,
         offset: offset,
         orderBy: '!timestamp',
-        georel: georel,
-        geometry: geometry,
-        coords: coords,
       },
     });
     return response.data;
@@ -264,67 +219,6 @@ export class HappinessAllService {
       };
     });
     return map_data;
-  }
-
-  private calculateGraphData(
-    entities: HappinessEntity[],
-    startAsUTC: string,
-    endAsUTC: string,
-    period: 'time' | 'day' | 'month',
-  ): GraphData[] {
-    const startDate = DateTime.fromISO(startAsUTC);
-    const endDate = DateTime.fromISO(endAsUTC);
-    const result: GraphData[] = [];
-
-    const periodMap: { [key: string]: keyof DurationLikeObject } = {
-      time: 'hours',
-      day: 'days',
-      month: 'months',
-    };
-    const luxonPeriod = periodMap[period];
-
-    const spans = endDate.diff(startDate).as(luxonPeriod);
-    for (let i = 0; i < spans; i++) {
-      const spanStart = startDate.plus({ [luxonPeriod]: i });
-      const spanEnd = startDate.plus({ [luxonPeriod]: i + 1 });
-      const filteredEntities = entities.filter((entity) => {
-        const datetime = DateTime.fromISO(entity.timestamp.value);
-        return spanStart <= datetime && datetime < spanEnd;
-      });
-
-      const graphData: GraphData = {
-        count: filteredEntities.length,
-        timestamp: spanStart.setZone('Asia/Tokyo').toISO(),
-        happiness1: this.averageHappiness(
-          filteredEntities,
-          HappinessAllService.keys[0],
-        ),
-        happiness2: this.averageHappiness(
-          filteredEntities,
-          HappinessAllService.keys[1],
-        ),
-        happiness3: this.averageHappiness(
-          filteredEntities,
-          HappinessAllService.keys[2],
-        ),
-        happiness4: this.averageHappiness(
-          filteredEntities,
-          HappinessAllService.keys[3],
-        ),
-        happiness5: this.averageHappiness(
-          filteredEntities,
-          HappinessAllService.keys[4],
-        ),
-        happiness6: this.averageHappiness(
-          filteredEntities,
-          HappinessAllService.keys[5],
-        ),
-      };
-
-      result.push(graphData);
-    }
-
-    return result;
   }
 
   private averageHappiness(entities: HappinessEntity[], happinessKey: string) {
