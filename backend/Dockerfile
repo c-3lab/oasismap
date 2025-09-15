@@ -1,4 +1,4 @@
-FROM node:22.13-slim AS build
+FROM node:22-slim AS build
 
 WORKDIR /app/backend
 
@@ -13,7 +13,7 @@ RUN npm ci && npm run build
 
 USER node
 
-FROM node:20-slim AS production
+FROM node:22-slim AS production
 
 WORKDIR /app/backend
 

@@ -1,6 +1,8 @@
 services:
   backend:
-    image: node:22.13.1
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     hostname: backend
     container_name: backend
     depends_on:
@@ -13,10 +15,6 @@ services:
     working_dir: /app/backend
     ports:
       - "4000:4000"
-    command: >
-      sh -c "
-      npm ci &&
-      npm run start"
     environment:
       - "API_PORT=4000"
       - "ORION_URI=http://orion:1026"
@@ -31,8 +29,6 @@ services:
       - "POSTGRES_PASSWORD=${POSTGREPASSWORD}"
       - "POSTGRES_DATABASE=cygnus"
       - "REVERSE_GEOCODING_URL=${REVERSE_GEOCODING_URL}"
-    volumes:
-      - ./backend:/app/backend
     networks:
       - backend-network
     healthcheck:
