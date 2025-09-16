@@ -11,9 +11,9 @@ describe('CreateHappinessDto', () => {
       answers: {
         happiness1: 1,
         happiness2: 0,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
+        happiness3: 0,
+        happiness4: 0,
+        happiness5: 0,
         happiness6: 0,
       },
       timestamp: '2024-12-19T09:00:00.000Z',
@@ -35,9 +35,9 @@ describe('CreateHappinessDto', () => {
       answers: {
         happiness1: 1,
         happiness2: 0,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
+        happiness3: 0,
+        happiness4: 0,
+        happiness5: 0,
         happiness6: 0,
       },
     };
@@ -58,9 +58,9 @@ describe('CreateHappinessDto', () => {
       answers: {
         happiness1: 1,
         happiness2: 0,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
+        happiness3: 0,
+        happiness4: 0,
+        happiness5: 0,
         happiness6: 0,
       },
       timestamp: '2024/12/19T09:00:00.000Z',
@@ -100,9 +100,57 @@ describe('CreateHappinessDto', () => {
     expect(errors.length).toBe(1);
     expect(errors[0].constraints).toEqual({
       isNotAllHappinessZero: 'All happiness values cannot be zero.',
+      isExactlyOneHappinessSelected:
+        'Exactly one happiness value must be selected (value = 1).',
     });
   });
 
+  it('should fail validation when more than one happiness values are one', async () => {
+    const requestParam: CreateHappinessDto = {
+      latitude: 35.629327,
+      longitude: 139.72382,
+      memo: 'ダミーメモ',
+      answers: {
+        happiness1: 1,
+        happiness2: 1,
+        happiness3: 0,
+        happiness4: 0,
+        happiness5: 0,
+        happiness6: 0,
+      },
+    };
+    const CreateHappinessObject = plainToInstance(
+      CreateHappinessDto,
+      requestParam,
+    );
+    const errors = await validate(CreateHappinessObject);
+
+    expect(errors.length).toBe(1);
+    expect(errors[0].constraints).toEqual({
+      isExactlyOneHappinessSelected:
+        'Exactly one happiness value must be selected (value = 1).',
+    });
+  });
+
+  it('should fail validation when answers is none', async () => {
+    const requestParam: unknown = {
+      latitude: 35.629327,
+      longitude: 139.72382,
+      memo: 'ダミーメモ',
+    };
+    const CreateHappinessObject = plainToInstance(
+      CreateHappinessDto,
+      requestParam,
+    );
+    const errors = await validate(CreateHappinessObject);
+
+    expect(errors.length).toBe(1);
+    expect(errors[0].constraints).toEqual({
+      isExactlyOneHappinessSelected:
+        'Exactly one happiness value must be selected (value = 1).',
+      isNotAllHappinessZero: 'All happiness values cannot be zero.',
+    });
+  });
   it('should fail validation when memo has orion forbidden chars', async () => {
     const requestParam: CreateHappinessDto = {
       latitude: 35.629327,
@@ -111,9 +159,9 @@ describe('CreateHappinessDto', () => {
       answers: {
         happiness1: 1,
         happiness2: 0,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
+        happiness3: 0,
+        happiness4: 0,
+        happiness5: 0,
         happiness6: 0,
       },
     };
@@ -137,9 +185,9 @@ describe('CreateHappinessDto', () => {
       answers: {
         happiness1: 1,
         happiness2: 0,
-        happiness3: 1,
-        happiness4: 1,
-        happiness5: 1,
+        happiness3: 0,
+        happiness4: 0,
+        happiness5: 0,
         happiness6: 0,
       },
     };

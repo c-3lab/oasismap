@@ -53,7 +53,7 @@ describe('HappinessImportService', () => {
       const header =
         'ニックネーム,年代,住所,送信日時,緯度,経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6';
       const csvData =
-        'nickname,30代,東京都新宿区,2023-06-27 12:34:56,35.6895,139.6917,東京都渋谷区,1,0,1,1,1,0';
+        'nickname,30代,東京都新宿区,2023-06-27 12:34:56,35.6895,139.6917,東京都渋谷区,1,0,0,0,0,0';
       const csvString = header + '\n' + csvData;
       const csvFile = { buffer: Buffer.from(csvString) } as Express.Multer.File;
 
@@ -115,9 +115,9 @@ describe('HappinessImportService', () => {
               type: 'happiness',
               happiness1: { type: 'Number', value: 1 },
               happiness2: { type: 'Number', value: 0 },
-              happiness3: { type: 'Number', value: 1 },
-              happiness4: { type: 'Number', value: 1 },
-              happiness5: { type: 'Number', value: 1 },
+              happiness3: { type: 'Number', value: 0 },
+              happiness4: { type: 'Number', value: 0 },
+              happiness5: { type: 'Number', value: 0 },
               happiness6: { type: 'Number', value: 0 },
               timestamp: {
                 type: 'DateTime',
@@ -167,7 +167,7 @@ describe('HappinessImportService', () => {
       const header =
         'ニックネーム,年代,住所,送信日時,緯度,経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6,メモ';
       const csvData =
-        'nickname,30代,東京都新宿区,2023-06-27 12:34:56,35.6895,139.6917,東京都渋谷区,1,0,1,1,1,0,ダミーメモ';
+        'nickname,30代,東京都新宿区,2023-06-27 12:34:56,35.6895,139.6917,東京都渋谷区,1,0,0,0,0,0,ダミーメモ';
       const csvString = header + '\n' + csvData;
       const csvFile = { buffer: Buffer.from(csvString) } as Express.Multer.File;
 
@@ -229,9 +229,9 @@ describe('HappinessImportService', () => {
               type: 'happiness',
               happiness1: { type: 'Number', value: 1 },
               happiness2: { type: 'Number', value: 0 },
-              happiness3: { type: 'Number', value: 1 },
-              happiness4: { type: 'Number', value: 1 },
-              happiness5: { type: 'Number', value: 1 },
+              happiness3: { type: 'Number', value: 0 },
+              happiness4: { type: 'Number', value: 0 },
+              happiness5: { type: 'Number', value: 0 },
               happiness6: { type: 'Number', value: 0 },
               timestamp: {
                 type: 'DateTime',
@@ -286,7 +286,7 @@ describe('HappinessImportService', () => {
       const header =
         'ニックネーム,年代,住所,送信日時,緯度,経度,送信住所,happiness1,happiness2,happiness3,happiness4,happiness5,happiness6,メモ';
       const csvData =
-        'nickname,30代,東京都新宿区,abc,35.6895,139.6917,東京都渋谷区,1,0,1,1,1,0,ダミーメモ';
+        'nickname,30代,東京都新宿区,abc,35.6895,139.6917,東京都渋谷区,1,0,0,0,0,0,ダミーメモ';
       const csvString = header + '\n' + csvData;
       const errorCsvFile = {
         buffer: Buffer.from(csvString),
@@ -321,6 +321,181 @@ describe('HappinessImportService', () => {
       await expect(
         happinessImportService.importCsv(errorCsvFile, false),
       ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('validateHappinessCsvRows', () => {
+    it('should validate valid CSV rows successfully', async () => {
+      const validRows = [
+        {
+          ニックネーム: 'test1',
+          年代: '30代',
+          住所: '東京都新宿区',
+          送信日時: '2023-06-27 12:34:56',
+          緯度: '35.6895',
+          経度: '139.6917',
+          送信住所: '東京都渋谷区',
+          happiness1: '1',
+          happiness2: '0',
+          happiness3: '1',
+          happiness4: '0',
+          happiness5: '1',
+          happiness6: '0',
+          メモ: 'test memo',
+        },
+      ];
+
+      // Should not throw any error
+      await expect(
+        happinessImportService['validateHappinessCsvRows'](validRows),
+      ).resolves.not.toThrow();
+    });
+
+    it('should throw error for invalid CSV rows with all happiness values zero', async () => {
+      const invalidRows = [
+        {
+          ニックネーム: 'test1',
+          年代: '30代',
+          住所: '東京都新宿区',
+          送信日時: '2023-06-27 12:34:56',
+          緯度: '35.6895',
+          経度: '139.6917',
+          送信住所: '東京都渋谷区',
+          happiness1: '0',
+          happiness2: '0',
+          happiness3: '0',
+          happiness4: '0',
+          happiness5: '0',
+          happiness6: '0',
+          メモ: 'test memo',
+        },
+      ];
+
+      try {
+        await happinessImportService['validateHappinessCsvRows'](invalidRows);
+        fail('Expected function to throw');
+      } catch (error) {
+        expect(error).toContain('Row 2:');
+        expect(error).toContain('All happiness values cannot be zero.');
+      }
+    });
+
+    it('should throw error for invalid CSV rows with invalid latitude', async () => {
+      const invalidRows = [
+        {
+          ニックネーム: 'test1',
+          年代: '30代',
+          住所: '東京都新宿区',
+          送信日時: '2023-06-27 12:34:56',
+          緯度: 'invalid_latitude',
+          経度: '139.6917',
+          送信住所: '東京都渋谷区',
+          happiness1: '1',
+          happiness2: '0',
+          happiness3: '1',
+          happiness4: '0',
+          happiness5: '1',
+          happiness6: '0',
+          メモ: 'test memo',
+        },
+      ];
+
+      try {
+        await happinessImportService['validateHappinessCsvRows'](invalidRows);
+        fail('Expected function to throw');
+      } catch (error) {
+        expect(error).toContain('Row 2:');
+        expect(error).toContain(
+          'latitude must be a number conforming to the specified constraints',
+        );
+        expect(error).toContain('latitude must be a latitude string or number');
+      }
+    });
+
+    it('should throw error for invalid CSV rows with invalid timestamp', async () => {
+      const invalidRows = [
+        {
+          ニックネーム: 'test1',
+          年代: '30代',
+          住所: '東京都新宿区',
+          送信日時: 'invalid_timestamp',
+          緯度: '35.6895',
+          経度: '139.6917',
+          送信住所: '東京都渋谷区',
+          happiness1: '1',
+          happiness2: '0',
+          happiness3: '1',
+          happiness4: '0',
+          happiness5: '1',
+          happiness6: '0',
+          メモ: 'test memo',
+        },
+      ];
+
+      try {
+        await happinessImportService['validateHappinessCsvRows'](invalidRows);
+        fail('Expected function to throw');
+      } catch (error) {
+        expect(error).toContain('Row 2:');
+        expect(error).toContain(
+          'timestamp must be a valid ISO 8601 date string',
+        );
+      }
+    });
+
+    it('should throw multiple errors for multiple invalid rows', async () => {
+      const invalidRows = [
+        {
+          ニックネーム: 'test1',
+          年代: '30代',
+          住所: '東京都新宿区',
+          送信日時: '2023-06-27 12:34:56',
+          緯度: '35.6895',
+          経度: '139.6917',
+          送信住所: '東京都渋谷区',
+          happiness1: '0',
+          happiness2: '0',
+          happiness3: '0',
+          happiness4: '0',
+          happiness5: '0',
+          happiness6: '0',
+          メモ: 'test memo',
+        },
+        {
+          ニックネーム: 'test2',
+          年代: '30代',
+          住所: '東京都新宿区',
+          送信日時: '2023-06-27 12:34:56',
+          緯度: '35.6895',
+          経度: '139.6917',
+          送信住所: '東京都渋谷区',
+          happiness1: '0',
+          happiness2: '0',
+          happiness3: '0',
+          happiness4: '0',
+          happiness5: '0',
+          happiness6: '0',
+          メモ: 'test memo',
+        },
+      ];
+
+      try {
+        await happinessImportService['validateHappinessCsvRows'](invalidRows);
+        fail('Expected function to throw');
+      } catch (error) {
+        expect(error).toContain('Row 2:');
+        expect(error).toContain('Row 3:');
+        expect(error).toContain('All happiness values cannot be zero.');
+      }
+    });
+
+    it('should handle empty rows array', async () => {
+      const emptyRows: any[] = [];
+
+      // Should not throw any error for empty array
+      await expect(
+        happinessImportService['validateHappinessCsvRows'](emptyRows),
+      ).resolves.not.toThrow();
     });
   });
 });

@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   backend:
-    image: node:20.10.0
+    image: node:22-slim
     hostname: backend
     container_name: backend
     depends_on:
@@ -36,7 +36,7 @@ services:
       - backend-network
 
   frontend:
-    image: node:20.10.0
+    image: node:22-slim
     hostname: frontend
     container_name: frontend
     working_dir: /app/frontend
@@ -184,7 +184,9 @@ services:
     entrypoint: sleep infinity
 
   orion:
-    image: fiware/orion:3.11.0
+    build:
+      context: ./fiware/orion
+      dockerfile: Dockerfile
     hostname: orion
     container_name: orion
     ports:
@@ -194,13 +196,11 @@ services:
     depends_on:
       - mongo
     environment:
-      - "ORION_MONGO_HOST=mongo:27017"
-      - "ORION_MONGO_USER=${MONGOUSERNAME}"
-      - "ORION_MONGO_PASSWORD=${MONGOPASSWORD}"
-      - "ORION_MONGO_AUTH_SOURCE=admin"
+      - "ORION_MONGO_URI=mongodb://${MONGOUSERNAME}:${MONGOPASSWORD}@mongo:27017?authSource=admin"
       - "ORION_MONGO_DB=oriondb"
       - "ORION_PORT=1026"
       - "ORION_MULTI_SERVICE=true"
+      - "ORION_LOG_LEVEL=INFO"
     networks:
       - backend-network
     healthcheck:
@@ -212,7 +212,9 @@ services:
     restart: always
 
   cygnus:
-    image: fiware/cygnus-ngsi:3.5.0
+    build:
+      context: ./fiware/cygnus
+      dockerfile: Dockerfile
     hostname: cygnus
     container_name: cygnus
     depends_on:
@@ -233,6 +235,12 @@ services:
       - "CYGNUS_API_PORT=5080"
     networks:
       - backend-network
+    healthcheck:
+      test: "curl -f http://cygnus:5080/v1/version"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     restart: always
 
 networks:

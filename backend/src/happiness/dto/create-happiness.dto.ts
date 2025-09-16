@@ -11,6 +11,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { IsNotAllHappinessZero } from '../validation/is-not-all-happiness-zero';
+import { IsExactlyOneHappinessSelected } from '../validation/is-exactly-one-happiness-selected';
 import { IsNotOrionForbiddenChars } from '../validation/is-not-orion-forbidden-chars';
 import { IsNotSurrogatePair } from '../validation/is-not-surrogate-pair';
 
@@ -60,6 +61,7 @@ class HappinessDto {
   @ValidateNested()
   @Type(() => Answer)
   @IsNotAllHappinessZero()
+  @IsExactlyOneHappinessSelected()
   answers: Answer;
 }
 

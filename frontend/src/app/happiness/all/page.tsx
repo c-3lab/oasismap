@@ -1,29 +1,22 @@
 'use client'
 import dynamic from 'next/dynamic'
 import { useState, useEffect, useContext, useRef } from 'react'
-import { LatLngBounds } from 'leaflet'
+
 import { useRouter } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { Button, ButtonGroup, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { MessageType } from '@/types/message-type'
-import { ResponsiveContainer } from 'recharts'
 const Map = dynamic(() => import('@/components/map/map'), { ssr: false })
 import { GetPin } from '@/components/utils/pin'
-import { graphColors } from '@/theme/color'
 import {
   DateTimeTextbox,
   useDateTimeProps,
 } from '@/components/fields/date-time-textbox'
 
-const LineGraph = dynamic(() => import('@/components/happiness/line-graph'), {
-  ssr: false,
-})
-import { ourHappinessData } from '@/libs/graph'
 import { messageContext } from '@/contexts/message-context'
 import { useFetchData } from '@/libs/fetch'
 import { ERROR_TYPE, PROFILE_TYPE, HAPPINESS_KEYS } from '@/libs/constants'
-import { HappinessKey } from '@/types/happiness-key'
 import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 import {
@@ -33,7 +26,6 @@ import {
 } from '@/types/happiness-all-response'
 import { LoadingContext } from '@/contexts/loading-context'
 import { Pin } from '@/types/pin'
-import { happinessSet } from '@/types/happiness-set'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -43,34 +35,13 @@ const HappinessAll: React.FC = () => {
   const [period, setPeriod] = useState(PeriodType.Month)
   const [pinData, setPinData] = useState<Pin[]>([])
   const willStop = useRef(false)
-  const [OurHappiness, setOurHappiness] = useState<happinessSet>({
-    month: [],
-    day: [],
-    time: [],
-  })
+
   const { isTokenFetched } = useTokenFetchStatus()
   const { startProps, endProps, updatedPeriod } = useDateTimeProps(period)
   const { data: session, update } = useSession()
-  const [selectedLayers] = useState<HappinessKey[]>(HAPPINESS_KEYS)
-  const [bounds, setBounds] = useState<LatLngBounds | undefined>(undefined)
+
   const { isLoading, setIsLoading } = useContext(LoadingContext)
   const { fetchData } = useFetchData()
-  const [isLoaded, setIsLoaded] = useState(false)
-
-  const getBoundsNESW = (): string | undefined => {
-    if (session?.user?.type !== PROFILE_TYPE.ADMIN) return undefined
-    if (!bounds) return undefined
-
-    const boundsNESW = `${bounds.getNorth()},${bounds.getEast()},${bounds.getSouth()},${bounds.getWest()}`
-
-    // 画面上部・画面下部の緯度、左端・右端の経度が全て取得できている事を確認する
-    if (!/^[\d.-]+,[\d.-]+,[\d.-]+,[\d.-]+$/.test(boundsNESW)) {
-      console.error('Invalid boundsNESW format:', boundsNESW)
-      return undefined
-    }
-
-    return boundsNESW
-  }
 
   const getData = async () => {
     if (isLoading) return
@@ -78,7 +49,6 @@ const HappinessAll: React.FC = () => {
       setIsLoading(true)
       willStop.current = false
       setPinData([])
-      setOurHappiness({ month: [], day: [], time: [] })
 
       const url = backendUrl + '/api/happiness/all'
       const startDateTime = toDateTime(startProps.value).toISO()
@@ -92,9 +62,6 @@ const HappinessAll: React.FC = () => {
       const limit = 1000
       let offset = 0
       const allMapData: HappinessAllResponse['map_data'] = {}
-      const allGraphData: HappinessAllResponse['graph_data'] = []
-
-      const boundsNESW: string | undefined = getBoundsNESW()
 
       while (!willStop.current) {
         // アクセストークンを再取得
@@ -112,7 +79,6 @@ const HappinessAll: React.FC = () => {
               parseInt(
                 process.env.NEXT_PUBLIC_DEFAULT_ZOOM_FOR_COLLECTION_RANGE!
               ) || 14,
-            boundsNESW: boundsNESW,
           },
           updatedSession?.user?.accessToken!
         )
@@ -159,25 +125,6 @@ const HappinessAll: React.FC = () => {
           )
         )
 
-        for (let i = 0; i < data['graph_data'].length; i++) {
-          const existedGraphData = allGraphData[i]
-          const fetchedGraphData = data['graph_data'][i]
-          if (existedGraphData) {
-            if (fetchedGraphData['count'] === 0) continue
-
-            HAPPINESS_KEYS.forEach((key) => {
-              allGraphData[i][key] =
-                (existedGraphData[key] * existedGraphData['count'] +
-                  fetchedGraphData[key] * fetchedGraphData['count']) /
-                (existedGraphData['count'] + fetchedGraphData['count'])
-            })
-            allGraphData[i]['count'] += fetchedGraphData['count']
-          } else {
-            allGraphData.push(fetchedGraphData)
-          }
-        }
-        setOurHappiness(ourHappinessData(allGraphData))
-
         offset += data['count']
       }
     } catch (error) {
@@ -197,7 +144,6 @@ const HappinessAll: React.FC = () => {
       }
     } finally {
       setIsLoading(false)
-      setIsLoaded(true)
     }
   }
 
@@ -209,20 +155,7 @@ const HappinessAll: React.FC = () => {
       willStop.current = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTokenFetched, updatedPeriod, bounds])
-
-  const renderCustomDayTick = (tickProps: any) => {
-    const { x, y, payload } = tickProps
-    const hour = payload.value
-    if (hour % 2 === 0) {
-      return (
-        <text x={x} y={y} dy={16} fill="#666" textAnchor="middle">
-          {hour}
-        </text>
-      )
-    }
-    return null
-  }
+  }, [isTokenFetched, updatedPeriod])
 
   return (
     <Grid
@@ -247,13 +180,9 @@ const HappinessAll: React.FC = () => {
           fiware={{ servicePath: '', tenant: '' }}
           iconType="heatmap"
           pinData={pinData}
-          setBounds={
-            session?.user?.type === PROFILE_TYPE.ADMIN ? setBounds : undefined
-          }
         />
       </Grid>
       <Grid
-        container
         item
         xs={12}
         md={6}
@@ -262,25 +191,6 @@ const HappinessAll: React.FC = () => {
         justifyContent={'center'}
         sx={{ px: { md: '16px' }, my: { xs: '32px', md: 0 } }}
       >
-        <Grid
-          item
-          xs={12}
-          md={12}
-          sx={{
-            backgroundColor: '#FFFFFF',
-            minHeight: '300px',
-          }}
-        >
-          <ResponsiveContainer width="100%" height={300}>
-            <LineGraph
-              plotdata={OurHappiness[period]}
-              color={graphColors}
-              xTickFormatter={renderCustomDayTick}
-              isLoaded={isLoaded}
-              selectedLayers={selectedLayers}
-            />
-          </ResponsiveContainer>
-        </Grid>
         <Grid
           container
           justifyContent="center"
