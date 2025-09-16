@@ -42,6 +42,7 @@ import { PeriodType } from '@/types/period'
 import { AllModal } from '../happiness/all-modal'
 import { HappinessFields } from '@/types/happiness-set'
 import { Data } from '@/types/happiness-me-response'
+import { EntityByEntityId } from '@/types/entityByEntityId'
 
 // 環境変数の取得に失敗した場合は日本経緯度原点を設定
 const defaultLatitude =
@@ -80,6 +81,8 @@ type Props = {
   _highlightTarget?: HighlightTarget
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
   period?: PeriodType
+  initialEntityId?: string | null
+  entityByEntityId?: EntityByEntityId
 }
 
 const OnPopupClose = ({ onPopupClose }: { onPopupClose: () => void }) => {
@@ -165,6 +168,8 @@ const HybridClusterGroup = ({
   period,
   session,
   targetEntity,
+  initialEntityId,
+  entityByEntityId,
 }: {
   iconType: IconType
   pinData: Pin[]
@@ -173,6 +178,8 @@ const HybridClusterGroup = ({
   period?: PeriodType
   session: any
   targetEntity?: Data
+  initialEntityId?: string | null
+  entityByEntityId?: EntityByEntityId
 }) => {
   const map = useMap()
   const happinessClustersRef = useRef<{ [key: string]: L.MarkerClusterGroup }>(
@@ -270,23 +277,64 @@ const HybridClusterGroup = ({
     [setPopupPin, setPopupPosition]
   )
 
+  // Common function to handle popup opening and highlighting
+  const openPopupAndHighlight = useCallback(
+    (entityId: string) => {
+      if (!map || pinData.length === 0) {
+        return
+      }
+
+      // Find the pin that matches the entityId
+      const targetPin = pinData.find((pin) => pin.id === entityId)
+      if (!targetPin) {
+        return
+      }
+
+      // Open popup and pan to the target pin
+      setPopupPin(targetPin)
+      setPopupPosition([targetPin.latitude, targetPin.longitude])
+      map.panTo([targetPin.latitude, targetPin.longitude])
+
+      // Handle highlight if period is available
+      if (setHighlightTarget && period) {
+        const newXAxisValue = convertToXAxisValue(targetPin, period)
+
+        setHighlightTarget((prev) => {
+          if (
+            prev.xAxisValue === newXAxisValue &&
+            prev.lastUpdateBy === 'Map'
+          ) {
+            return prev
+          }
+          return { lastUpdateBy: 'Map', xAxisValue: newXAxisValue }
+        })
+      }
+    },
+    [map, pinData, setHighlightTarget, period, setPopupPin, setPopupPosition]
+  )
+
   // Logic to automatically open popup for targetEntity
   useEffect(() => {
-    if (!targetEntity || !map || pinData.length === 0) {
+    if (!targetEntity) {
+      return
+    }
+    openPopupAndHighlight(targetEntity.id)
+  }, [targetEntity, openPopupAndHighlight])
+
+  // Logic to automatically open popup for initialEntityId
+  useEffect(() => {
+    if (!initialEntityId || !entityByEntityId) {
       return
     }
 
-    // Find the pin that matches the targetEntity
-    const targetPin = pinData.find((pin) => pin.id === targetEntity.id)
-    if (!targetPin) {
+    // Find the entity data for the initialEntityId
+    const entityData = entityByEntityId[initialEntityId]
+    if (!entityData) {
       return
     }
 
-    // Open popup and pan to the target pin
-    setPopupPin(targetPin)
-    setPopupPosition([targetPin.latitude, targetPin.longitude])
-    map.panTo([targetPin.latitude, targetPin.longitude])
-  }, [targetEntity, map, pinData, period])
+    openPopupAndHighlight(entityData.id)
+  }, [initialEntityId, entityByEntityId, openPopupAndHighlight])
 
   const updateClusters = useCallback(() => {
     const zoomLevel = map.getZoom()
@@ -449,6 +497,8 @@ const Map: React.FC<Props> = ({
   period,
   targetEntity,
   onPopupClose,
+  initialEntityId,
+  entityByEntityId,
 }) => {
   const { data: session } = useSession()
   const [center, setCenter] = useState<LatLngTuple | null>(null)
@@ -596,6 +646,8 @@ const Map: React.FC<Props> = ({
           period={period}
           session={session}
           targetEntity={targetEntity}
+          initialEntityId={initialEntityId}
+          entityByEntityId={entityByEntityId}
         />
         {onPopupClose && <OnPopupClose onPopupClose={onPopupClose} />}
         {currentPosition && (
