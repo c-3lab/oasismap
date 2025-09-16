@@ -1,21 +1,25 @@
 import { registerDecorator } from 'class-validator';
 
-export function IsNotAllHappinessZero() {
+export function IsExactlyOneHappinessSelected() {
   return function (object: object, propertyName: string) {
     registerDecorator({
-      name: 'isNotAllHappinessZero',
+      name: 'isExactlyOneHappinessSelected',
       target: object.constructor,
       propertyName,
       validator: {
         validate(value: any) {
+          console.log('value', value);
           if (!value || typeof value !== 'object') {
             return false;
           }
 
-          return Object.values(value).some((val) => val !== 0);
+          const values = Object.values(value);
+          const countOfOnes = values.filter((val) => val === 1).length;
+
+          return countOfOnes === 1;
         },
         defaultMessage() {
-          return 'All happiness values cannot be zero.';
+          return 'Exactly one happiness value must be selected (value = 1).';
         },
       },
     });

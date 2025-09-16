@@ -69,11 +69,7 @@ jobs:
           echo "Starting application with docker-compose..."
 
           # Start services
-          docker compose up -d
-
-          # Wait for services to be ready
-          echo "Waiting for services to start..."
-          timeout 60 bash -c 'until curl -f http://localhost:4000 > /dev/null 2>&1; do sleep 10; echo "Waiting for backend..."; done'
+          docker compose -f docker-compose-dev.yml up -d
 
           # Additional wait to ensure all services are stable
           sleep 30
@@ -82,9 +78,9 @@ jobs:
 
       - name: Run E2E Tests with docker-compose
         run: |
-          # Run E2E tests inside the backend container
-          echo "Running E2E tests inside backend container..."
-          docker compose exec -T backend npm run test:e2e
+          # Install dev dependencies and run E2E tests inside the backend container
+          echo "Installing dev dependencies and running E2E tests inside backend container..."
+          docker compose exec -T backend sh -c "npm ci --ignore-scripts && npm run test:e2e"
 
       - name: Stop all services
         if: always()
@@ -93,7 +89,7 @@ jobs:
 
           # Stop docker-compose services
           echo "Stopping docker-compose services..."
-          docker compose down
+          docker compose -f docker-compose-dev.yml down
           
           # Clean up Docker
           docker system prune -f

@@ -9,7 +9,8 @@ import { Repository } from 'typeorm';
 import Papa from 'papaparse';
 import { HappinessImportResponse } from './interface/happiness-import.response';
 import { Answer, ImportHappinessDto } from './dto/create-happiness.dto';
-import { validateOrReject } from 'class-validator';
+import { validateOrReject, ValidationError } from 'class-validator';
+import { ValidationErrorUtil } from './utils/validation-error.util';
 
 const expectedHeaders = [
   'ニックネーム',
@@ -131,7 +132,7 @@ export class HappinessImportService {
   private async validateHappinessCsvRows(
     rows: HappinessCsvRow[],
   ): Promise<void> {
-    await Promise.all(
+    const validationResults = await Promise.all(
       rows.map(async (row, index) => {
         try {
           const answer = new Answer();
@@ -149,12 +150,20 @@ export class HappinessImportService {
           happiness.memo = row['メモ'];
           happiness.answers = answer;
           await validateOrReject(happiness);
+          return null;
         } catch (error) {
-          console.debug(`Validation error at row ${index + 2}: ${error}`);
-          throw error;
+          const errorMessage = ValidationErrorUtil.formatValidationError(
+            error as ValidationError,
+          );
+          return `Row ${index + 2}: ${errorMessage}`;
         }
       }),
     );
+
+    const errors = validationResults.filter((error) => error !== null);
+    if (errors.length > 0) {
+      throw errors.join('\n');
+    }
   }
 
   private toPostEntities(rows: HappinessCsvRow[]): HappinessEntity[] {
