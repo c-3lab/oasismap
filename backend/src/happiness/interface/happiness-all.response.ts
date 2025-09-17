@@ -1,6 +1,8 @@
+import { Data } from './happiness-me.response';
+
 export interface HappinessAllResponse {
   count: number;
-  map_data: { [key: string]: MapData };
+  data?: Data[]; // Optional for individual data
 }
 
 export interface MapData {

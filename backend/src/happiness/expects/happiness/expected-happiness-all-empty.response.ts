@@ -2,5 +2,5 @@ import { HappinessAllResponse } from 'src/happiness/interface/happiness-all.resp
 
 export const expectedHappinessAllEmptyResponse: HappinessAllResponse = {
   count: 0,
-  map_data: {},
+  data: [],
 };

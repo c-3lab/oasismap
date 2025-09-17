@@ -111,7 +111,6 @@ export class HappinessController {
       getHappinessAllDto.end,
       getHappinessAllDto.limit,
       getHappinessAllDto.offset,
-      getHappinessAllDto.zoomLevel,
     );
   }
 

@@ -7,6 +7,7 @@ import {
   MapData,
   MapDataItem,
 } from './interface/happiness-all.response';
+import { Data } from './interface/happiness-me.response'; // Import for individual data
 import { DateTime } from 'luxon';
 
 @Injectable()
@@ -27,7 +28,6 @@ export class HappinessAllService {
     end: string,
     limit: string,
     offset: string,
-    zoomLevel: number,
   ): Promise<HappinessAllResponse> {
     const startAsUTC = DateTime.fromISO(start).setZone('UTC').toISO();
     const endAsUTC = DateTime.fromISO(end).setZone('UTC').toISO();
@@ -38,14 +38,10 @@ export class HappinessAllService {
       limit,
       offset,
     );
-    const gridEntities = this.generateGridEntities(
-      zoomLevel,
-      happinessEntities,
-    );
 
     return {
       count: happinessEntities.length,
-      map_data: this.toHappinessAllMapData(gridEntities),
+      data: this.convertEntitiesToData(happinessEntities),
     };
   }
 
@@ -228,5 +224,39 @@ export class HappinessAllService {
       .map((entity) => entity[happinessKey].value)
       .reduce((s, value) => s + value, 0);
     return sum / entities.length;
+  }
+
+  // New method to convert entities to individual data format
+  private convertEntitiesToData(entities: HappinessEntity[]): Data[] {
+    return entities.flatMap((entity) => {
+      return HappinessAllService.keys.map((key) => ({
+        id: uuidv4(),
+        entityId: entity.id,
+        type: key,
+        location: {
+          type: entity.location.type,
+          value: {
+            type: entity.location.value.type,
+            // Convert from longitude,latitude to latitude,longitude
+            coordinates: [
+              entity.location.value.coordinates[1],
+              entity.location.value.coordinates[0],
+            ],
+          },
+        },
+        timestamp: DateTime.fromISO(entity.timestamp.value)
+          .setZone('Asia/Tokyo')
+          .toISO(),
+        memo: entity.memo?.value ?? '',
+        answers: {
+          happiness1: entity.happiness1.value,
+          happiness2: entity.happiness2.value,
+          happiness3: entity.happiness3.value,
+          happiness4: entity.happiness4.value,
+          happiness5: entity.happiness5.value,
+          happiness6: entity.happiness6.value,
+        },
+      }));
+    });
   }
 }
