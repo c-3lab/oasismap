@@ -43,5 +43,10 @@ RUN set -eux; \
     rm -f "${saved_pkgs_file}" "${current_pkgs_file}"; \
     rm -rf /var/lib/apt/lists/*; \
     \
+    # Remove vulnerable MongoDB tools to fix CVE-2025-47907
+    rm -f /usr/bin/bsondump /usr/bin/mongodump /usr/bin/mongoexport \
+          /usr/bin/mongofiles /usr/bin/mongoimport /usr/bin/mongorestore \
+          /usr/bin/mongostat /usr/bin/mongotop; \
+    \
     # Now clean up Go toolchain and temp files
     rm -rf /usr/local/go /tmp/*
