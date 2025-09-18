@@ -1,5 +1,5 @@
 # Dockerfile to fix CRITICAL vulnerabilities in gosu and system packages
-# Based on FROM postgres:17.5 but builds gosu with Go 1.22.4 and updates vulnerable packages
+# Based on FROM postgres:17.5 but builds gosu with Go 1.23.12 and updates vulnerable packages
 
 FROM postgres:17.5
 
