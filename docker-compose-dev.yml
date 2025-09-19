@@ -2,7 +2,10 @@ version: "3.8"
 
 services:
   backend:
-    image: node:22-slim
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: dev
     hostname: backend
     container_name: backend
     depends_on:
@@ -36,7 +39,10 @@ services:
       - backend-network
 
   frontend:
-    image: node:22-slim
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev
     hostname: frontend
     container_name: frontend
     working_dir: /app/frontend

@@ -16,15 +16,16 @@ COPY --chown=node:node . .
 RUN npm ci && npm run build
 USER node
 
-# 本番用ステージ
 FROM base AS production
 WORKDIR /app/backend
+
 ENV NODE_ENV=production
 COPY --chown=node:node package*.json .
 RUN npm ci --omit=dev --ignore-scripts
 COPY --chown=node:node --from=build /app/backend/dist ./dist
 
 EXPOSE 4000
+
 USER node
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD [ "node", "dist/main.js" ]
