@@ -23,9 +23,10 @@ const Login: React.FC = () => {
         {isValidBrowser ? (
           <>
             <Grid item xs={12} sx={{ p: 3, border: '1px solid' }}>
-              <Typography variant="subtitle1" align="center">
-                Googleアカウントでログイン
+              <Typography variant="subtitle1" align="center" sx={{ mb: 3 }}>
+                ログイン方法を選択してください
               </Typography>
+
               <Button
                 variant="outlined"
                 fullWidth
@@ -40,7 +41,24 @@ const Login: React.FC = () => {
                   )
                 }
               >
-                Google
+                Googleアカウントでログイン
+              </Button>
+
+              <Button
+                variant="contained"
+                fullWidth
+                sx={{ my: 2, textTransform: 'none' }}
+                onClick={() =>
+                  signIn(
+                    'basic-auth-keycloak-client',
+                    {
+                      callbackUrl: '/happiness/me',
+                    },
+                    { prompt: 'login' }
+                  )
+                }
+              >
+                その他のアカウントでログイン
               </Button>
             </Grid>
           </>

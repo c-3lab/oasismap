@@ -1,0 +1,700 @@
+{
+	"info": {
+		"_postman_id": "af47aa94-d001-45e8-bd01-f3f86c75395d",
+		"name": "Keycloak Add Roles",
+		"description": "Role assignment and service account setup for existing realm",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "32335069"
+	},
+	"item": [
+		{
+			"name": "Add admin-role",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP Status Code Check 201 Created\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"admin-role\",\r\n    \"description\": \"Administrator role for system management\",\r\n    \"composite\": false,\r\n    \"clientRole\": false\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/roles",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}",
+						"roles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add general-user-role",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP Status Code Check 201 Created\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"general-user-role\",\r\n    \"description\": \"General user role for event participants\",\r\n    \"composite\": false,\r\n    \"clientRole\": false\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/roles",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}",
+						"roles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Basic Auth Client",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let clientBaseURL = pm.variables.get(\"ClientBaseURL\") ?? \"\";\r",
+							"if (clientBaseURL == \"\") {\r",
+							"    pm.collectionVariables.set(\"CLIENT_BASE_URL\",\"\");\r",
+							"    pm.collectionVariables.set(\"WEB_ORIGIN\",\"*\");\r",
+							"} else {\r",
+							"    pm.collectionVariables.set(\"CLIENT_BASE_URL\",clientBaseURL);\r",
+							"    pm.collectionVariables.set(\"WEB_ORIGIN\",clientBaseURL);\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.unset(\"CLIENT_BASE_URL\");\r",
+							"pm.collectionVariables.unset(\"WEB_ORIGIN\");\r",
+							"\r",
+							"pm.test(\"HTTP Status Code Check 201 Created\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"clientId\": \"basic-auth-client\",\r\n    \"enabled\": true,\r\n    \"redirectUris\": [\r\n        \"{{CLIENT_BASE_URL}}/api/auth/callback/basic-auth-keycloak-client\"\r\n    ],\r\n    \"webOrigins\": [\r\n        \"{{WEB_ORIGIN}}\"\r\n    ],\r\n    \"publicClient\": false,\r\n    \"standardFlowEnabled\": true,\r\n    \"directAccessGrantsEnabled\": true,\r\n    \"frontchannelLogout\": true,\r\n    \"protocolMappers\": [\r\n        {\r\n            \"name\": \"userType\",\r\n            \"protocol\": \"openid-connect\",\r\n            \"protocolMapper\": \"oidc-hardcoded-claim-mapper\",\r\n            \"consentRequired\": false,\r\n            \"config\": {\r\n                \"introspection.token.claim\": \"true\",\r\n                \"claim.value\": \"general\",\r\n                \"userinfo.token.claim\": \"true\",\r\n                \"id.token.claim\": \"true\",\r\n                \"access.token.claim\": \"true\",\r\n                \"claim.name\": \"userType\",\r\n                \"jsonType.label\": \"String\",\r\n                \"access.tokenResponse.claim\": \"false\"\r\n            }\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/clients",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}",
+						"clients"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add User Profile Features",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.unset(\"prefecture\");\r",
+							"pm.collectionVariables.unset(\"city\");\r",
+							"pm.test(\"HTTP Status Code Check 200 OK\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"if (!pm.variables.has(\"PrefectureList\")) {\r",
+							"    console.log(\"Environment variable PrefectureList is not set, skipping this process.\");\r",
+							"    pm.execution.skipRequest();\r",
+							"}\r",
+							"let prefectureAndCities=JSON.parse(`{\"value\": ` + pm.variables.get(\"PrefectureList\").replace(/\\\\\"/g, '\"').replace(/\\n/g, '') + `}`).value[0];\r",
+							"pm.collectionVariables.set(\"prefecture\", JSON.stringify(Object.keys(prefectureAndCities)));\r",
+							"pm.collectionVariables.set(\"city\", JSON.stringify(Object.values(prefectureAndCities).flat()));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"attributes\": [\r\n    {\r\n      \"name\": \"username\",\r\n      \"displayName\": \"${username}\",\r\n      \"validations\": {\r\n        \"length\": {\r\n          \"min\": 3,\r\n          \"max\": 255\r\n        },\r\n        \"username-prohibited-characters\": {},\r\n        \"up-username-not-idn-homograph\": {}\r\n      },\r\n      \"annotations\": {},\r\n      \"permissions\": {\r\n        \"view\": [\r\n          \"admin\",\r\n          \"user\"\r\n        ],\r\n        \"edit\": [\r\n          \"admin\"\r\n        ]\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"email\",\r\n      \"displayName\": \"${email}\",\r\n      \"validations\": {\r\n        \"email\": {},\r\n        \"length\": {\r\n          \"max\": 255\r\n        }\r\n      },\r\n      \"annotations\": {},\r\n      \"required\": {\r\n        \"roles\": [\r\n          \"user\"\r\n        ]\r\n      },\r\n      \"permissions\": {\r\n        \"view\": [\r\n          \"admin\",\r\n          \"user\"\r\n        ],\r\n        \"edit\": []\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"firstName\",\r\n      \"displayName\": \"${firstName}\",\r\n      \"validations\": {\r\n        \"length\": {\r\n          \"max\": 255\r\n        },\r\n        \"person-name-prohibited-characters\": {}\r\n      },\r\n      \"annotations\": {},\r\n      \"permissions\": {\r\n        \"view\": [\r\n          \"admin\",\r\n          \"user\"\r\n        ],\r\n        \"edit\": []\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"lastName\",\r\n      \"displayName\": \"${lastName}\",\r\n      \"validations\": {\r\n        \"length\": {\r\n          \"max\": 255\r\n        },\r\n        \"person-name-prohibited-characters\": {}\r\n      },\r\n      \"annotations\": {},\r\n      \"permissions\": {\r\n        \"view\": [\r\n          \"admin\",\r\n          \"user\"\r\n        ],\r\n        \"edit\": []\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"nickname\",\r\n      \"displayName\": \"${profile.attribute.nickname}\",\r\n      \"validations\": {\r\n        \"pattern\": {\r\n          \"pattern\": \"[a-zA-Z0-9-_]+\",\r\n          \"error-message\": \"profile.error.nickname\"\r\n        }\r\n      },\r\n      \"annotations\": {},\r\n      \"required\": {\r\n        \"roles\": [\r\n          \"admin\",\r\n          \"user\"\r\n        ]\r\n      },\r\n      \"permissions\": {\r\n        \"view\": [],\r\n        \"edit\": [\r\n          \"admin\",\r\n          \"user\"\r\n        ]\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"prefecture\",\r\n      \"displayName\": \"${profile.attribute.prefecture}\",\r\n      \"validations\": {\r\n        \"options\": {\r\n          \"options\": {{prefecture}}\r\n        }\r\n      },\r\n      \"annotations\": {\r\n        \"inputType\": \"select\"\r\n      },\r\n      \"required\": {\r\n        \"roles\": [\r\n          \"user\"\r\n        ]\r\n      },\r\n      \"permissions\": {\r\n        \"view\": [],\r\n        \"edit\": [\r\n          \"user\"\r\n        ]\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"city\",\r\n      \"displayName\": \"${profile.attribute.city}\",\r\n      \"validations\": {\r\n        \"options\": {\r\n          \"options\": {{city}}\r\n        }\r\n      },\r\n      \"annotations\": {\r\n        \"inputType\": \"select\"\r\n      },\r\n      \"required\": {\r\n        \"roles\": [\r\n          \"user\"\r\n        ]\r\n      },\r\n      \"permissions\": {\r\n        \"view\": [],\r\n        \"edit\": [\r\n          \"user\"\r\n        ]\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"age\",\r\n      \"displayName\": \"${profile.attribute.age}\",\r\n      \"validations\": {\r\n        \"options\": {\r\n          \"options\": [\r\n            \"Under 10s\",\r\n            \"20s\",\r\n            \"30s\",\r\n            \"40s\",\r\n            \"50s\",\r\n            \"60s and over\",\r\n            \"Other\"\r\n          ]\r\n        }\r\n      },\r\n      \"annotations\": {\r\n        \"inputType\": \"select\"\r\n      },\r\n      \"required\": {\r\n        \"roles\": [\r\n          \"user\"\r\n        ]\r\n      },\r\n      \"permissions\": {\r\n        \"view\": [],\r\n        \"edit\": [\r\n          \"user\"\r\n        ]\r\n      }\r\n    },\r\n    {\r\n      \"name\": \"gender\",\r\n      \"displayName\": \"${profile.attribute.gender}\",\r\n      \"validations\": {\r\n        \"options\": {\r\n          \"options\": [\r\n            \"Male\",\r\n            \"Female\",\r\n            \"Other\",\r\n            \"Prefer not to answer\"\r\n          ]\r\n        }\r\n      },\r\n      \"annotations\": {\r\n        \"inputType\": \"select\"\r\n      },\r\n      \"required\": {\r\n        \"roles\": [\r\n          \"user\"\r\n        ]\r\n      },\r\n      \"permissions\": {\r\n        \"view\": [],\r\n        \"edit\": [\r\n          \"user\"\r\n        ]\r\n      }\r\n    }\r\n  ],\r\n  \"groups\": []\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/users/profile",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}",
+						"users",
+						"profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Service Account Client for Role Assignment",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Generate a random client secret if not set",
+							"if (!pm.variables.has(\"SERVICE_ACCOUNT_CLIENT_SECRET\") || !pm.variables.get(\"SERVICE_ACCOUNT_CLIENT_SECRET\")) {",
+							"    const randomSecret = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);",
+							"    pm.collectionVariables.set(\"SERVICE_ACCOUNT_CLIENT_SECRET\", randomSecret);",
+							"    console.log(\"Generated random client secret:\", randomSecret);",
+							"}",
+							"",
+							"// Get realm-management client ID for role assignment",
+							"pm.sendRequest({",
+							"    url: pm.variables.get(\"KeycloakRootURL\") + \"/admin/realms/\" + pm.variables.get(\"RealmName\") + \"/clients?clientId=realm-management\",",
+							"    method: 'GET',",
+							"    header: {",
+							"        'Authorization': \"Bearer \" + pm.variables.get(\"KeycloakAdminAccessToken\"),",
+							"    },",
+							"}, function (error, response) {",
+							"    if (!error && response.json().length > 0) {",
+							"        const realmManagementClientId = response.json()[0].id;",
+							"        pm.collectionVariables.set(\"REALM_MANAGEMENT_CLIENT_ID\", realmManagementClientId);",
+							"        console.log(\"Realm Management Client ID:\", realmManagementClientId);",
+							"    } else {",
+							"        console.error(\"Error getting realm-management client:\", error);",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP Status Code Check 201 Created\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"// Save client ID for use in application",
+							"if (pm.response.code === 201) {",
+							"    // Keycloak usually returns 201 with empty body, so we set client ID manually",
+							"    pm.collectionVariables.set(\"SERVICE_ACCOUNT_CLIENT_ID\", \"role-assignment-service\");",
+							"    console.log(\"Service Account Client ID set to: role-assignment-service\");",
+							"    console.log(\"Service Account Client Secret:\", pm.collectionVariables.get(\"SERVICE_ACCOUNT_CLIENT_SECRET\"));",
+							"    ",
+							"    // Get client UUID from Location header",
+							"    const locationHeader = pm.response.headers.get(\"Location\");",
+							"    if (locationHeader) {",
+							"        const clientUuid = locationHeader.split('/').pop();",
+							"        pm.collectionVariables.set(\"SERVICE_CLIENT_UUID\", clientUuid);",
+							"        console.log(\"Service Account Client UUID:\", clientUuid);",
+							"    }",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"clientId\": \"role-assignment-service\",\r\n    \"enabled\": true,\r\n    \"serviceAccountsEnabled\": true,\r\n    \"publicClient\": false,\r\n    \"standardFlowEnabled\": false,\r\n    \"directAccessGrantsEnabled\": true,\r\n    \"clientAuthenticatorType\": \"client-secret\",\r\n    \"secret\": \"{{SERVICE_ACCOUNT_CLIENT_SECRET}}\",\r\n    \"protocol\": \"openid-connect\",\r\n    \"attributes\": {\r\n        \"access.token.lifespan\": \"300\",\r\n        \"client.secret.creation.time\": \"{{$timestamp}}\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/clients",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}",
+						"clients"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Service Account User ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP Status Code Check 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// Save service account user ID",
+							"if (pm.response.code === 200) {",
+							"    const userInfo = pm.response.json();",
+							"    pm.collectionVariables.set(\"SERVICE_ACCOUNT_USER_ID\", userInfo.id);",
+							"    console.log(\"Service Account User ID:\", userInfo.id);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{KeycloakAdminAccessToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/clients/{{SERVICE_CLIENT_UUID}}/service-account-user",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}",
+						"clients",
+						"{{SERVICE_CLIENT_UUID}}",
+						"service-account-user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Specific Realm Management Roles",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP Status Code Check 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// Save 3 specific roles from realm-management",
+							"if (pm.response.code === 200) {",
+							"    const allRoles = pm.response.json();",
+							"    console.log(\"Available realm-management roles:\", allRoles.map(r => r.name));",
+							"    ",
+							"    // Only get 3 specific roles: manage-realm, manage-users, manage-clients",
+							"    const targetRoles = ['manage-realm', 'manage-users', 'manage-clients'];",
+							"    const selectedRoles = allRoles.filter(role => targetRoles.includes(role.name));",
+							"    ",
+							"    console.log(\"Selected roles:\", selectedRoles.map(r => r.name));",
+							"    pm.collectionVariables.set(\"SELECTED_REALM_ROLES\", JSON.stringify(selectedRoles));",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{KeycloakAdminAccessToken}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/clients/{{REALM_MANAGEMENT_CLIENT_ID}}/roles",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}",
+						"clients",
+						"{{REALM_MANAGEMENT_CLIENT_ID}}",
+						"roles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Assign 3 Specific Realm Management Roles to Service Account",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP Status Code Check 204 No Content\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							"",
+							"// Cleanup variables",
+							"pm.collectionVariables.unset(\"SERVICE_CLIENT_UUID\");",
+							"pm.collectionVariables.unset(\"SERVICE_ACCOUNT_USER_ID\");",
+							"pm.collectionVariables.unset(\"REALM_MANAGEMENT_CLIENT_ID\");",
+							"pm.collectionVariables.unset(\"SELECTED_REALM_ROLES\");",
+							"",
+							"console.log(\"✅ 3 specific realm-management roles assigned to service account successfully\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{KeycloakAdminAccessToken}}",
+						"type": "text"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{{SELECTED_REALM_ROLES}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}/users/{{SERVICE_ACCOUNT_USER_ID}}/role-mappings/clients/{{REALM_MANAGEMENT_CLIENT_ID}}",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}",
+						"users",
+						"{{SERVICE_ACCOUNT_USER_ID}}",
+						"role-mappings",
+						"clients",
+						"{{REALM_MANAGEMENT_CLIENT_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Service Account Access Token",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Check if client ID and secret exist",
+							"const clientId = pm.collectionVariables.get(\"SERVICE_ACCOUNT_CLIENT_ID\");",
+							"const clientSecret = pm.collectionVariables.get(\"SERVICE_ACCOUNT_CLIENT_SECRET\");",
+							"",
+							"if (!clientId || !clientSecret) {",
+							"    console.error(\"Missing SERVICE_ACCOUNT_CLIENT_ID or SERVICE_ACCOUNT_CLIENT_SECRET. Please run 'Service Account Client for Role Assignment' first.\");",
+							"    pm.execution.skipRequest();",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP Status Code Check 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// Save access token for use",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    pm.collectionVariables.set(\"SERVICE_ACCOUNT_ACCESS_TOKEN\", responseJson.access_token);",
+							"    console.log(\"Service Account Access Token obtained successfully\");",
+							"    console.log(\"Token expires in:\", responseJson.expires_in, \"seconds\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials",
+							"type": "text"
+						},
+						{
+							"key": "client_id",
+							"value": "{{SERVICE_ACCOUNT_CLIENT_ID}}",
+							"type": "text"
+						},
+						{
+							"key": "client_secret",
+							"value": "{{SERVICE_ACCOUNT_CLIENT_SECRET}}",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{KeycloakRootURL}}/realms/{{RealmName}}/protocol/openid-connect/token",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"realms",
+						"{{RealmName}}",
+						"protocol",
+						"openid-connect",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Test Service Account with Admin API",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"// Check if access token exists",
+							"const accessToken = pm.collectionVariables.get(\"SERVICE_ACCOUNT_ACCESS_TOKEN\");",
+							"if (!accessToken) {",
+							"    console.error(\"Missing SERVICE_ACCOUNT_ACCESS_TOKEN. Please run 'Get Service Account Access Token' first.\");",
+							"    pm.execution.skipRequest();",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"HTTP Status Code Check 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"// Check if response contains realm info",
+							"if (pm.response.code === 200) {",
+							"    const responseJson = pm.response.json();",
+							"    pm.test(\"Response contains realm information\", function () {",
+							"        pm.expect(responseJson).to.have.property('realm');",
+							"        pm.expect(responseJson.realm).to.equal(pm.variables.get(\"RealmName\"));",
+							"    });",
+							"    console.log(\"✅ Service Account has admin access to Keycloak API\");",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer {{SERVICE_ACCOUNT_ACCESS_TOKEN}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{KeycloakRootURL}}/admin/realms/{{RealmName}}",
+					"host": [
+						"{{KeycloakRootURL}}"
+					],
+					"path": [
+						"admin",
+						"realms",
+						"{{RealmName}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{KeycloakAdminAccessToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"pm.sendRequest({",
+					"    url:  pm.variables.get(\"KeycloakTokenEndpoint\"), ",
+					"    method: 'POST',",
+					"    header: {",
+					"    'Content-Type': 'application/x-www-form-urlencoded',",
+					"    },",
+					"    body: {",
+					"    mode: 'urlencoded',",
+					"    urlencoded: [",
+					"        {",
+					"            key: \"grant_type\",",
+					"            value: \"password\"",
+					"        },",
+					"        {",
+					"            key: \"client_id\",",
+					"            value: \"admin-cli\"",
+					"        },",
+					"        {",
+					"            key: \"username\",",
+					"            value: pm.variables.get(\"KeycloakAdminUser\")",
+					"        },",
+					"        {",
+					"            key: \"password\",",
+					"            value: pm.variables.get(\"KeycloakAdminPassword\")",
+					"        }",
+					"    ]",
+					"}",
+					"}, function (error, res) {",
+					"    if (!error) {",
+					"        pm.variables.set(\"KeycloakAdminAccessToken\", res.json().access_token);",
+					"    } else {",
+					"        console.error(error);",
+					"    }",
+					"});"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
