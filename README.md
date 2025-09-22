@@ -161,7 +161,27 @@ OASIS Mapでは現在の位置情報を利用します。
     /etc/newman/keycloak/postman-collection.json
     ```
 
+6. postman-add-role-collection.jsonを実行する（postman-collection.jsonの実行方法と同じ）
+
+    ```sh
+    ~/keycloak$ docker run --network oasismap_backend-network --volume $(pwd):/etc/newman/keycloak \
+    postman/newman:latest run --bail --environment /etc/newman/keycloak/variables.json \
+    --env-var "KeycloakAdminUser=$KEYCLOAK_ADMIN" \
+    --env-var "KeycloakAdminPassword=$KEYCLOAK_ADMIN_PASSWORD" \
+    /etc/newman/keycloak/postman-add-role-collection.json
+    ```
+
 ### 環境変数の準備と追加
+
+#### 環境設定:
+
+基本認証に使用:
+- `BASIC_AUTH_CLIENT_ID=basic-auth-client`
+- `BASIC_AUTH_CLIENT_SECRET`
+
+新規登録ユーザーにロールを割り当てるために使用:
+- `SERVICE_ACCOUNT_CLIENT_ID=role-assignment-service`
+- `SERVICE_ACCOUNT_CLIENT_SECRET`
 
 1. ブラウザから `http://Dockerホスト名:8080`でアクセスします。
 2. 「Administration Console」をクリック
