@@ -3,7 +3,9 @@ import dynamic from 'next/dynamic'
 import { useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Button, ButtonGroup, Grid } from '@mui/material'
+import { useSession } from 'next-auth/react'
 import { PeriodType } from '@/types/period'
+import { PROFILE_TYPE } from '@/libs/constants'
 const Map = dynamic(() => import('@/components/map/map'), { ssr: false })
 import {
   DateTimeTextbox,
@@ -45,6 +47,7 @@ const HappinessViewer = ({
   const searchParams = useSearchParams()
   const timestamp = searchParams.get('timestamp')
   const { startProps, endProps } = useDateTimeProps(period, timestamp)
+  const { data: session } = useSession()
 
   const handleSearch = async () => {
     const startDateTime = startProps.value
@@ -74,7 +77,15 @@ const HappinessViewer = ({
   }, [])
 
   return (
-    <Grid container sx={{ paddingBottom: { xs: '50px', md: '0px' } }}>
+    <Grid
+      container
+      sx={{
+        paddingBottom: {
+          xs: session?.user?.type === PROFILE_TYPE.GENERAL ? '50px' : '0px',
+          md: '0px',
+        },
+      }}
+    >
       <Grid
         container
         item
@@ -99,7 +110,6 @@ const HappinessViewer = ({
         />
       </Grid>
       <Grid
-        container
         item
         xs={12}
         md={6}
@@ -175,27 +185,29 @@ const HappinessViewer = ({
               </Button>
             </Grid>
           </Grid>
-          <Grid
-            item
-            md={12}
-            lg={8}
-            sx={{
-              position: { xs: 'fixed', md: 'static' },
-              bottom: { xs: '10px', md: 'auto' },
-              left: { xs: '10px', md: 'auto' },
-              right: { xs: '10px', md: 'auto' },
-            }}
-          >
-            <Button
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-              onClick={() => router.push('/happiness/input')}
+          {session?.user?.type === PROFILE_TYPE.GENERAL && (
+            <Grid
+              item
+              md={12}
+              lg={8}
+              sx={{
+                position: { xs: 'fixed', md: 'static' },
+                bottom: { xs: '10px', md: 'auto' },
+                left: { xs: '10px', md: 'auto' },
+                right: { xs: '10px', md: 'auto' },
+              }}
             >
-              幸福度を入力
-            </Button>
-          </Grid>
+              <Button
+                variant="contained"
+                color="primary"
+                size="large"
+                fullWidth
+                onClick={() => router.push('/happiness/input')}
+              >
+                幸福度を入力
+              </Button>
+            </Grid>
+          )}
         </Grid>
       </Grid>
     </Grid>
