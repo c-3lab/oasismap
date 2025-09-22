@@ -128,8 +128,11 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
       }
 
       if (timestamp && Object.keys(entityByEntityId).length === 0) {
+        const dateTime = DateTime.fromISO(timestamp)
+        const formattedDate = dateTime.toFormat('yyyy/MM/dd')
+
         noticeMessageContext.showMessage(
-          'のデータを表示しました',
+          formattedDate + ' ' + 'のデータを表示しました',
           MessageType.Success
         )
       }
