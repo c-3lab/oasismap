@@ -37,7 +37,12 @@ WORKDIR /app/frontend
 
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y tzdata tini curl && \
-    rm -rf /var/lib/apt/lists/*
+    # Remove vulnerable packages that are not needed for Next.js frontend
+    apt-get remove -y libldap-2.5-0 libldap-common && \
+    # Clean up unnecessary packages and cache
+    apt-get autoremove -y && \
+    apt-get autoclean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ENV NODE_ENV=production
 
