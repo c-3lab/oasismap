@@ -509,6 +509,7 @@ const Map: React.FC<Props> = ({
               border: '1px solid #ccc',
               borderRadius: 100,
               boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
+              marginBottom: '50px',
             }}
             onClick={() => {
               if (currentPosition) {

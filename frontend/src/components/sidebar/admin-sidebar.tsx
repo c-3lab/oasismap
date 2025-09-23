@@ -5,7 +5,7 @@ import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
 import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ListItem from '@mui/material/ListItem'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
@@ -53,17 +53,13 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
   }
 
   return (
-    <Drawer
-      anchor="right"
-      open={props.isOpen}
-      onClose={props.handleDrawerClose}
-    >
+    <Drawer anchor="left" open={props.isOpen} onClose={props.handleDrawerClose}>
       <Box sx={{ width: '240px' }}>
         <IconButton
           onClick={props.handleDrawerClose}
           sx={{ p: { xs: '16px', sm: '20px' } }}
         >
-          <ChevronRightIcon />
+          <ChevronLeftIcon />
         </IconButton>
         <Divider />
         <List>
