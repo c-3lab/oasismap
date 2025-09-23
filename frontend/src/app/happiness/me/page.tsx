@@ -1,17 +1,14 @@
 'use client'
 import dynamic from 'next/dynamic'
-import { useState, useEffect, useContext, useRef } from 'react'
+import { useState, useEffect, useContext, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { Button, ButtonGroup, Grid } from '@mui/material'
+import { Button, Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { MessageType } from '@/types/message-type'
 const Map = dynamic(() => import('@/components/map/map'), { ssr: false })
 import { GetPin } from '@/components/utils/pin'
-import {
-  DateTimeTextbox,
-  useDateTimeProps,
-} from '@/components/fields/date-time-textbox'
+import { useDateTimeProps } from '@/components/fields/date-time-textbox'
 import { EntityByEntityId } from '@/types/entityByEntityId'
 import { Data } from '@/types/happiness-me-response'
 
@@ -19,10 +16,13 @@ import { messageContext } from '@/contexts/message-context'
 import { ERROR_TYPE } from '@/libs/constants'
 import { useFetchData } from '@/libs/fetch'
 import { toDateTime } from '@/libs/date-converter'
+import { DateTime as OasismapDateTime } from '@/types/datetime'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 
 import { Pin } from '@/types/pin'
 import { LoadingContext } from '@/contexts/loading-context'
+import { useSearchContext } from '@/contexts/search-context'
+import { DateTimeProps } from '@/types/search-context'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -39,13 +39,11 @@ const HappinessMe: React.FC = () => {
   const searchParams = useSearchParams()
   const searchEntityId = searchParams.get('entityId')
   const timestamp = searchParams.get('timestamp')
-  const { startProps, endProps, updatedPeriod } = useDateTimeProps(
-    period,
-    timestamp
-  )
+  const { startProps, endProps } = useDateTimeProps(period, timestamp)
   const { update } = useSession()
   const { isLoading, setIsLoading } = useContext(LoadingContext)
   const { fetchData } = useFetchData()
+  const { setOnSearch, setIsLoading: setContextIsLoading } = useSearchContext()
 
   const [initialEntityId, setInitialEntityId] = useState<
     string | null | undefined
@@ -55,98 +53,120 @@ const HappinessMe: React.FC = () => {
     setInitialEntityId(searchEntityId)
   }
 
-  const getData = async () => {
-    try {
-      setIsLoading(true)
-      willStop.current = false
-      setPinData([])
+  const getData = useCallback(
+    async (opts?: {
+      startValue?: OasismapDateTime
+      endValue?: OasismapDateTime
+    }) => {
+      try {
+        setIsLoading(true)
+        willStop.current = false
+        setPinData([])
 
-      setEntityByEntityId({})
+        setEntityByEntityId({})
 
-      const url = backendUrl + '/api/happiness/me'
-      const startDateTime = toDateTime(startProps.value).toISO()
-      const endDateTime = toDateTime(endProps.value).endOf('minute').toISO()
-      // 日付の変換に失敗した場合
-      if (!startDateTime || !endDateTime) {
-        console.error('Date conversion failed.')
-        return
-      }
+        const url = backendUrl + '/api/happiness/me'
+        const startValue = opts?.startValue ?? startProps.value
+        const endValue = opts?.endValue ?? endProps.value
+        const startDateTime = toDateTime(startValue).toISO()
+        const endDateTime = toDateTime(endValue).endOf('minute').toISO()
+        // 日付の変換に失敗した場合
+        if (!startDateTime || !endDateTime) {
+          console.error('Date conversion failed.')
+          return
+        }
 
-      const limit = 1000
-      let offset = 0
-      while (!willStop.current) {
-        // アクセストークンを再取得
-        const updatedSession = await update()
+        const limit = 1000
+        let offset = 0
+        while (!willStop.current) {
+          // アクセストークンを再取得
+          const updatedSession = await update()
 
-        const data = await fetchData(
-          url,
-          {
-            start: startDateTime,
-            end: endDateTime,
-            limit: limit,
-            offset: offset,
-          },
-          updatedSession?.user?.accessToken!
-        )
+          const data = await fetchData(
+            url,
+            {
+              start: startDateTime,
+              end: endDateTime,
+              limit: limit,
+              offset: offset,
+            },
+            updatedSession?.user?.accessToken!
+          )
 
-        if (data['count'] === 0 || data['data'].length === 0) {
+          if (data['count'] === 0 || data['data'].length === 0) {
+            break
+          }
+
+          try {
+            const newPins = GetPin(data['data'])
+            setPinData((prevPinData: Pin[]) => [...prevPinData, ...newPins])
+          } catch (error) {
+            console.error('Error in GetPin or setPinData:', error)
+          }
+
+          if (
+            initialEntityId &&
+            timestamp &&
+            Object.keys(entityByEntityId).length === 0
+          ) {
+            setEntityByEntityId((prevEntityByEntityId: EntityByEntityId) => {
+              const nextEntityByEntityId = { ...prevEntityByEntityId }
+              data['data'].forEach((entity: Data) => {
+                if (entity.answers[entity.type] === 0) return
+                nextEntityByEntityId[entity['entityId']] = entity
+              })
+              return nextEntityByEntityId
+            })
+          }
+
+          offset += data['data'].length
+
           break
         }
 
-        try {
-          const newPins = GetPin(data['data'])
-          setPinData((prevPinData: Pin[]) => [...prevPinData, ...newPins])
-        } catch (error) {
-          console.error('Error in GetPin or setPinData:', error)
+        if (timestamp && Object.keys(entityByEntityId).length === 0) {
+          noticeMessageContext.showMessage(
+            startProps.value.date.replace(/-/g, '/') +
+              ' ' +
+              'のデータを表示しました',
+            MessageType.Success
+          )
         }
-
+      } catch (error) {
+        console.error('Error fetching data:', error)
         if (
-          initialEntityId &&
-          timestamp &&
-          Object.keys(entityByEntityId).length === 0
+          error instanceof Error &&
+          error.message === ERROR_TYPE.UNAUTHORIZED
         ) {
-          setEntityByEntityId((prevEntityByEntityId: EntityByEntityId) => {
-            const nextEntityByEntityId = { ...prevEntityByEntityId }
-            data['data'].forEach((entity: Data) => {
-              if (entity.answers[entity.type] === 0) return
-              nextEntityByEntityId[entity['entityId']] = entity
-            })
-            return nextEntityByEntityId
-          })
+          noticeMessageContext.showMessage(
+            '再ログインしてください',
+            MessageType.Error
+          )
+          signOut({ redirect: false })
+          router.push('/login')
+        } else {
+          noticeMessageContext.showMessage(
+            '幸福度の検索に失敗しました',
+            MessageType.Error
+          )
         }
-
-        offset += data['data'].length
-
-        break
+      } finally {
+        setIsLoading(false)
       }
-
-      if (timestamp && Object.keys(entityByEntityId).length === 0) {
-        noticeMessageContext.showMessage(
-          startProps.value.date.replace(/-/g, '/') +
-            ' ' +
-            'のデータを表示しました',
-          MessageType.Success
-        )
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error)
-      if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
-        noticeMessageContext.showMessage(
-          '再ログインしてください',
-          MessageType.Error
-        )
-        signOut({ redirect: false })
-        router.push('/login')
-      } else {
-        noticeMessageContext.showMessage(
-          '幸福度の検索に失敗しました',
-          MessageType.Error
-        )
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    },
+    [
+      startProps.value,
+      endProps.value,
+      fetchData,
+      update,
+      noticeMessageContext,
+      router,
+      setIsLoading,
+      initialEntityId,
+      timestamp,
+      entityByEntityId,
+    ]
+  )
 
   useEffect(() => {
     isMounted.current = true
@@ -164,7 +184,7 @@ const HappinessMe: React.FC = () => {
       willStop.current = true
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isTokenFetched, updatedPeriod])
+  }, [isTokenFetched])
 
   useEffect(() => {
     if (initialEntityId && entityByEntityId) {
@@ -172,15 +192,48 @@ const HappinessMe: React.FC = () => {
     }
   }, [initialEntityId, entityByEntityId])
 
+  const handleSearch = useCallback(
+    async (
+      searchPeriod: PeriodType,
+      searchStartProps: DateTimeProps,
+      searchEndProps: DateTimeProps
+    ) => {
+      try {
+        setPeriod(searchPeriod)
+        const nextStart = searchStartProps?.value ?? startProps.value
+        const nextEnd = searchEndProps?.value ?? endProps.value
+
+        if (searchStartProps?.value) {
+          startProps.setValue(searchStartProps.value)
+        }
+        if (searchEndProps?.value) {
+          endProps.setValue(searchEndProps.value)
+        }
+
+        await getData({ startValue: nextStart, endValue: nextEnd })
+      } catch (error) {
+        console.error('Error in handleSearch:', error)
+        noticeMessageContext.showMessage(
+          '検索中にエラーが発生しました',
+          MessageType.Error
+        )
+      }
+    },
+    [startProps, endProps, getData, noticeMessageContext]
+  )
+
+  useEffect(() => {
+    setOnSearch(handleSearch)
+    return () => setOnSearch(null)
+  }, [handleSearch, setOnSearch])
+
+  useEffect(() => {
+    setContextIsLoading(isLoading)
+  }, [isLoading, setContextIsLoading])
+
   return (
-    <Grid container sx={{ paddingBottom: { xs: '50px', md: '0px' } }}>
-      <Grid
-        container
-        item
-        xs={12}
-        md={6}
-        sx={{ height: { xs: '50vh', md: 'calc(100vh - 64px)' } }}
-      >
+    <Grid container sx={{ height: 'calc(100vh - 64px)' }}>
+      <Grid container item xs={12} sx={{ height: '100%' }}>
         <Map
           pointEntities={[]}
           surfaceEntities={[]}
@@ -199,107 +252,23 @@ const HappinessMe: React.FC = () => {
       <Grid
         item
         xs={12}
-        md={6}
-        rowSpacing={4}
-        columnSpacing={1}
-        justifyContent={'center'}
-        sx={{ px: { md: '16px' }, my: { xs: '32px', md: 0 } }}
+        sx={{
+          position: 'fixed',
+          bottom: '10px',
+          left: '10px',
+          right: '10px',
+          zIndex: 1000,
+        }}
       >
-        <Grid
-          container
-          justifyContent="center"
-          rowSpacing={4}
-          columnSpacing={1}
-          sx={{ px: { xs: '16px', md: 0 }, my: { xs: '0px' } }}
+        <Button
+          variant="contained"
+          color="primary"
+          size="large"
+          fullWidth
+          onClick={() => router.push('/happiness/input?referral=me')}
         >
-          <Grid item xs={12} md={12} lg={8}>
-            <ButtonGroup size="large" aria-label="large button group" fullWidth>
-              <Button
-                key="month"
-                variant={period === PeriodType.Month ? 'contained' : 'outlined'}
-                onClick={() => {
-                  setPeriod(PeriodType.Month)
-                }}
-                disabled={isLoading}
-              >
-                月
-              </Button>
-              <Button
-                key="day"
-                variant={period === PeriodType.Day ? 'contained' : 'outlined'}
-                onClick={() => {
-                  setPeriod(PeriodType.Day)
-                }}
-                disabled={isLoading}
-              >
-                日
-              </Button>
-              <Button
-                key="time"
-                variant={period === PeriodType.Time ? 'contained' : 'outlined'}
-                onClick={() => {
-                  setPeriod(PeriodType.Time)
-                }}
-                disabled={isLoading}
-              >
-                時間
-              </Button>
-            </ButtonGroup>
-          </Grid>
-          <Grid item xs={12} md={12} lg={8}>
-            <DateTimeTextbox
-              dateLabel="開始日"
-              timeLabel="時間"
-              period={period}
-              disabled={isLoading}
-              {...startProps}
-            />
-          </Grid>
-          <Grid item xs={12} md={12} lg={8}>
-            <DateTimeTextbox
-              dateLabel="終了日"
-              timeLabel="時間"
-              period={period}
-              disabled={isLoading}
-              {...endProps}
-            />
-          </Grid>
-          <Grid container item xs={12} md={12} lg={8} columnSpacing={1}>
-            <Grid item xs={8} md={8} />
-            <Grid item xs={4} md={4}>
-              <Button
-                variant="outlined"
-                fullWidth
-                sx={{ borderColor: 'primary.light' }}
-                onClick={getData}
-                disabled={isLoading}
-              >
-                検索
-              </Button>
-            </Grid>
-          </Grid>
-          <Grid
-            item
-            md={12}
-            lg={8}
-            sx={{
-              position: { xs: 'fixed', md: 'static' },
-              bottom: { xs: '10px', md: 'auto' },
-              left: { xs: '10px', md: 'auto' },
-              right: { xs: '10px', md: 'auto' },
-            }}
-          >
-            <Button
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-              onClick={() => router.push('/happiness/input?referral=me')}
-            >
-              幸福度を入力
-            </Button>
-          </Grid>
-        </Grid>
+          幸福度を入力
+        </Button>
       </Grid>
     </Grid>
   )
