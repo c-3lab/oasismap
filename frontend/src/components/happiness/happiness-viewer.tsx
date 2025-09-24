@@ -12,7 +12,6 @@ import {
   useDateTimeProps,
 } from '@/components/fields/date-time-textbox'
 import { DateTime as OasismapDateTime } from '@/types/datetime'
-import { HighlightTarget } from '@/types/highlight-target'
 import { Pin } from '@/types/pin'
 import { Data } from '@/types/happiness-me-response'
 
@@ -20,7 +19,6 @@ type HappinessViewerProps = {
   pinData: Pin[]
   isLoading: boolean
   period: PeriodType
-  highlightTarget: HighlightTarget
   targetEntity: Data | undefined
   type: 'me' | 'all'
   onSearch: (
@@ -28,19 +26,16 @@ type HappinessViewerProps = {
     endDateTime: OasismapDateTime
   ) => Promise<void>
   onPeriodChange: (period: PeriodType) => void
-  onHighlightChange: (highlightTarget: HighlightTarget) => void
 }
 
 const HappinessViewer = ({
   pinData,
   isLoading,
   period,
-  highlightTarget,
   targetEntity,
   type,
   onSearch,
   onPeriodChange,
-  onHighlightChange,
 }: HappinessViewerProps) => {
   const router = useRouter()
   const isMounted = useRef(false)
@@ -57,16 +52,6 @@ const HappinessViewer = ({
 
   const handlePeriodChange = (newPeriod: PeriodType) => {
     onPeriodChange(newPeriod)
-  }
-
-  const handleHighlightChange = (
-    newHighlightTarget: React.SetStateAction<HighlightTarget>
-  ) => {
-    const target =
-      typeof newHighlightTarget === 'function'
-        ? newHighlightTarget(highlightTarget)
-        : newHighlightTarget
-    onHighlightChange(target)
   }
 
   useEffect(() => {
@@ -104,8 +89,6 @@ const HappinessViewer = ({
             isMounted.current && router.replace(`/happiness/${type}`)
           }}
           period={period}
-          _highlightTarget={highlightTarget}
-          setHighlightTarget={handleHighlightChange}
         />
       </Grid>
       <Grid

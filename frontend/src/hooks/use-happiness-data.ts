@@ -11,7 +11,6 @@ import { useFetchData } from '@/libs/fetch'
 import { DateTime } from 'luxon'
 import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
-import { HighlightTarget } from '@/types/highlight-target'
 import { Pin } from '@/types/pin'
 import { LoadingContext } from '@/contexts/loading-context'
 import { EntityByEntityId } from '@/types/entityByEntityId'
@@ -41,10 +40,6 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
   const { fetchData } = useFetchData()
   const [targetEntity, setTargetEntity] = useState<Data | undefined>(undefined)
 
-  const [highlightTarget, setHighlightTarget] = useState<HighlightTarget>({
-    lastUpdateBy: 'init',
-    xAxisValue: null,
-  })
   const [initialEntityId, setInitialEntityId] = useState<
     string | null | undefined
   >(undefined)
@@ -59,7 +54,6 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
       willStop.current = false
       setPinData([])
       setEntityByEntityId({})
-      setHighlightTarget({ lastUpdateBy: 'init', xAxisValue: null })
 
       const url =
         backendUrl +
@@ -177,10 +171,6 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
     // Optionally trigger data refetch with new period
   }
 
-  const handleHighlightChange = (newHighlightTarget: HighlightTarget) => {
-    setHighlightTarget(newHighlightTarget)
-  }
-
   useEffect(() => {
     isMounted.current = true
     return () => {
@@ -218,14 +208,12 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
     entityByEntityId,
     isLoading,
     period,
-    highlightTarget,
     initialEntityId,
     targetEntity,
 
     // Actions
     handleSearch,
     handlePeriodChange,
-    handleHighlightChange,
 
     // Utils
     isMounted,

@@ -12,11 +12,9 @@ const HappinessMe: React.FC = () => {
     pinData,
     isLoading,
     period,
-    highlightTarget,
     targetEntity,
     handleSearch,
     handlePeriodChange,
-    handleHighlightChange,
   } = useHappinessData({ type: 'me' })
 
   return (
@@ -24,11 +22,9 @@ const HappinessMe: React.FC = () => {
       pinData={pinData}
       isLoading={isLoading}
       period={period}
-      highlightTarget={highlightTarget}
       targetEntity={targetEntity}
       onSearch={handleSearch}
       onPeriodChange={handlePeriodChange}
-      onHighlightChange={handleHighlightChange}
       type="me"
     />
   )

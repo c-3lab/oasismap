@@ -34,7 +34,6 @@ import { Pin } from '@/types/pin'
 import { HAPPINESS_KEYS, PROFILE_TYPE } from '@/libs/constants'
 import { MePopup } from './mePopup'
 import { MessageType } from '@/types/message-type'
-import { HighlightTarget } from '@/types/highlight-target'
 import { HappinessKey } from '@/types/happiness-key'
 import { PeriodType } from '@/types/period'
 import { HappinessFields } from '@/types/happiness-set'
@@ -73,8 +72,6 @@ type Props = {
   pinData: Pin[]
   targetEntity?: Data
   onPopupClose?: () => void
-  _highlightTarget?: HighlightTarget
-  setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
   period?: PeriodType
 }
 
@@ -156,14 +153,12 @@ const createClusterIcon = ({
 const HybridClusterGroup = ({
   pinData,
   setSelectedPin,
-  setHighlightTarget,
   period,
   session,
   targetEntity,
 }: {
   pinData: Pin[]
   setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
-  setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
   period?: PeriodType
   session: any
   targetEntity?: Data
@@ -384,7 +379,6 @@ const HybridClusterGroup = ({
   }, [
     map,
     pinData,
-    setHighlightTarget,
     period,
     setSelectedPin,
     createHappinessClusters,
@@ -432,8 +426,6 @@ const HybridClusterGroup = ({
 
 const Map: React.FC<Props> = ({
   pinData,
-  _highlightTarget,
-  setHighlightTarget,
   period,
   targetEntity,
   onPopupClose,
@@ -579,7 +571,6 @@ const Map: React.FC<Props> = ({
         <HybridClusterGroup
           pinData={pinData}
           setSelectedPin={setSelectedPin}
-          setHighlightTarget={setHighlightTarget}
           period={period}
           session={session}
           targetEntity={targetEntity}
