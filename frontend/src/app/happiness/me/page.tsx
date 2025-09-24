@@ -232,7 +232,10 @@ const HappinessMe: React.FC = () => {
   }, [isLoading, setContextIsLoading])
 
   return (
-    <Grid container sx={{ height: 'calc(100vh - 64px)' }}>
+    <Grid
+      container
+      sx={{ height: { xs: 'calc(100vh - 56px)', sm: 'calc(100vh - 64px)' } }}
+    >
       <Grid container item xs={12} sx={{ height: '100%' }}>
         <Map
           pointEntities={[]}
