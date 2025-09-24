@@ -91,67 +91,6 @@ describe('HappinessMeService', () => {
     });
   });
 
-  describe('findAllHappiness', () => {
-    it('should return all happiness entities from API', async () => {
-      const spy = mockedAxios.get.mockResolvedValue(mockHappinessMeEntities);
-
-      const start = '2024-01-01T14:30:00+09:00';
-      const end = '2024-03-31T23:59:59+09:00';
-      const limit = '100';
-      const offset = '200';
-
-      const result = await happinessMeService.findAllHappiness(
-        start,
-        end,
-        limit,
-        offset,
-      );
-
-      expect(spy).toHaveBeenCalledWith(`${process.env.ORION_URI}/v2/entities`, {
-        headers: {
-          'Fiware-Service': process.env.ORION_FIWARE_SERVICE,
-          'Fiware-ServicePath': process.env.ORION_FIWARE_SERVICE_PATH,
-        },
-        params: {
-          q: 'timestamp>=2024-01-01T05:30:00.000Z;timestamp<=2024-03-31T14:59:59.000Z',
-          limit: '100',
-          offset: '200',
-          orderBy: '!timestamp',
-        },
-      });
-      expect(result).toEqual(expectedHappinessMeResponse);
-    });
-
-    it('should handle empty results', async () => {
-      const emptyMock = { data: [] };
-      const spy = mockedAxios.get.mockResolvedValue(emptyMock);
-
-      const result = await happinessMeService.findAllHappiness(
-        '2024-01-01T14:30:00+09:00',
-        '2024-03-31T23:59:59+09:00',
-        '100',
-        '200',
-      );
-
-      expect(spy).toHaveBeenCalledWith(`${process.env.ORION_URI}/v2/entities`, {
-        headers: {
-          'Fiware-Service': process.env.ORION_FIWARE_SERVICE,
-          'Fiware-ServicePath': process.env.ORION_FIWARE_SERVICE_PATH,
-        },
-        params: {
-          q: 'timestamp>=2024-01-01T05:30:00.000Z;timestamp<=2024-03-31T14:59:59.000Z',
-          limit: '100',
-          offset: '200',
-          orderBy: '!timestamp',
-        },
-      });
-      expect(result).toEqual({
-        count: 0,
-        data: [],
-      });
-    });
-  });
-
   describe('getHappinessEntities', () => {
     it('should call axios with correct parameters', async () => {
       const spy = mockedAxios.get.mockResolvedValue({ data: [] });
@@ -284,20 +223,6 @@ describe('HappinessMeService', () => {
       await expect(
         happinessMeService.findHappinessMe(
           requestUserAttributes,
-          '2024-01-01T14:30:00+09:00',
-          '2024-03-31T23:59:59+09:00',
-          '100',
-          '200',
-        ),
-      ).rejects.toThrow('Network error');
-    });
-
-    it('should handle axios errors in findAllHappiness', async () => {
-      const error = new Error('Network error');
-      mockedAxios.get.mockRejectedValue(error);
-
-      await expect(
-        happinessMeService.findAllHappiness(
           '2024-01-01T14:30:00+09:00',
           '2024-03-31T23:59:59+09:00',
           '100',
