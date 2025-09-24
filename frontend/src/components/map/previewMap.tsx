@@ -38,10 +38,10 @@ const PreviewMap: React.FC<Props> = ({ latitude, longitude, answer }) => {
       number,
     ][]) {
       if (value === 1) {
-        return getIconByType(key, value, true)
+        return getIconByType(key)
       }
     }
-    return getIconByType('happiness1', 1, true)
+    return getIconByType('happiness1')
   }
 
   return (

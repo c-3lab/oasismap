@@ -11,11 +11,7 @@ const happinessIcons: { [key in HappinessKey]: string } = {
   happiness6: '/happy6.svg',
 }
 
-export const getIconByType = (
-  type: HappinessKey,
-  answer: number,
-  isActive: boolean
-) => {
+export const getIconByType = (type: HappinessKey) => {
   const svgUrl = happinessIcons[type] || '/happy1.svg'
 
   return new L.Icon({
@@ -23,6 +19,5 @@ export const getIconByType = (
     iconSize: [50, 50],
     iconAnchor: [25, 50],
     popupAnchor: [0, -50],
-    className: isActive ? 'active-pin' : 'inactive-pin',
   })
 }

@@ -337,7 +337,7 @@ const HybridClusterGroup = ({
       // Add marker to color cluster based on pin type
       if (happinessClustersRef.current[pin.type]) {
         const marker = L.marker([pin.latitude, pin.longitude], {
-          icon: getIconByType(pin.type, pin.answer, true),
+          icon: getIconByType(pin.type),
         })
 
         // Add event handler
@@ -349,7 +349,7 @@ const HybridClusterGroup = ({
       // Add marker to super cluster (copy)
       if (superClusterRef.current) {
         const superMarker = L.marker([pin.latitude, pin.longitude], {
-          icon: getIconByType(pin.type, pin.answer, true),
+          icon: getIconByType(pin.type),
         })
 
         // Add event handler for super marker
