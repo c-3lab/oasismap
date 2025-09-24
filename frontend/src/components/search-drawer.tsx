@@ -8,10 +8,7 @@ import {
   Button,
   ButtonGroup,
   Divider,
-  useMediaQuery,
-  useTheme,
 } from '@mui/material'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ChevronDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { PeriodType } from '@/types/period'
 import { DateTimeProps } from '@/types/search-context'
@@ -39,8 +36,6 @@ const SearchDrawer: React.FC<SearchDrawerProps> = ({
 }) => {
   const [period, setPeriod] = useState(PeriodType.Month)
   const { startProps, endProps } = useDateTimeProps(period)
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
 
   const handleSearch = async () => {
     onSearch(period, startProps, endProps)
@@ -49,23 +44,11 @@ const SearchDrawer: React.FC<SearchDrawerProps> = ({
   }
 
   return (
-    <Drawer
-      anchor={isMobile ? 'bottom' : 'right'}
-      open={isOpen}
-      onClose={onClose}
-      sx={{
-        '& .MuiDrawer-paper': isMobile
-          ? {}
-          : {
-              width: '400px',
-              maxWidth: '400px',
-            },
-      }}
-    >
+    <Drawer anchor={'bottom'} open={isOpen} onClose={onClose}>
       <Box sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <IconButton onClick={onClose} sx={{ mr: 1 }}>
-            {isMobile ? <ChevronDownIcon /> : <ChevronRightIcon />}
+            <ChevronDownIcon />
           </IconButton>
           <Typography variant="h6" component="div">
             検索条件
