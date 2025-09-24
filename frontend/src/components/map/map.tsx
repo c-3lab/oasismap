@@ -23,7 +23,6 @@ import 'leaflet.markercluster'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { getIconByType } from '../utils/icon'
-import { IconType } from '@/types/icon-type'
 import { messageContext } from '@/contexts/message-context'
 
 import { IconButton } from '@mui/material'
@@ -34,12 +33,10 @@ import { MeModal } from '../happiness/me-modal'
 import { Pin } from '@/types/pin'
 import { HAPPINESS_KEYS, PROFILE_TYPE } from '@/libs/constants'
 import { MePopup } from './mePopup'
-import { AllPopup } from './allPopup'
 import { MessageType } from '@/types/message-type'
 import { HighlightTarget } from '@/types/highlight-target'
 import { HappinessKey } from '@/types/happiness-key'
 import { PeriodType } from '@/types/period'
-import { AllModal } from '../happiness/all-modal'
 import { HappinessFields } from '@/types/happiness-set'
 import { Data } from '@/types/happiness-me-response'
 
@@ -73,7 +70,6 @@ type Props = {
     tenant: string
     servicePath: string
   }
-  iconType: IconType
   pinData: Pin[]
   targetEntity?: Data
   onPopupClose?: () => void
@@ -158,7 +154,6 @@ const createClusterIcon = ({
 }
 
 const HybridClusterGroup = ({
-  iconType,
   pinData,
   setSelectedPin,
   setHighlightTarget,
@@ -166,7 +161,6 @@ const HybridClusterGroup = ({
   session,
   targetEntity,
 }: {
-  iconType: IconType
   pinData: Pin[]
   setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
@@ -343,7 +337,7 @@ const HybridClusterGroup = ({
       // Add marker to color cluster based on pin type
       if (happinessClustersRef.current[pin.type]) {
         const marker = L.marker([pin.latitude, pin.longitude], {
-          icon: getIconByType(iconType, pin.type, pin.answer, true),
+          icon: getIconByType(pin.type, pin.answer, true),
         })
 
         // Add event handler
@@ -355,7 +349,7 @@ const HybridClusterGroup = ({
       // Add marker to super cluster (copy)
       if (superClusterRef.current) {
         const superMarker = L.marker([pin.latitude, pin.longitude], {
-          icon: getIconByType(iconType, pin.type, pin.answer, true),
+          icon: getIconByType(pin.type, pin.answer, true),
         })
 
         // Add event handler for super marker
@@ -390,7 +384,6 @@ const HybridClusterGroup = ({
   }, [
     map,
     pinData,
-    iconType,
     setHighlightTarget,
     period,
     setSelectedPin,
@@ -430,11 +423,7 @@ const HybridClusterGroup = ({
             },
           }}
         >
-          {iconType === 'pin' ? (
-            <MePopup pin={popupPin} setSelectedPin={setSelectedPin} />
-          ) : (
-            <AllPopup pin={popupPin} setSelectedPin={setSelectedPin} />
-          )}
+          <MePopup pin={popupPin} setSelectedPin={setSelectedPin} />
         </Popup>
       )}
     </>
@@ -442,7 +431,6 @@ const HybridClusterGroup = ({
 }
 
 const Map: React.FC<Props> = ({
-  iconType,
   pinData,
   _highlightTarget,
   setHighlightTarget,
@@ -589,7 +577,6 @@ const Map: React.FC<Props> = ({
           minZoom={5}
         />
         <HybridClusterGroup
-          iconType={iconType}
           pinData={pinData}
           setSelectedPin={setSelectedPin}
           setHighlightTarget={setHighlightTarget}
@@ -602,11 +589,7 @@ const Map: React.FC<Props> = ({
           <Marker position={currentPosition} icon={currentPositionIcon} />
         )}
       </MapContainer>
-      {iconType === 'pin' ? (
-        <MeModal data={selectedPin} onClose={() => setSelectedPin(null)} />
-      ) : (
-        <AllModal data={selectedPin} onClose={() => setSelectedPin(null)} />
-      )}
+      <MeModal data={selectedPin} onClose={() => setSelectedPin(null)} />
     </>
   )
 }

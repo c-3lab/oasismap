@@ -97,7 +97,6 @@ const HappinessViewer = ({
           pointEntities={[]}
           surfaceEntities={[]}
           fiware={{ servicePath: '', tenant: '' }}
-          iconType="pin"
           pinData={pinData}
           targetEntity={targetEntity}
           onPopupClose={() => {
