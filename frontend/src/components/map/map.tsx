@@ -63,12 +63,6 @@ const maxBounds = new LatLngBounds(new LatLng(-90, -180), new LatLng(90, 180))
 const maxBoundsViscosity = 1.0
 
 type Props = {
-  pointEntities: any[]
-  surfaceEntities: any[]
-  fiware: {
-    tenant: string
-    servicePath: string
-  }
   pinData: Pin[]
   targetEntity?: Data
   onPopupClose?: () => void

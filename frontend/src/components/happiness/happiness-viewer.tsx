@@ -79,9 +79,6 @@ const HappinessViewer = ({
         sx={{ height: { xs: '50vh', md: 'calc(100vh - 64px)' } }}
       >
         <Map
-          pointEntities={[]}
-          surfaceEntities={[]}
-          fiware={{ servicePath: '', tenant: '' }}
           pinData={pinData}
           targetEntity={targetEntity}
           onPopupClose={() => {
