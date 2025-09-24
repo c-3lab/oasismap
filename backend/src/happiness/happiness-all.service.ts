@@ -2,11 +2,7 @@ import axios from 'axios';
 import { HappinessEntity } from './interface/happiness-entity';
 import { v4 as uuidv4 } from 'uuid';
 import { Injectable } from '@nestjs/common';
-import {
-  HappinessAllResponse,
-  MapData,
-  MapDataItem,
-} from './interface/happiness-all.response';
+import { HappinessAllResponse } from './interface/happiness-all.response';
 import { Data } from './interface/happiness-me.response'; // Import for individual data
 import { DateTime } from 'luxon';
 
