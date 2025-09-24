@@ -57,6 +57,8 @@
       - `KC_HOSTNAME_URL`
       - `KC_HOSTNAME_ADMIN_URL`
       - `KEYCLOAK_CLIENT_ISSUER`
+      - `BASIC_AUTH_CLIENT_SECRET`
+      - `SERVICE_ACCOUNT_CLIENT_SECRET`
       - `GENERAL_USER_KEYCLOAK_CLIENT_SECRET`
       - `ADMIN_KEYCLOAK_CLIENT_SECRET`
 
@@ -173,16 +175,6 @@ OASIS Mapでは現在の位置情報を利用します。
 
 ### 環境変数の準備と追加
 
-#### 環境設定:
-
-基本認証に使用:
-- `BASIC_AUTH_CLIENT_ID=basic-auth-client`
-- `BASIC_AUTH_CLIENT_SECRET`
-
-新規登録ユーザーにロールを割り当てるために使用:
-- `SERVICE_ACCOUNT_CLIENT_ID=role-assignment-service`
-- `SERVICE_ACCOUNT_CLIENT_SECRET`
-
 1. ブラウザから `http://Dockerホスト名:8080`でアクセスします。
 2. 「Administration Console」をクリック
 3. 環境変数 `KEYCLOAK_ADMIN` `KEYCLOAK_ADMIN_PASSWORD` に指定した認証情報でログイン
@@ -196,6 +188,22 @@ OASIS Mapでは現在の位置情報を利用します。
 5. [Google Cloud](https://console.cloud.google.com/apis/credentials)に接続
 6. 事前準備にて作成した認証情報を選択
 7. `承認済みのリダイレクトURI` に控えておいた `Redirect URI` を転記して保存
+
+#### パスワード認証用クライアントシークレットの設定
+
+1. `realm` から `oasismap` を選択
+2. 左のメニューバーから `client` をクリック
+3. `basic-auth-client` をクリック
+4. `Credentials` をクリック
+5. `Client Secret` の値を環境変数 `BASIC_AUTH_CLIENT_SECRET` に転記
+
+#### 新規ユーザーにロールを割り当てるサービス用クライアントシークレットの設定
+
+1. `realm` から `oasismap` を選択
+2. 左のメニューバーから `client` をクリック
+3. `role-assignment-service` をクリック
+4. `Credentials` をクリック
+5. `Client Secret` の値を環境変数 `SERVICE_ACCOUNT_CLIENT_SECRET` に転記
 
 #### 利用者向けクライアントシークレットの設定
 
