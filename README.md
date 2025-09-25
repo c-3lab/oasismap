@@ -156,7 +156,7 @@ OASIS Mapでは現在の位置情報を利用します。
     ※ 4で取得したkeycloakディレクトリのパスに書き換えて実行すること
 
     ```sh
-    ~/keycloak$ docker run --network oasismap_backend-network --volume $(pwd):/etc/newman/keycloak \
+    ~/keycloak$ docker run --rm --network oasismap_backend-network --volume $(pwd):/etc/newman/keycloak \
     postman/newman:latest run --bail --environment /etc/newman/keycloak/variables.json \
     --env-var "KeycloakAdminUser=$KEYCLOAK_ADMIN" \
     --env-var "KeycloakAdminPassword=$KEYCLOAK_ADMIN_PASSWORD" \
@@ -166,7 +166,7 @@ OASIS Mapでは現在の位置情報を利用します。
 6. postman-add-role-collection.jsonを実行する（postman-collection.jsonの実行方法と同じ）
 
     ```sh
-    ~/keycloak$ docker run --network oasismap_backend-network --volume $(pwd):/etc/newman/keycloak \
+    ~/keycloak$ docker run --rm --network oasismap_backend-network --volume $(pwd):/etc/newman/keycloak \
     postman/newman:latest run --bail --environment /etc/newman/keycloak/variables.json \
     --env-var "KeycloakAdminUser=$KEYCLOAK_ADMIN" \
     --env-var "KeycloakAdminPassword=$KEYCLOAK_ADMIN_PASSWORD" \
@@ -281,6 +281,8 @@ OASIS Mapでは現在の位置情報を利用します。
 8. `Credentials` を選択して `Set password` からパスワードを入力してください
 9. パスワード入力後, `Temporary` のチェックを外して `Save`
 10. `Save password` から保存
+11. `Role mapping`を選択して`Assign role`>`Realm roles`を選択
+12. チェックリストから`admin-role`にチェックを入れて`Assign`で確定
 
 ##### 自治体管理者機能の使い方
 
