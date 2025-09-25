@@ -53,8 +53,9 @@ jobs:
           docker compose -f ${{ matrix.compose_file }} pull
           docker compose -f ${{ matrix.compose_file }} build
 
-          # Also get built images
-          docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" > images.txt
+          # Get only project-specific images (exclude system/dependency images)
+          PROJECT_IMAGES="oasismap|frontend|backend|orion|cygnus|mongo|postgres|keycloak|node"
+          docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" | grep -E "($PROJECT_IMAGES)" > images.txt
 
           # Remove duplicates
           sort -u images.txt > images_unique.txt
