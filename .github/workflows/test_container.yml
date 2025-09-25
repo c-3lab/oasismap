@@ -74,9 +74,21 @@ jobs:
             if [ -n "$image" ]; then
               echo "Scanning image: $image"
 
+              # Determine the appropriate .trivyignore file based on image name
+              ignorefile=""
+              if [[ "$image" == *"frontend"* ]]; then
+                ignorefile="--ignorefile ./frontend/.trivyignore"
+              elif [[ "$image" == *"backend"* ]]; then
+                ignorefile="--ignorefile ./backend/.trivyignore"
+              elif [[ "$image" == *"orion"* ]]; then
+                ignorefile="--ignorefile ./fiware/orion/.trivyignore"
+              elif [[ "$image" == *"cygnus"* ]]; then
+                ignorefile="--ignorefile ./fiware/cygnus/.trivyignore"
+              fi
+
               # Get total Critical + High vulnerabilities
               severity_template='{{- $total := 0 }}{{- range . }}{{- range .Vulnerabilities }}{{- if or (eq .Severity "CRITICAL") (eq .Severity "HIGH") }}{{- $total = add $total 1 }}{{- end }}{{- end }}{{- end }}{{ $total }}'
-              total_vulnerabilities=$(trivy image --quiet --scanners vuln --severity CRITICAL,HIGH --format template --template "$severity_template" "$image")
+              total_vulnerabilities=$(trivy image --quiet --scanners vuln --severity CRITICAL,HIGH --format template --template "$severity_template" $ignorefile "$image")
 
               if [ $total_vulnerabilities -eq 0 ]; then
                 # No vulnerabilities found
@@ -93,7 +105,7 @@ jobs:
                 echo "" >> ${{ matrix.summary_file }}
                 echo "### Vulnerability Details:" >> ${{ matrix.summary_file }}
                 echo '```' >> ${{ matrix.summary_file }}
-                trivy image --quiet --scanners vuln --severity CRITICAL,HIGH --format table "$image" >> ${{ matrix.summary_file }} 2>&1 || echo "Failed to get detailed results" >> ${{ matrix.summary_file }}
+                trivy image --quiet --scanners vuln --severity CRITICAL,HIGH --format table $ignorefile "$image" >> ${{ matrix.summary_file }} 2>&1 || echo "Failed to get detailed results" >> ${{ matrix.summary_file }}
                 echo '```' >> ${{ matrix.summary_file }}
                 echo "" >> ${{ matrix.summary_file }}
               fi
