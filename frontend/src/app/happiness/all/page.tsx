@@ -2,6 +2,7 @@
 import dynamic from 'next/dynamic'
 import { useHappinessData } from '@/hooks/use-happiness-data'
 
+
 const HappinessViewer = dynamic(
   () => import('@/components/happiness/happiness-viewer'),
   { ssr: false }
