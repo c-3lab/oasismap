@@ -29,6 +29,7 @@ import { messageContext } from '@/contexts/message-context'
 import { IconButton } from '@mui/material'
 import NavigationIcon from '@mui/icons-material/Navigation'
 import CurrentPositionIcon from '@mui/icons-material/RadioButtonChecked'
+import EditIcon from '@mui/icons-material/Edit'
 import { renderToString } from 'react-dom/server'
 import { MeModal } from '../happiness/me-modal'
 import { Pin } from '@/types/pin'
@@ -80,6 +81,8 @@ type Props = {
   _highlightTarget?: HighlightTarget
   setHighlightTarget?: React.Dispatch<React.SetStateAction<HighlightTarget>>
   period?: PeriodType
+  showAddHappiness?: boolean
+  onAddHappiness?: () => void
 }
 
 const OnPopupClose = ({ onPopupClose }: { onPopupClose: () => void }) => {
@@ -449,6 +452,8 @@ const Map: React.FC<Props> = ({
   period,
   targetEntity,
   onPopupClose,
+  showAddHappiness,
+  onAddHappiness,
 }) => {
   const { data: session } = useSession()
   const [center, setCenter] = useState<LatLngTuple | null>(null)
@@ -534,7 +539,7 @@ const Map: React.FC<Props> = ({
               border: '1px solid #ccc',
               borderRadius: 100,
               boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
-              marginBottom: '50px',
+              marginBottom: '10px',
             }}
             onClick={() => {
               if (currentPosition) {
@@ -564,6 +569,57 @@ const Map: React.FC<Props> = ({
 
     return null
   }
+
+  const AddHappinessControl = () => {
+    const map = useMap()
+
+    useEffect(() => {
+      if (!showAddHappiness) {
+        return
+      }
+
+      const control: L.Control = new L.Control({ position: 'bottomright' })
+
+      control.onAdd = () => {
+        const div = L.DomUtil.create('div', 'leaflet-control-custom')
+
+        const root = createRoot(div)
+        root.render(
+          <IconButton
+            style={{
+              backgroundColor: '#20B2AA',
+              borderRadius: 100,
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
+              marginBottom: '10px',
+            }}
+            onClick={() => {
+              if (onAddHappiness) {
+                onAddHappiness()
+              }
+            }}
+          >
+            <EditIcon
+              style={{
+                color: 'white',
+                fontSize: 45,
+              }}
+            />
+          </IconButton>
+        )
+
+        return div
+      }
+
+      control.addTo(map)
+
+      return () => {
+        control.remove()
+      }
+    }, [map])
+
+    return null
+  }
+
   if (error) {
     console.error('Error: Unable to get current position.', error)
     return null
@@ -582,6 +638,7 @@ const Map: React.FC<Props> = ({
         maxBounds={maxBounds}
         maxBoundsViscosity={maxBoundsViscosity}
       >
+        <AddHappinessControl />
         <MoveToCurrentPositionControl />
         <TileLayer
           attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'

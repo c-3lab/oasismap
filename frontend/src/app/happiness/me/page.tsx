@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic'
 import { useState, useEffect, useContext, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { Button, Grid } from '@mui/material'
+import { Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { MessageType } from '@/types/message-type'
 const Map = dynamic(() => import('@/components/map/map'), { ssr: false })
@@ -250,28 +250,9 @@ const HappinessMe: React.FC = () => {
             setInitialEntityId(null)
           }}
           period={period}
+          showAddHappiness={true}
+          onAddHappiness={() => router.push('/happiness/input?referral=me')}
         />
-      </Grid>
-      <Grid
-        item
-        xs={12}
-        sx={{
-          position: 'fixed',
-          bottom: '10px',
-          left: '10px',
-          right: '10px',
-          zIndex: 1000,
-        }}
-      >
-        <Button
-          variant="contained"
-          color="primary"
-          size="large"
-          fullWidth
-          onClick={() => router.push('/happiness/input?referral=me')}
-        >
-          幸福度を入力
-        </Button>
       </Grid>
     </Grid>
   )

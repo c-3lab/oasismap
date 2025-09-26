@@ -11,7 +11,7 @@ import {
 
 import { useRouter } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { Button, Grid } from '@mui/material'
+import { Grid } from '@mui/material'
 import { PeriodType } from '@/types/period'
 import { MessageType } from '@/types/message-type'
 const Map = dynamic(() => import('@/components/map/map'), { ssr: false })
@@ -252,31 +252,10 @@ const HappinessAll: React.FC = () => {
           fiware={{ servicePath: '', tenant: '' }}
           iconType="heatmap"
           pinData={pinData}
+          showAddHappiness={session?.user?.type === PROFILE_TYPE.GENERAL}
+          onAddHappiness={() => router.push('/happiness/input?referral=all')}
         />
       </Grid>
-      {session?.user?.type === PROFILE_TYPE.GENERAL && (
-        <Grid
-          item
-          xs={12}
-          sx={{
-            position: 'fixed',
-            bottom: '10px',
-            left: '10px',
-            right: '10px',
-            zIndex: 1000,
-          }}
-        >
-          <Button
-            variant="contained"
-            color="primary"
-            size="large"
-            fullWidth
-            onClick={() => router.push('/happiness/input?referral=all')}
-          >
-            幸福度を入力
-          </Button>
-        </Grid>
-      )}
     </Grid>
   )
 }
