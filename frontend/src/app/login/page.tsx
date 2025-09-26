@@ -45,7 +45,7 @@ const Login: React.FC = () => {
               </Button>
 
               <Button
-                variant="contained"
+                variant="outlined"
                 fullWidth
                 sx={{ my: 2, textTransform: 'none' }}
                 onClick={() =>
