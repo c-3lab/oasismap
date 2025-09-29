@@ -36,8 +36,9 @@ FROM node:22-slim AS production
 WORKDIR /app/frontend
 
 RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y tzdata tini curl && \
-    rm -rf /var/lib/apt/lists/*
+    apt-get install -y tzdata tini wget && \
+    apt-get autoremove -y && apt-get autoclean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ENV NODE_ENV=production
 
