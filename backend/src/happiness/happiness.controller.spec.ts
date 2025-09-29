@@ -14,7 +14,7 @@ import { GetHappinessAllDto } from './dto/get-happiness-all.dto';
 import { mockHappinessMeResponse } from './mocks/happiness/mock-happiness-me.response';
 import { mockHappinessListResponse } from './mocks/happiness/mock-happiness-list.response';
 import { mockHappinessInputResponse } from './mocks/happiness/mock-happiness-input.response';
-import { mockHappinesAllResponse } from './mocks/happiness/mock-happiness-all.response';
+import { mockHappinessAllIndividualResponse } from './mocks/happiness/mock-happiness-all-individual.response';
 import { mockHappinessImportResponse } from './mocks/happiness/mock-happiness-import.response';
 import { mockUserAttributesResponse } from './mocks/keycloak/mock-user-attribute.response';
 import { Response } from 'express';
@@ -172,7 +172,7 @@ describe('HappinessController', () => {
       const happinessAllService =
         module.get<jest.Mocked<HappinessAllService>>(HappinessAllService);
       happinessAllService.findHappinessAll.mockResolvedValue(
-        mockHappinesAllResponse,
+        mockHappinessAllIndividualResponse,
       );
       authService.verifyAuthorization.mockResolvedValue(
         mockUserAttributesResponse,
@@ -191,46 +191,8 @@ describe('HappinessController', () => {
         requestParam.end,
         requestParam.limit,
         requestParam.offset,
-        requestParam.zoomLevel,
       );
-      expect(result).toEqual(mockHappinesAllResponse);
-    });
-
-    it('should return array of happinessAll entities By Bounds', async () => {
-      // リクエストパラメータのダミーデータ
-      const requestParam: GetHappinessAllDto = {
-        limit: '100',
-        offset: '0',
-        start: '2024-03-01T00:00:00+09:00',
-        end: '2024-03-31T23:59:59+09:00',
-        zoomLevel: 13,
-      };
-
-      const happinessAllService =
-        module.get<jest.Mocked<HappinessAllService>>(HappinessAllService);
-      happinessAllService.findHappinessAll.mockResolvedValue(
-        mockHappinesAllResponse,
-      );
-      authService.verifyAuthorization.mockResolvedValue(
-        mockUserAttributesResponse,
-      );
-
-      const result = await happinessController.getHappinessAll(
-        'authorization',
-        requestParam,
-      );
-
-      expect(authService.verifyAuthorization).toHaveBeenCalledWith(
-        'authorization',
-      );
-      expect(happinessAllService.findHappinessAll).toHaveBeenCalledWith(
-        requestParam.start,
-        requestParam.end,
-        requestParam.limit,
-        requestParam.offset,
-        requestParam.zoomLevel,
-      );
-      expect(result).toEqual(mockHappinesAllResponse);
+      expect(result).toEqual(mockHappinessAllIndividualResponse);
     });
   });
 

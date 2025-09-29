@@ -15,19 +15,19 @@ export const MePopup = ({
       <HappinessTitle
         type="popup"
         title={questionTitles.happiness1}
-        color={mapColors.BLUE[0]}
+        color={mapColors.RED[0]}
         selected={pin.answer1 === 1}
       />
       <HappinessTitle
         type="popup"
         title={questionTitles.happiness2}
-        color={mapColors.GREEN[0]}
+        color={mapColors.BLUE[0]}
         selected={pin.answer2 === 1}
       />
       <HappinessTitle
         type="popup"
         title={questionTitles.happiness3}
-        color={mapColors.VIOLET[0]}
+        color={mapColors.GREEN[0]}
         selected={pin.answer3 === 1}
       />
       <HappinessTitle
@@ -45,7 +45,7 @@ export const MePopup = ({
       <HappinessTitle
         type="popup"
         title={questionTitles.happiness6}
-        color={mapColors.RED[0]}
+        color={mapColors.VIOLET[0]}
         selected={pin.answer6 === 1}
       />
       {pin.memo !== undefined && (

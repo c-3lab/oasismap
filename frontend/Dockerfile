@@ -1,9 +1,10 @@
 # 共通ベース（脆弱性対応済み）
 FROM node:22-slim AS base
 RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y tzdata tini curl && \
-    rm -rf /var/lib/apt/lists/*
-
+    apt-get install -y tzdata tini wget && \
+    apt-get autoremove -y && apt-get autoclean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    
 # 開発用ステージ
 FROM base AS dev
 ENV NODE_ENV=development

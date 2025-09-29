@@ -90,4 +90,145 @@ describe('HappinessMeService', () => {
       expect(result).toEqual(expectedHappinessMeResponse);
     });
   });
+
+  describe('getHappinessEntities', () => {
+    it('should call axios with correct parameters', async () => {
+      const spy = mockedAxios.get.mockResolvedValue({ data: [] });
+
+      await (happinessMeService as any).getHappinessEntities(
+        'test-query',
+        '100',
+        '200',
+      );
+
+      expect(spy).toHaveBeenCalledWith(`${process.env.ORION_URI}/v2/entities`, {
+        headers: {
+          'Fiware-Service': process.env.ORION_FIWARE_SERVICE,
+          'Fiware-ServicePath': process.env.ORION_FIWARE_SERVICE_PATH,
+        },
+        params: {
+          q: 'test-query',
+          limit: '100',
+          offset: '200',
+          orderBy: '!timestamp',
+        },
+      });
+    });
+  });
+
+  describe('toHappinessMeResponse', () => {
+    it('should convert entities to happiness me response format', () => {
+      const mockEntities = [
+        {
+          id: 'test-1',
+          type: 'happiness',
+          address: { type: 'Text', value: '東京都文京区' },
+          age: { type: 'Text', value: '20代' },
+          nickname: { type: 'Text', value: 'testuser' },
+          location: {
+            type: 'geo:json',
+            value: {
+              type: 'Point',
+              coordinates: [139.72382, 35.629327],
+            },
+            metadata: {
+              place: {
+                type: 'Text',
+                value: '東京都品川区',
+              },
+            },
+          },
+          timestamp: { type: 'DateTime', value: '2024-03-16T05:02:38.150Z' },
+          memo: { type: 'Text', value: 'test memo' },
+          happiness1: { type: 'Number', value: 1 },
+          happiness2: { type: 'Number', value: 1 },
+          happiness3: { type: 'Number', value: 1 },
+          happiness4: { type: 'Number', value: 1 },
+          happiness5: { type: 'Number', value: 1 },
+          happiness6: { type: 'Number', value: 1 },
+        },
+      ];
+
+      const result = (happinessMeService as any).toHappinessMeResponse(
+        mockEntities,
+      );
+
+      expect(result).toHaveLength(6); // 6 happiness types
+      expect(result[0]).toHaveProperty('id');
+      expect(result[0]).toHaveProperty('entityId');
+      expect(result[0]).toHaveProperty('type');
+      expect(result[0]).toHaveProperty('location');
+      expect(result[0]).toHaveProperty('timestamp');
+      expect(result[0]).toHaveProperty('memo');
+      expect(result[0]).toHaveProperty('answers');
+
+      // Check coordinate conversion (longitude,latitude -> latitude,longitude)
+      expect(result[0].location.value.coordinates).toEqual([
+        35.629327, 139.72382,
+      ]);
+    });
+
+    it('should handle entity without memo', () => {
+      const mockEntities = [
+        {
+          id: 'test-1',
+          type: 'happiness',
+          address: { type: 'Text', value: '東京都文京区' },
+          age: { type: 'Text', value: '20代' },
+          nickname: { type: 'Text', value: 'testuser' },
+          location: {
+            type: 'geo:json',
+            value: {
+              type: 'Point',
+              coordinates: [139.72382, 35.629327],
+            },
+            metadata: {
+              place: {
+                type: 'Text',
+                value: '東京都品川区',
+              },
+            },
+          },
+          timestamp: { type: 'DateTime', value: '2024-03-16T05:02:38.150Z' },
+          happiness1: { type: 'Number', value: 1 },
+          happiness2: { type: 'Number', value: 1 },
+          happiness3: { type: 'Number', value: 1 },
+          happiness4: { type: 'Number', value: 1 },
+          happiness5: { type: 'Number', value: 1 },
+          happiness6: { type: 'Number', value: 1 },
+        },
+      ];
+
+      const result = (happinessMeService as any).toHappinessMeResponse(
+        mockEntities,
+      );
+
+      expect(result[0].memo).toBe(''); // Should default to empty string
+    });
+  });
+
+  describe('Error handling', () => {
+    it('should handle axios errors in findHappinessMe', async () => {
+      process.env.USE_MOCK_DATA = 'false';
+      const error = new Error('Network error');
+      mockedAxios.get.mockRejectedValue(error);
+
+      const requestUserAttributes: UserAttribute = {
+        nickname: 'nickname',
+        age: '20代',
+        prefecture: '東京都',
+        city: '文京区',
+      };
+
+      await expect(
+        happinessMeService.findHappinessMe(
+          requestUserAttributes,
+          '2024-01-01T14:30:00+09:00',
+          '2024-03-31T23:59:59+09:00',
+          '100',
+          '200',
+        ),
+      ).rejects.toThrow('Network error');
+    });
+  });
 });
