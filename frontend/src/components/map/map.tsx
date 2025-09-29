@@ -38,6 +38,7 @@ import { HappinessKey } from '@/types/happiness-key'
 import { PeriodType } from '@/types/period'
 import { HappinessFields } from '@/types/happiness-set'
 import { Data } from '@/types/happiness-me-response'
+import { mapColors } from '@/theme/color'
 
 // 環境変数の取得に失敗した場合は日本経緯度原点を設定
 const defaultLatitude =
@@ -188,12 +189,12 @@ const HybridClusterGroup = ({
 
   const getHappinessColorPalette = useCallback(
     (): { [key in HappinessKey]: string } => ({
-      happiness1: '#ff0000', // RED
-      happiness2: '#007fff', // BLUE
-      happiness3: '#4BA724', // GREEN
-      happiness4: '#FF00D8', // YELLOW
-      happiness5: '#ff7f00', // ORANGE
-      happiness6: '#7f00ff', // VIOLET
+      happiness1: mapColors.RED[0],
+      happiness2: mapColors.BLUE[0],
+      happiness3: mapColors.GREEN[0],
+      happiness4: mapColors.YELLOW[0],
+      happiness5: mapColors.ORANGE[0],
+      happiness6: mapColors.VIOLET[0],
     }),
     []
   )

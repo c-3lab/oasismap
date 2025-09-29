@@ -1,6 +1,6 @@
 export const mapColors = {
   RED: [
-    '#ff0000',
+    '#EF4E4E',
     '#ff7070',
     '#ff6666',
     '#ff5656',
@@ -12,7 +12,7 @@ export const mapColors = {
     '#ff1919',
   ],
   BLUE: [
-    '#007fff',
+    '#477ADE',
     '#70b7ff',
     '#66b2ff',
     '#5badff',
@@ -24,7 +24,7 @@ export const mapColors = {
     '#1e8eff',
   ],
   GREEN: [
-    '#4BA724',
+    '#39C370',
     '#3DCB00',
     '#3EC704',
     '#40C308',
@@ -36,7 +36,7 @@ export const mapColors = {
     '#4AAB20',
   ],
   YELLOW: [
-    '#FF00D8',
+    '#D8D80C',
     '#FFCCF7',
     '#FC9BEE',
     '#FF99EF',
@@ -48,7 +48,7 @@ export const mapColors = {
     '#FF32E0',
   ],
   ORANGE: [
-    '#ff7f00',
+    '#FD9832',
     '#ffb770',
     '#ffb266',
     '#ffab5b',
@@ -60,7 +60,7 @@ export const mapColors = {
     '#ff8e1e',
   ],
   VIOLET: [
-    '#7f00ff',
+    '#F586A8',
     '#b770ff',
     '#b266ff',
     '#ad5bff',
@@ -74,10 +74,10 @@ export const mapColors = {
 }
 
 export const graphColors = [
-  mapColors['BLUE'][0], //'#007fff'
-  mapColors['GREEN'][0], //'#4BA724',
-  mapColors['VIOLET'][0], //'#7f00ff',
-  mapColors['YELLOW'][0], //'#FF00D8',
-  mapColors['ORANGE'][0], //'#ff7f00',
-  mapColors['RED'][0], //'#ff0000',
+  mapColors['RED'][0], // happiness1 - ワクワクする場所
+  mapColors['BLUE'][0], // happiness2 - 発見の学びの場所
+  mapColors['GREEN'][0], // happiness3 - ホッとする場所
+  mapColors['YELLOW'][0], // happiness4 - 自分を取り戻せる場所
+  mapColors['ORANGE'][0], // happiness5 - 自慢の場所
+  mapColors['VIOLET'][0], // happiness6 - 思い出の場所
 ]

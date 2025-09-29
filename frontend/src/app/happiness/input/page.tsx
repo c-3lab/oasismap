@@ -140,6 +140,7 @@ const HappinessInput: React.FC = () => {
 
     try {
       const rawExif = await exifr.parse(image)
+
       const exif = {
         timestamp: rawExif?.CreateDate,
         latitude: isNaN(rawExif?.latitude) ? undefined : rawExif?.latitude,
