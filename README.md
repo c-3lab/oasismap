@@ -27,7 +27,7 @@
 
 - `docker compose`で提供しております
 - `docker compose 2.21.0`, `docker 24.0.7` をインストール済みの `Ubuntu 22.04.3` 上で動作確認しております
-- またインストールの中で `curl` を使用しております
+- またインストールの中で `wget` を使用しております
 - 対応ブラウザ
   - Chrome
   - Safari
@@ -210,12 +210,7 @@ OASIS Mapでは現在の位置情報を利用します。
 2. 以下コマンドを実行してorionにサブスクリプションの設定を行う
 
     ```sh
-    root@backend:/app/backend$ curl -iX POST \
-      --url 'http://orion:1026/v2/subscriptions' \
-      --header 'content-type: application/json' \
-      --header 'Fiware-Service: Government' \
-      --header 'Fiware-ServicePath: /Happiness' \
-      --data '{
+    root@backend:/app/backend$ wget --post-data='{
       "description": "Notice of entities change",
       "subject": {
         "entities": [
@@ -233,7 +228,13 @@ OASIS Mapでは現在の位置情報を利用します。
           "url": "http://cygnus:5055/notify"
         }
       }
-    }'
+    }' \
+      --header='content-type: application/json' \
+      --header='Fiware-Service: Government' \
+      --header='Fiware-ServicePath: /Happiness' \
+      --server-response \
+      --output-document=- \
+      'http://orion:1026/v2/subscriptions'
     ```
 
 ### 基本的な使い方

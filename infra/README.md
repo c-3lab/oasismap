@@ -344,12 +344,7 @@
 2. (backendコンテナ)コンテナ上で以下コマンドを実行してorionにサブスクリプションの設定を行う
 
     ```sh
-    node@backend:/app/backend$ curl -iX POST \
-      --url 'http://orion:1026/v2/subscriptions' \
-      --header 'content-type: application/json' \
-      --header 'Fiware-Service: Government' \
-      --header 'Fiware-ServicePath: /Happiness' \
-      --data '{
+    root@backend:/app/backend$ wget --post-data='{
       "description": "Notice of entities change",
       "subject": {
         "entities": [
@@ -367,7 +362,13 @@
           "url": "http://cygnus:5055/notify"
         }
       }
-    }'
+    }' \
+      --header='content-type: application/json' \
+      --header='Fiware-Service: Government' \
+      --header='Fiware-ServicePath: /Happiness' \
+      --server-response \
+      --output-document=- \
+      'http://orion:1026/v2/subscriptions'
     ```
 
 3. (backendコンテナ)`201 Created`が返されたことを確認する
