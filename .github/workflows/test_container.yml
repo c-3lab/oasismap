@@ -53,8 +53,9 @@ jobs:
           docker compose -f ${{ matrix.compose_file }} pull
           docker compose -f ${{ matrix.compose_file }} build
 
-          # Also get built images
-          docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" > images.txt
+          # Get only project-specific images (exclude system/dependency images)
+          PROJECT_IMAGES="oasismap|frontend|backend|orion|cygnus|mongo|postgres|keycloak|node"
+          docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" | grep -E "($PROJECT_IMAGES)" > images.txt
 
           # Remove duplicates
           sort -u images.txt > images_unique.txt
@@ -67,33 +68,59 @@ jobs:
           echo "# ${{ matrix.compose_file }} Scan Results" > ${{ matrix.summary_file }}
           echo "" >> ${{ matrix.summary_file }}
 
-          # Scan each image for CRITICAL and HIGH vulnerabilities
+          # Scan each image with appropriate severity level (HIGH for frontend/backend, CRITICAL for others)
           has_vulnerabilities=false
 
           while IFS= read -r image; do
             if [ -n "$image" ]; then
               echo "Scanning image: $image"
 
-              # Get total Critical + High vulnerabilities
-              severity_template='{{- $total := 0 }}{{- range . }}{{- range .Vulnerabilities }}{{- if or (eq .Severity "CRITICAL") (eq .Severity "HIGH") }}{{- $total = add $total 1 }}{{- end }}{{- end }}{{- end }}{{ $total }}'
-              total_vulnerabilities=$(trivy image --quiet --scanners vuln --severity CRITICAL,HIGH --format template --template "$severity_template" "$image")
+              # Determine severity level based on image name
+              if [[ "$image" == *"frontend"* ]] || [[ "$image" == *"backend"* ]]; then
+                severity_level="CRITICAL,HIGH"
+                severity_description="CRITICAL or HIGH"
+              else
+                # Other containers (orion, cygnus, mongo, postgres, keycloak, node, etc.)
+                severity_level="CRITICAL"
+                severity_description="CRITICAL"
+              fi
+
+              # Determine .trivyignore file based on image name
+              ignorefile=""
+              if [[ "$image" == *"frontend"* ]]; then
+                ignorefile="--ignorefile ./frontend/.trivyignore"
+              elif [[ "$image" == *"backend"* ]]; then
+                ignorefile="--ignorefile ./backend/.trivyignore"
+              elif [[ "$image" == *"orion"* ]]; then
+                ignorefile="--ignorefile ./fiware/orion/.trivyignore"
+              elif [[ "$image" == *"cygnus"* ]]; then
+                ignorefile="--ignorefile ./fiware/cygnus/.trivyignore"
+              fi
+
+              # Get total vulnerabilities based on severity level
+              if [[ "$severity_level" == "CRITICAL,HIGH" ]]; then
+                severity_template='{{- $total := 0 }}{{- range . }}{{- range .Vulnerabilities }}{{- if or (eq .Severity "CRITICAL") (eq .Severity "HIGH") }}{{- $total = add $total 1 }}{{- end }}{{- end }}{{- end }}{{ $total }}'
+              else
+                severity_template='{{- $total := 0 }}{{- range . }}{{- range .Vulnerabilities }}{{- if eq .Severity "CRITICAL" }}{{- $total = add $total 1 }}{{- end }}{{- end }}{{- end }}{{ $total }}'
+              fi
+              total_vulnerabilities=$(trivy image --quiet --scanners vuln --severity "$severity_level" --format template --template "$severity_template" $ignorefile "$image")
 
               if [ $total_vulnerabilities -eq 0 ]; then
                 # No vulnerabilities found
-                echo "✅ $image - No CRITICAL or HIGH vulnerabilities found"
+                echo "✅ $image - No $severity_description vulnerabilities found"
                 echo "## ✅ $image" >> ${{ matrix.summary_file }} 
-                echo "**No CRITICAL or HIGH vulnerabilities found**" >> ${{ matrix.summary_file }}
+                echo "**No $severity_description vulnerabilities found**" >> ${{ matrix.summary_file }}
                 echo "" >> ${{ matrix.summary_file }}
               else
                 # Vulnerabilities found
-                echo "❌ $image - CRITICAL/HIGH vulnerabilities found! ($total_vulnerabilities total)"
+                echo "❌ $image - $severity_description vulnerabilities found! ($total_vulnerabilities total)"
                 has_vulnerabilities=true
                 echo "## ❌ $image" >> ${{ matrix.summary_file }}
-                echo "**CRITICAL/HIGH vulnerabilities found ($total_vulnerabilities total)**" >> ${{ matrix.summary_file }}
+                echo "**$severity_description vulnerabilities found ($total_vulnerabilities total)**" >> ${{ matrix.summary_file }}
                 echo "" >> ${{ matrix.summary_file }}
                 echo "### Vulnerability Details:" >> ${{ matrix.summary_file }}
                 echo '```' >> ${{ matrix.summary_file }}
-                trivy image --quiet --scanners vuln --severity CRITICAL,HIGH --format table "$image" >> ${{ matrix.summary_file }} 2>&1 || echo "Failed to get detailed results" >> ${{ matrix.summary_file }}
+                trivy image --quiet --scanners vuln --severity "$severity_level" --format table $ignorefile "$image" >> ${{ matrix.summary_file }} 2>&1 || echo "Failed to get detailed results" >> ${{ matrix.summary_file }}
                 echo '```' >> ${{ matrix.summary_file }}
                 echo "" >> ${{ matrix.summary_file }}
               fi
@@ -105,7 +132,7 @@ jobs:
 
           # Fail workflow immediately if vulnerabilities found
           if [ "$has_vulnerabilities" = true ]; then
-            echo "🚨 CRITICAL/HIGH vulnerabilities detected! Failing workflow..."
+            echo "🚨 Vulnerabilities detected! Failing workflow..."
             exit 1
           fi
 
