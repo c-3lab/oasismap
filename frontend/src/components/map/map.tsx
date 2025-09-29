@@ -576,7 +576,7 @@ const Map: React.FC<Props> = ({
             <EditIcon
               style={{
                 color: 'white',
-                fontSize: 55,
+                fontSize: 45,
               }}
             />
           </IconButton>

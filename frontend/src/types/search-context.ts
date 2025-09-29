@@ -1,4 +1,3 @@
-import { PeriodType } from '@/types/period'
 import { DateTime as OasismapDateTime } from '@/types/datetime'
 
 export interface DateTimeProps {
@@ -9,15 +8,10 @@ export interface DateTimeProps {
 export interface SearchParams {
   startValue?: OasismapDateTime
   endValue?: OasismapDateTime
-  searchPeriod?: PeriodType
 }
 
 export interface SearchFunction {
-  (
-    period: PeriodType,
-    startProps: DateTimeProps,
-    endProps: DateTimeProps
-  ): Promise<void>
+  (startProps: DateTimeProps, endProps: DateTimeProps): Promise<void>
 }
 
 export interface SearchContextType {

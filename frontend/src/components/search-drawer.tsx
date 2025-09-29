@@ -20,11 +20,7 @@ import {
 interface SearchDrawerProps {
   isOpen: boolean
   onClose: () => void
-  onSearch: (
-    period: PeriodType,
-    startProps: DateTimeProps,
-    endProps: DateTimeProps
-  ) => void
+  onSearch: (startProps: DateTimeProps, endProps: DateTimeProps) => void
   isLoading?: boolean
 }
 
@@ -38,7 +34,7 @@ const SearchDrawer: React.FC<SearchDrawerProps> = ({
   const { startProps, endProps } = useDateTimeProps(period)
 
   const handleSearch = async () => {
-    onSearch(period, startProps, endProps)
+    onSearch(startProps, endProps)
 
     onClose()
   }
