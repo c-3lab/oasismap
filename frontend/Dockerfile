@@ -1,3 +1,14 @@
+# 共通ベース（脆弱性対応済み）
+FROM node:22-slim AS base
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y tzdata tini wget && \
+    apt-get autoremove -y && apt-get autoclean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    
+# 開発用ステージ
+FROM base AS dev
+ENV NODE_ENV=development
+
 # FROM node:20-slim AS build
 FROM node:22 AS build
 
@@ -31,14 +42,9 @@ RUN npm run build
 
 USER node
 
-FROM node:22-slim AS production
+FROM base AS production
 
 WORKDIR /app/frontend
-
-RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y tzdata tini wget && \
-    apt-get autoremove -y && apt-get autoclean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 ENV NODE_ENV=production
 
