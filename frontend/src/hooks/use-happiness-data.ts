@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useRef } from 'react'
+import { useState, useEffect, useContext, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import { PeriodType } from '@/types/period'
@@ -16,6 +16,8 @@ import { LoadingContext } from '@/contexts/loading-context'
 import { EntityByEntityId } from '@/types/entityByEntityId'
 import { Data } from '@/types/happiness-me-response'
 import { DateTime as OasismapDateTime } from '@/types/datetime'
+import { useSearchContext } from '@/contexts/search-context'
+import { SearchParams, DateTimeProps } from '@/types/search-context'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -38,6 +40,7 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
   const { update } = useSession()
   const { isLoading, setIsLoading } = useContext(LoadingContext)
   const { fetchData } = useFetchData()
+  const { setOnSearch, setIsLoading: setContextIsLoading } = useSearchContext()
   const [targetEntity, setTargetEntity] = useState<Data | undefined>(undefined)
 
   const [initialEntityId, setInitialEntityId] = useState<
@@ -48,107 +51,129 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
     setInitialEntityId(searchEntityId)
   }
 
-  const getData = async (startDateTime?: string, endDateTime?: string) => {
-    try {
-      setIsLoading(true)
-      willStop.current = false
-      setPinData([])
-      setEntityByEntityId({})
+  const getData = useCallback(
+    async (opts?: SearchParams) => {
+      if (isLoading) return
+      try {
+        setIsLoading(true)
+        setContextIsLoading(true)
+        willStop.current = false
+        setPinData([])
+        setEntityByEntityId({})
 
-      const url =
-        backendUrl +
-        (type === 'me' ? '/api/happiness/me' : '/api/happiness/all')
+        const url =
+          backendUrl +
+          (type === 'me' ? '/api/happiness/me' : '/api/happiness/all')
 
-      // Use provided dates or default to current period
-      // Backend expects ISO string format, so we use DateTime.fromJSDate().toISO()
-      const start =
-        startDateTime || DateTime.fromJSDate(new Date()).startOf('day').toISO()
-      const end =
-        endDateTime || DateTime.fromJSDate(new Date()).endOf('day').toISO()
+        const start = opts?.startValue
+          ? toDateTime(opts.startValue).toISO()
+          : DateTime.fromJSDate(new Date()).startOf('day').toISO()
+        const end = opts?.endValue
+          ? toDateTime(opts.endValue).endOf('minute').toISO()
+          : DateTime.fromJSDate(new Date()).endOf('day').toISO()
 
-      if (!start || !end) {
-        console.error('Date conversion failed.')
-        return
-      }
-
-      const limit = 1000
-      let offset = 0
-      while (!willStop.current) {
-        // アクセストークンを再取得
-        const updatedSession = await update()
-
-        // Prepare request parameters
-        const requestParams: any = {
-          start: start,
-          end: end,
-          limit: limit,
-          offset: offset,
+        if (!start || !end) {
+          console.error('Date conversion failed.')
+          return
         }
 
-        const data = await fetchData(
-          url,
-          requestParams,
-          updatedSession?.user?.accessToken!
-        )
+        const limit = 1000
+        let offset = 0
+        while (!willStop.current) {
+          // アクセストークンを再取得
+          const updatedSession = await update()
 
-        if (data['count'] === 0 || data['data'].length === 0) {
+          // Prepare request parameters
+          const requestParams: any = {
+            start: start,
+            end: end,
+            limit: limit,
+            offset: offset,
+          }
+
+          const data = await fetchData(
+            url,
+            requestParams,
+            updatedSession?.user?.accessToken!
+          )
+
+          if (data['count'] === 0 || data['data'].length === 0) {
+            break
+          }
+
+          try {
+            const newPins = GetPin(data['data'])
+            setPinData((prevPinData: Pin[]) => [...prevPinData, ...newPins])
+          } catch (error) {
+            console.error('Error in GetPin or setPinData:', error)
+          }
+
+          if (
+            initialEntityId &&
+            timestamp &&
+            Object.keys(entityByEntityId).length === 0
+          ) {
+            setEntityByEntityId((prevEntityByEntityId: EntityByEntityId) => {
+              const nextEntityByEntityId = { ...prevEntityByEntityId }
+              data['data'].forEach((entity: Data) => {
+                if (entity.answers[entity.type] === 0) return
+                nextEntityByEntityId[entity['entityId']] = entity
+              })
+
+              return nextEntityByEntityId
+            })
+          }
+
+          offset += data['data'].length
           break
         }
 
-        try {
-          const newPins = GetPin(data['data'])
-          setPinData((prevPinData: Pin[]) => [...prevPinData, ...newPins])
-        } catch (error) {
-          console.error('Error in GetPin or setPinData:', error)
-        }
+        if (timestamp && Object.keys(entityByEntityId).length === 0) {
+          const dateTime = DateTime.fromISO(timestamp)
+          const formattedDate = dateTime.toFormat('yyyy/MM/dd')
 
+          noticeMessageContext.showMessage(
+            formattedDate + ' ' + 'のデータを表示しました',
+            MessageType.Success
+          )
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error)
         if (
-          initialEntityId &&
-          timestamp &&
-          Object.keys(entityByEntityId).length === 0
+          error instanceof Error &&
+          error.message === ERROR_TYPE.UNAUTHORIZED
         ) {
-          setEntityByEntityId((prevEntityByEntityId: EntityByEntityId) => {
-            const nextEntityByEntityId = { ...prevEntityByEntityId }
-            data['data'].forEach((entity: Data) => {
-              if (entity.answers[entity.type] === 0) return
-              nextEntityByEntityId[entity['entityId']] = entity
-            })
-            return nextEntityByEntityId
-          })
+          noticeMessageContext.showMessage(
+            '再ログインしてください',
+            MessageType.Error
+          )
+          signOut({ redirect: false })
+          router.push('/login')
+        } else {
+          noticeMessageContext.showMessage(
+            '幸福度の検索に失敗しました',
+            MessageType.Error
+          )
         }
-
-        offset += data['data'].length
-        break
+      } finally {
+        setIsLoading(false)
+        setContextIsLoading(false)
       }
-
-      if (timestamp && Object.keys(entityByEntityId).length === 0) {
-        const dateTime = DateTime.fromISO(timestamp)
-        const formattedDate = dateTime.toFormat('yyyy/MM/dd')
-
-        noticeMessageContext.showMessage(
-          formattedDate + ' ' + 'のデータを表示しました',
-          MessageType.Success
-        )
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error)
-      if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
-        noticeMessageContext.showMessage(
-          '再ログインしてください',
-          MessageType.Error
-        )
-        signOut({ redirect: false })
-        router.push('/login')
-      } else {
-        noticeMessageContext.showMessage(
-          '幸福度の検索に失敗しました',
-          MessageType.Error
-        )
-      }
-    } finally {
-      setIsLoading(false)
-    }
-  }
+    },
+    [
+      isLoading,
+      type,
+      initialEntityId,
+      timestamp,
+      entityByEntityId,
+      noticeMessageContext,
+      router,
+      update,
+      fetchData,
+      setContextIsLoading,
+      setIsLoading,
+    ]
+  )
 
   const handleSearch = async (
     startDateTime: OasismapDateTime,
@@ -163,8 +188,15 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
       return
     }
 
-    await getData(startISO, endISO)
+    await getData({ startValue: startDateTime, endValue: endDateTime })
   }
+
+  const searchFunction = useCallback(
+    async (startProps: DateTimeProps, endProps: DateTimeProps) => {
+      await getData({ startValue: startProps.value, endValue: endProps.value })
+    },
+    [getData]
+  )
 
   const handlePeriodChange = (newPeriod: PeriodType) => {
     setPeriod(newPeriod)
@@ -179,16 +211,34 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
   }, [])
 
   useEffect(() => {
+    setOnSearch(searchFunction)
+    return () => {
+      setOnSearch(null)
+    }
+  }, [searchFunction, setOnSearch])
+
+  useEffect(() => {
     if (!isTokenFetched) return
 
     const start = timestamp
-      ? DateTime.fromISO(timestamp).startOf('day').toISO() || undefined
+      ? {
+          date: DateTime.fromISO(timestamp)
+            .startOf('day')
+            .toFormat('yyyy-MM-dd'),
+          time: DateTime.fromISO(timestamp).startOf('day').toFormat('HH:mm'),
+        }
       : undefined
     const end = timestamp
-      ? DateTime.fromISO(timestamp).endOf('day').toISO() || undefined
+      ? {
+          date: DateTime.fromISO(timestamp).endOf('day').toFormat('yyyy-MM-dd'),
+          time: DateTime.fromISO(timestamp).endOf('day').toFormat('HH:mm'),
+        }
       : undefined
 
-    getData(start, end)
+    getData({
+      startValue: start,
+      endValue: end,
+    })
 
     return () => {
       willStop.current = true

@@ -8,23 +8,13 @@ const HappinessViewer = dynamic(
 )
 
 const HappinessMe: React.FC = () => {
-  const {
-    pinData,
-    isLoading,
-    period,
-    targetEntity,
-    handleSearch,
-    handlePeriodChange,
-  } = useHappinessData({ type: 'me' })
+  const { pinData, period, targetEntity } = useHappinessData({ type: 'me' })
 
   return (
     <HappinessViewer
       pinData={pinData}
-      isLoading={isLoading}
       period={period}
       targetEntity={targetEntity}
-      onSearch={handleSearch}
-      onPeriodChange={handlePeriodChange}
       type="me"
     />
   )
