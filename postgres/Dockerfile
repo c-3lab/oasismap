@@ -1,5 +1,5 @@
 # Dockerfile to fix CRITICAL vulnerabilities in gosu and system packages
-# Based on FROM postgres:17.5 but builds gosu with Go 1.22.4 and updates vulnerable packages
+# Based on FROM postgres:17.5 but builds gosu with Go 1.23.12 and updates vulnerable packages
 
 FROM postgres:17.5
 
@@ -12,13 +12,13 @@ RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends ca-certificates curl git build-essential; \
     \
-    # --- Temporarily install Go 1.22.4 (amd64) ---
+    # --- Temporarily install Go 1.23.12 (amd64) ---
     cd /tmp; \
-    curl -fsSLO "https://go.dev/dl/go1.22.4.linux-amd64.tar.gz"; \
-    tar -C /usr/local -xzf go1.22.4.linux-amd64.tar.gz; \
+    curl -fsSLO "https://go.dev/dl/go1.23.12.linux-amd64.tar.gz"; \
+    tar -C /usr/local -xzf go1.23.12.linux-amd64.tar.gz; \
     export PATH="/usr/local/go/bin:$PATH"; \
     \
-    # --- Build gosu v1.17 with Go 1.22.4 (static binary) ---
+    # --- Build gosu v1.17 with Go 1.23.12 (static binary) ---
     mkdir -p /tmp/gosu-src; \
     curl -fsSL -o /tmp/gosu-src/gosu.tar.gz "https://github.com/tianon/gosu/archive/refs/tags/1.17.tar.gz"; \
     tar -C /tmp/gosu-src -xzf /tmp/gosu-src/gosu.tar.gz --strip-components=1; \
@@ -40,7 +40,8 @@ RUN set -eux; \
         libgssapi-krb5-2/trixie \
         libk5crypto3/trixie \
         libkrb5-3/trixie \
-        libkrb5support0/trixie || apt-get install -y libsqlite3-0; \
+        libkrb5support0/trixie \
+        libxslt1.1/trixie || apt-get install -y libsqlite3-0; \
     \
     # --- Cleanup build artifacts and Go toolchain ---
     cd /; \
