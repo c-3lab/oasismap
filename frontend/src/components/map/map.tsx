@@ -36,7 +36,7 @@ import { HAPPINESS_KEYS, PROFILE_TYPE } from '@/libs/constants'
 import { MePopup } from './mePopup'
 import { MessageType } from '@/types/message-type'
 import { HappinessKey } from '@/types/happiness-key'
-import { PeriodType } from '@/types/period'
+
 import { HappinessFields } from '@/types/happiness-set'
 import { Data } from '@/types/happiness-me-response'
 import { mapColors } from '@/theme/color'
@@ -68,7 +68,6 @@ type Props = {
   pinData: Pin[]
   targetEntity?: Data
   onPopupClose?: () => void
-  period?: PeriodType
   showAddHappiness?: boolean
   onAddHappiness?: () => void
 }
@@ -151,13 +150,11 @@ const createClusterIcon = ({
 const HybridClusterGroup = ({
   pinData,
   setSelectedPin,
-  period,
   session,
   targetEntity,
 }: {
   pinData: Pin[]
   setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
-  period?: PeriodType
   session: any
   targetEntity?: Data
 }) => {
@@ -273,7 +270,7 @@ const HybridClusterGroup = ({
     setPopupPin(targetPin)
     setPopupPosition([targetPin.latitude, targetPin.longitude])
     map.panTo([targetPin.latitude, targetPin.longitude])
-  }, [targetEntity, map, pinData, period])
+  }, [targetEntity, map, pinData])
 
   const updateClusters = useCallback(() => {
     const zoomLevel = map.getZoom()
@@ -377,7 +374,6 @@ const HybridClusterGroup = ({
   }, [
     map,
     pinData,
-    period,
     setSelectedPin,
     createHappinessClusters,
     createSuperCluster,
@@ -424,7 +420,6 @@ const HybridClusterGroup = ({
 
 const Map: React.FC<Props> = ({
   pinData,
-  period,
   targetEntity,
   onPopupClose,
   showAddHappiness,
@@ -576,7 +571,7 @@ const Map: React.FC<Props> = ({
             <EditIcon
               style={{
                 color: 'white',
-                fontSize: 55,
+                fontSize: 45,
               }}
             />
           </IconButton>
@@ -624,7 +619,6 @@ const Map: React.FC<Props> = ({
         <HybridClusterGroup
           pinData={pinData}
           setSelectedPin={setSelectedPin}
-          period={period}
           session={session}
           targetEntity={targetEntity}
         />

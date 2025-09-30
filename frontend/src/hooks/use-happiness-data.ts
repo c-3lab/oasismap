@@ -1,7 +1,6 @@
 import { useState, useEffect, useContext, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { PeriodType } from '@/types/period'
 import { MessageType } from '@/types/message-type'
 import { GetPin } from '@/components/utils/pin'
 // import { myHappinessData, sumByTimestamp } from '@/libs/graph'
@@ -28,7 +27,6 @@ type UseHappinessDataProps = {
 export const useHappinessData = ({ type }: UseHappinessDataProps) => {
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
-  const [period, setPeriod] = useState(PeriodType.Month)
   const [pinData, setPinData] = useState<Pin[]>([])
   const [entityByEntityId, setEntityByEntityId] = useState<EntityByEntityId>({})
   const willStop = useRef(false)
@@ -198,11 +196,6 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
     [getData]
   )
 
-  const handlePeriodChange = (newPeriod: PeriodType) => {
-    setPeriod(newPeriod)
-    // Optionally trigger data refetch with new period
-  }
-
   useEffect(() => {
     isMounted.current = true
     return () => {
@@ -257,13 +250,11 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
     pinData,
     entityByEntityId,
     isLoading,
-    period,
     initialEntityId,
     targetEntity,
 
     // Actions
     handleSearch,
-    handlePeriodChange,
 
     // Utils
     isMounted,

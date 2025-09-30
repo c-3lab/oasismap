@@ -7,7 +7,6 @@ interface HappinessParams {
   offset: number
   start: string
   end: string
-  period?: string
   zoomLevel?: number
   boundsNESW?: string
 }
@@ -47,7 +46,6 @@ export const useFetchData = () => {
         end: params.end,
         limit: params.limit.toString(),
         offset: params.offset.toString(),
-        ...(params.period && { period: params.period }),
         ...(params.zoomLevel && { zoomLevel: params.zoomLevel.toString() }),
         ...(params.boundsNESW && { boundsNESW: params.boundsNESW }),
       })

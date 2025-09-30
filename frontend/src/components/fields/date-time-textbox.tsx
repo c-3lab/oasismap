@@ -1,14 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { DateTime } from 'luxon'
 
 import { Grid, TextField } from '@mui/material'
 import { DateTime as OasismapDateTime } from '@/types/datetime'
-import { PeriodType } from '@/types/period'
 
 interface DateTimeTextboxProps {
   dateLabel: string
   timeLabel: string
-  period: PeriodType
   value: OasismapDateTime
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
   disabled?: boolean | undefined
@@ -38,7 +36,7 @@ export const DateTimeTextbox: React.FC<DateTimeTextboxProps> = (props) => {
           type="time"
           value={props.value.time}
           onChange={props.onChange}
-          disabled={props.period !== PeriodType.Time || !!props.disabled}
+          disabled={!!props.disabled}
           fullWidth
         />
       </Grid>
@@ -46,10 +44,7 @@ export const DateTimeTextbox: React.FC<DateTimeTextboxProps> = (props) => {
   )
 }
 
-export const useDateTimeProps = (
-  period: PeriodType,
-  timestamp?: string | null
-) => {
+export const useDateTimeProps = (timestamp?: string | null) => {
   let defaultDateTime: DateTime
   if (timestamp && DateTime.fromISO(timestamp).isValid) {
     defaultDateTime = DateTime.fromISO(timestamp)
@@ -66,22 +61,7 @@ export const useDateTimeProps = (
     time: '23:59',
   })
 
-  const [updatedPeriod, setUpdatedPeriod] = useState(period)
-
-  useEffect(() => {
-    startProps.setValue({
-      ...startProps.value,
-      time: '00:00',
-    })
-    endProps.setValue({
-      ...endProps.value,
-      time: '23:59',
-    })
-    setUpdatedPeriod(period)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [period])
-
-  return { startProps, endProps, updatedPeriod }
+  return { startProps, endProps }
 }
 
 const useDateTime = (initialValue: OasismapDateTime) => {
