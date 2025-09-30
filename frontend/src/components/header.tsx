@@ -6,6 +6,7 @@ import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import AppBar from '@mui/material/AppBar'
 import { PROFILE_TYPE } from '@/libs/constants'
 import { useSession } from 'next-auth/react'
+import { usePathname } from 'next/navigation'
 
 interface HeaderProps {
   simple?: boolean
@@ -26,6 +27,11 @@ const Header: React.FC<HeaderProps> = ({
   handleFilterOpen,
 }) => {
   const { data: session } = useSession()
+  const pathname = usePathname()
+
+  // Only show filter button on /happiness/me and /happiness/all routes
+  const shouldShowFilter =
+    pathname === '/happiness/me' || pathname === '/happiness/all'
 
   return (
     <AppBar sx={{ color: '#FFF', backgroundColor: '#459586' }}>
@@ -57,14 +63,16 @@ const Header: React.FC<HeaderProps> = ({
             <Typography noWrap component="div" sx={{ mr: 2 }}>
               <Nickname />
             </Typography>
-            <IconButton
-              color="inherit"
-              aria-label="open filter"
-              edge="end"
-              onClick={handleFilterOpen}
-            >
-              <FilterAltIcon />
-            </IconButton>
+            {shouldShowFilter && (
+              <IconButton
+                color="inherit"
+                aria-label="open filter"
+                edge="end"
+                onClick={handleFilterOpen}
+              >
+                <FilterAltIcon />
+              </IconButton>
+            )}
           </>
         )}
       </Toolbar>
