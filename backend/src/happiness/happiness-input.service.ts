@@ -113,14 +113,24 @@ export class HappinessInputService {
     latitude: number,
     longitude: number,
   ): Promise<Address> {
-    const response = await axios.get(process.env.REVERSE_GEOCODING_URL, {
+    return axios.get(process.env.REVERSE_GEOCODING_URL, {
       params: {
         lat: latitude,
         lon: longitude,
         format: 'geocodejson',
         zoom: 10,
       },
+      headers: {
+        "User-Agent": "OasisMap"
+      }
+    }).then(response => {
+      return response.data.features[0].properties.geocoding.admin;
+    }).catch(error => {
+      console.error('Error in reverse geocoding:', error);
+      return {
+        level4: '',
+        level7: ''
+      };
     });
-    return response.data.features[0].properties.geocoding.admin;
   }
 }
