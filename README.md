@@ -322,7 +322,7 @@ OASIS Mapでは現在の位置情報を利用します。
 
 - [next 15.0.0](https://nextjs.org/)
 - [nest 10.4.15](https://nestjs.com/)
-- [react 18系](https://ja.reactjs.org/)
+- [react 19系](https://ja.reactjs.org/)
 - [typescript 5系](https://www.typescriptlang.org/)
 - [eslint 9系](https://eslint.org/)
 - [prettier 3系](https://prettier.io/)
