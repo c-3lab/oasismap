@@ -121,7 +121,7 @@ export class HappinessInputService {
         zoom: 10,
       },
       headers: {
-        "User-Agent": "OasisMap"
+        "User-Agent": "OasisMap (TIS_WB@ml.tis.co.jp)"
       }
     }).then(response => {
       return response.data.features[0].properties.geocoding.admin;
