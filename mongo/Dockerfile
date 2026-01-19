@@ -1,7 +1,7 @@
-# Dockerfile to fix CRITICAL vulnerabilities in gosu
-# Based on mongo:8.0.13 but rebuilds gosu with Go 1.25.1
+# Dockerfile to fix CRITICAL vulnerabilities in gosu and MongoDB
+# Based on mongo:8.0.17 (fixes CVE-2025-14847 "MongoBleed") but rebuilds gosu with Go 1.25.1
 
-FROM mongo:8.0.13
+FROM mongo:8.0.17
 
 RUN set -eux; \
     # Save the list of packages that were originally installed (sorted for later diff)
