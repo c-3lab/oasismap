@@ -7,7 +7,12 @@
   "license": "AGPL",
   "overrides": {
     "form-data": "^4.0.4",
-    "sha.js": "^2.4.12"
+    "sha.js": "^2.4.12",
+    "tar": "^7.5.3",
+    "validator": "^13.15.22",
+    "qs": "^6.14.1",
+    "glob": "^11.1.0",
+    "jws": "^3.2.3"
   },
   "scripts": {
     "build": "nest build",
