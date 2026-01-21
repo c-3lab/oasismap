@@ -6,7 +6,7 @@
     "dev": "TZ=Asia/Tokyo next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint -d .",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "format": "prettier --write .",
     "prepare": "cd .. && husky install",
     "lint-staged": "lint-staged",
