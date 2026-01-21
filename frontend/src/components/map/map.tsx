@@ -17,6 +17,14 @@ import React, {
 import { useSession } from 'next-auth/react'
 import { LatLng, LatLngTuple, LatLngBounds, divIcon } from 'leaflet'
 import L from 'leaflet'
+
+// MarkerClusterGroupの型定義（leaflet.markerclusterの型定義を参照）
+interface MarkerClusterGroupType extends L.LayerGroup {
+  addLayers(layers: L.Layer[]): this
+  removeLayers(layers: L.Layer[]): this
+  clearLayers(): this
+  getChildCount(): number
+}
 import { createRoot } from 'react-dom/client'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster'
@@ -159,10 +167,10 @@ const HybridClusterGroup = ({
   targetEntity?: Data
 }) => {
   const map = useMap()
-  const happinessClustersRef = useRef<{ [key: string]: L.MarkerClusterGroup }>(
-    {}
-  )
-  const superClusterRef = useRef<L.MarkerClusterGroup | null>(null)
+  const happinessClustersRef = useRef<{
+    [key: string]: MarkerClusterGroupType
+  }>({})
+  const superClusterRef = useRef<MarkerClusterGroupType | null>(null)
   const [popupPin, setPopupPin] = useState<Pin | null>(null)
   const [popupPosition, setPopupPosition] = useState<[number, number] | null>(
     null
@@ -205,9 +213,11 @@ const HybridClusterGroup = ({
 
     HAPPINESS_KEYS.forEach((happinessType) => {
       if (!happinessClustersRef.current[happinessType]) {
-        happinessClustersRef.current[happinessType] = L.markerClusterGroup({
+        happinessClustersRef.current[happinessType] = (
+          L as any
+        ).markerClusterGroup({
           ...markerClusterGroupProps,
-          iconCreateFunction: (cluster) => {
+          iconCreateFunction: (cluster: any) => {
             const count = cluster.getChildCount()
 
             return createClusterIcon({
@@ -228,9 +238,9 @@ const HybridClusterGroup = ({
     const markerClusterGroupProps = getMarkerClusterGroupProps()
 
     if (!superClusterRef.current) {
-      superClusterRef.current = L.markerClusterGroup({
+      superClusterRef.current = (L as any).markerClusterGroup({
         ...markerClusterGroupProps,
-        iconCreateFunction: (cluster) => {
+        iconCreateFunction: (cluster: any) => {
           return createClusterIcon({
             count: cluster.getChildCount(),
             backgroundColor: 'rgba(255, 255, 255, 0.9)',

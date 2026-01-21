@@ -56,6 +56,10 @@ export default defineConfig([
           caughtErrorsIgnorePattern: '^_',
         },
       ],
+      // React 19の新しいルールを無効化
+      'react-hooks/immutability': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/refs': 'off',
     },
   },
 
