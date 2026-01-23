@@ -150,7 +150,7 @@ services:
     entrypoint: ["sh", "/home/postgrescli/scripts/add-column.sh"]
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.3.4
+    image: quay.io/keycloak/keycloak:26.5.1
     hostname: keycloak
     container_name: keycloak
     ports:
