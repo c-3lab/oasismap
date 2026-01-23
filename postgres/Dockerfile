@@ -1,5 +1,6 @@
 # Dockerfile to fix CRITICAL vulnerabilities in gosu and system packages
-# Based on FROM postgres:17.5 but builds gosu with Go 1.23.12 and updates vulnerable packages
+# Based on FROM postgres:17.5 but builds gosu with Go 1.25.5 and updates vulnerable packages
+# Go 1.25.5 fixes CVE-2025-58183 and CVE-2025-61729
 
 FROM postgres:17.5
 
@@ -12,13 +13,13 @@ RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends ca-certificates curl git build-essential; \
     \
-    # --- Temporarily install Go 1.23.12 (amd64) ---
+    # --- Temporarily install Go 1.25.5 (amd64) ---
     cd /tmp; \
-    curl -fsSLO "https://go.dev/dl/go1.23.12.linux-amd64.tar.gz"; \
-    tar -C /usr/local -xzf go1.23.12.linux-amd64.tar.gz; \
+    curl -fsSLO "https://go.dev/dl/go1.25.5.linux-amd64.tar.gz"; \
+    tar -C /usr/local -xzf go1.25.5.linux-amd64.tar.gz; \
     export PATH="/usr/local/go/bin:$PATH"; \
     \
-    # --- Build gosu v1.17 with Go 1.23.12 (static binary) ---
+    # --- Build gosu v1.17 with Go 1.25.5 (static binary) ---
     mkdir -p /tmp/gosu-src; \
     curl -fsSL -o /tmp/gosu-src/gosu.tar.gz "https://github.com/tianon/gosu/archive/refs/tags/1.17.tar.gz"; \
     tar -C /tmp/gosu-src -xzf /tmp/gosu-src/gosu.tar.gz --strip-components=1; \
