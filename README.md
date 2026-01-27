@@ -321,11 +321,11 @@ OASIS Mapでは現在の位置情報を利用します。
 
 ## 利用バージョン
 
-- [next 14.2.3](https://nextjs.org/)
+- [next 15.5.9](https://nextjs.org/)
 - [nest 10.4.15](https://nestjs.com/)
-- [react 18系](https://ja.reactjs.org/)
+- [react 19系](https://ja.reactjs.org/)
 - [typescript 5系](https://www.typescriptlang.org/)
-- [eslint 8系(frontend), 9系(backend)](https://eslint.org/)
+- [eslint 9系](https://eslint.org/)
 - [prettier 3系](https://prettier.io/)
 - [jest 29.5.0](https://jestjs.io/ja/)
 - [Postgresql 17.2](https://www.postgresql.org/)

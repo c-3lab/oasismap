@@ -85,6 +85,9 @@ describe('HappinessInputService', () => {
           format: 'geocodejson',
           zoom: 10,
         },
+        headers: {
+          'User-Agent': 'OasisMap (TIS_WB@ml.tis.co.jp)',
+        },
       });
       expect(spyPost).toHaveBeenCalledWith(
         `${process.env.ORION_URI}/v2/entities`,
@@ -153,6 +156,9 @@ describe('HappinessInputService', () => {
           lon: 139.72382,
           format: 'geocodejson',
           zoom: 10,
+        },
+        headers: {
+          'User-Agent': 'OasisMap (TIS_WB@ml.tis.co.jp)',
         },
       });
       expect(spyPost).toHaveBeenCalledWith(
