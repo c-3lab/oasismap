@@ -24,6 +24,14 @@
   },
   "author": "c-3lab",
   "license": "AGPL",
+  "overrides": {
+    "form-data": "^4.0.4",
+    "sha.js": "^2.4.12",
+    "tar": "^7.5.3",
+    "glob": "^11.1.0",
+    "jws": "^4.0.1",
+    "preact": "^10.28.2"
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",

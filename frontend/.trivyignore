@@ -5,3 +5,22 @@
 # - frontend コンテナに含まれる zlib は minizip を含まずにビルドされている
 # - よって、frontend コンテナに含まれる zlib は CVE-2023-45853 に該当しない
 CVE-2023-45853
+
+# Node.jsベースイメージに含まれるnpmコマンド自体の依存関係の脆弱性
+# 本番環境ではnpmコマンドを使用しないため、リスクは低い
+# - CVE-2026-23745: npm/node_modules/tar の脆弱性
+# - CVE-2025-64756: npm/node_modules/glob の脆弱性
+# - CVE-2026-23950: npm/node_modules/tar の脆弱性（Unicode path collision race condition）
+CVE-2026-23745
+CVE-2025-64756
+CVE-2026-23950
+
+# glibc (libc6) について CVE-2026-0861 が検知されるが、Debian 公式で Minor issue として扱われているため無視
+# Debian 公式で Minor issue として扱われている理由は、以下の通り
+# - https://security-tracker.debian.org/tracker/CVE-2026-0861
+# - CVE-2026-0861 は memalign 系関数での整数オーバーフローによるヒープ破損の可能性
+# - 攻撃者が size と alignment の両方を制御する必要があり、実用的な攻撃は困難
+# - Debian 12 (bookworm) では修正版がまだ提供されていない（glibc 2.42-8 以降で修正済み）
+# - Debian Security Advisory (DSA) は発行されていない（<no-dsa>）
+# - よって、現時点では対応不要として無視する
+CVE-2026-0861
