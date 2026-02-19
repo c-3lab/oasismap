@@ -1,0 +1,34 @@
+# Copy to terraform.tfvars and set real values. Do not commit terraform.tfvars.
+# Backend: run terraform init -backend-config=backend.tfvars (or -backend-config="key=value")
+# with resource_group_name and storage_account_name for the state storage.
+
+resource_group_name = "YOUR_RESOURCE_GROUP_NAME"
+prefix              = "oasismap"
+location            = "Japan East"
+
+# VNet
+vnet_address_prefix  = "10.0.0.0/16"
+subnet_dmz_prefix    = "10.0.0.0/24"
+subnet_app_prefix    = "10.0.1.0/24"
+subnet_db_prefix     = "10.0.2.0/24"
+
+# Cosmos DB
+mongo_api_version       = "6.0"
+cosmosdb_database_name  = "oriondb-government"
+
+# PostgreSQL (password: set via tfvars or rotate after create; store in Key Vault)
+postgres_admin_login          = "postgres"
+postgres_admin_password       = "CHANGE_ME_PLACEHOLDER"
+postgres_sku_name             = "Standard_D2ds_v4"
+postgres_sku_tier             = "GeneralPurpose"
+postgres_storage_mb            = 32768
+postgres_version              = "16"
+postgres_backup_retention_days = 7
+postgres_geo_redundant_backup  = "Disabled"
+
+# Log Analytics
+log_analytics_sku                 = "PerGB2018"
+log_analytics_retention_in_days   = 30
+
+# Key Vault
+key_vault_sku = "standard"
