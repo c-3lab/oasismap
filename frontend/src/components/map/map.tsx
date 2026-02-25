@@ -561,7 +561,10 @@ const Map: React.FC<Props> = ({
       const control: L.Control = new L.Control({ position: 'bottomright' })
 
       control.onAdd = () => {
-        const div = L.DomUtil.create('div', 'leaflet-control-custom')
+        const div = L.DomUtil.create(
+          'div',
+          'leaflet-control-custom leaflet-control-add-happiness'
+        )
 
         const root = createRoot(div)
         root.render(

@@ -16,6 +16,9 @@ export default function HappinessLayout({
           alignItems="center"
           sx={{
             minHeight: '100vh',
+            '@supports (min-height: 100dvh)': {
+              minHeight: '100dvh',
+            },
           }}
         >
           <CircularProgress />

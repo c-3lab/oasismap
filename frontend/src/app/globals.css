@@ -113,6 +113,10 @@ a {
   height: 50px !important;
 }
 
+.leaflet-control-add-happiness {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Marker cluster styling for centered numbers and maintaining circular shape */
 .marker-cluster {
   display: flex;

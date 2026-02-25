@@ -236,6 +236,9 @@ const ListTable: React.FC<ListTableProps> = ({
       // maxHeightの指定についてはヘッダーの高さ(64px)と親コンポーネントの上下パディング(64px)を差し引く
       sx={{
         maxHeight: 'calc(100vh - 64px - 64px)',
+        '@supports (max-height: 100dvh)': {
+          maxHeight: 'calc(100dvh - 64px - 64px)',
+        },
         border: '1px solid rgba(0, 0, 0, 0.12)',
       }}
     >

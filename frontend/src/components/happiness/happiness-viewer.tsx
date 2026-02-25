@@ -45,7 +45,15 @@ const HappinessViewer = ({
         container
         item
         xs={12}
-        sx={{ height: { xs: 'calc(100vh - 56px)', sm: 'calc(100vh - 64px)' } }}
+        sx={{
+          height: { xs: 'calc(100vh - 56px)', sm: 'calc(100vh - 64px)' },
+          '@supports (height: 100dvh)': {
+            height: {
+              xs: 'calc(100dvh - 56px)',
+              sm: 'calc(100dvh - 64px)',
+            },
+          },
+        }}
       >
         <Map
           pinData={pinData}

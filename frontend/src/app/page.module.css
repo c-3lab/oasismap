@@ -7,6 +7,12 @@
   min-height: 100vh;
 }
 
+@supports (min-height: 100dvh) {
+  .main {
+    min-height: 100dvh;
+  }
+}
+
 .description {
   display: inherit;
   justify-content: inherit;
