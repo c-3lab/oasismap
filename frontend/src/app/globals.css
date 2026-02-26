@@ -117,6 +117,14 @@ a {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Safari: Leaflet コントロールの点滅・タイル下に隠れる問題のワークアラウンド (#8068) */
+@supports (-webkit-touch-callout: none) {
+  .leaflet-control-container .leaflet-top,
+  .leaflet-control-container .leaflet-bottom {
+    will-change: transform;
+  }
+}
+
 /* Marker cluster styling for centered numbers and maintaining circular shape */
 .marker-cluster {
   display: flex;
