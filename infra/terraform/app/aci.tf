@@ -17,6 +17,11 @@ resource "azurerm_container_group" "orion" {
       # Set Orion/Cosmos connection etc.; use Key Vault or placeholders
     }
   }
+
+  depends_on = [
+    azurerm_cosmosdb_mongo_collection.csubs,
+    azurerm_cosmosdb_mongo_collection.entities
+  ]
 }
 
 resource "azurerm_container_group" "cygnus" {
