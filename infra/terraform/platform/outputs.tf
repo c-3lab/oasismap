@@ -74,3 +74,13 @@ output "postgres_fqdn" {
   description = "PostgreSQL FQDN for connection strings (password from Key Vault)."
   value       = azurerm_postgresql_flexible_server.main.fqdn
 }
+
+output "user_assigned_identity_orion_id" {
+  description = "User Assigned Identity ID for orion."
+  value       = azurerm_user_assigned_identity.orion.id
+}
+
+output "user_assigned_identity_cygnus_id" {
+  description = "User Assigned Identity ID for cygnus."
+  value       = azurerm_user_assigned_identity.cygnus.id
+}

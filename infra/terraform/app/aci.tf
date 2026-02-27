@@ -1,12 +1,13 @@
 # Azure Container Instances: Orion, Cygnus. VNet integration using platform subnet_app.
 
 resource "azurerm_container_group" "orion" {
-  name                = "${var.prefix}-aci-orion"
-  location            = var.location
-  resource_group_name = data.terraform_remote_state.platform.outputs.resource_group_name
-  ip_address_type     = "Private"
-  os_type             = "Linux"
-  subnet_ids          = [data.terraform_remote_state.platform.outputs.subnet_app_id]
+  name                                = "${var.prefix}-aci-orion"
+  location                            = var.location
+  resource_group_name                 = data.terraform_remote_state.platform.outputs.resource_group_name
+  ip_address_type                     = "Private"
+  os_type                             = "Linux"
+  subnet_ids                          = [data.terraform_remote_state.platform.outputs.subnet_app_id]
+  key_vault_user_assigned_identity_id = data.terraform_remote_state.platform.outputs.uai_terraform_id
 
   container {
     name   = "orion"
