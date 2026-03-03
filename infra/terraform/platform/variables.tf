@@ -49,9 +49,13 @@ variable "mongo_api_version" {
 }
 
 variable "cosmosdb_database_name" {
-  description = "Cosmos DB MongoDB database name (e.g. oriondb-government)."
+  description = "Cosmos DB MongoDB database name (e.g. oriondb)."
   type        = string
-  default     = "oriondb-government"
+  default     = "oriondb"
+  validation {
+    condition     = length(var.cosmosdb_database_name) < 11
+    error_message = "Cosmos DB database name must be less than 11 characters (e.g. oriondb)."
+  }
 }
 
 # --- PostgreSQL (03) ---

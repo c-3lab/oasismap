@@ -47,17 +47,3 @@ resource "azurerm_cosmosdb_mongo_database" "orion" {
   resource_group_name = azurerm_resource_group.main.name
   account_name        = azurerm_cosmosdb_account.mongo.name
 }
-
-# Optional: Orion collections (csubs, entities). Uncomment and adjust if needed.
-# resource "azurerm_cosmosdb_mongo_collection" "csubs" {
-#   name                = "csubs"
-#   resource_group_name = azurerm_resource_group.main.name
-#   account_name        = azurerm_cosmosdb_account.mongo.name
-#   database_name       = azurerm_cosmosdb_mongo_database.orion.name
-# }
-# resource "azurerm_cosmosdb_mongo_collection" "entities" {
-#   name                = "entities"
-#   resource_group_name = azurerm_resource_group.main.name
-#   account_name        = azurerm_cosmosdb_account.mongo.name
-#   database_name       = azurerm_cosmosdb_mongo_database.orion.name
-# }

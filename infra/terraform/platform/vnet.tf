@@ -118,6 +118,13 @@ resource "azurerm_subnet" "app" {
   private_endpoint_network_policies             = "Enabled"
   private_link_service_network_policies_enabled = true
   service_endpoints                             = ["Microsoft.AzureCosmosDB"]
+  delegation {
+    name = "dlg-Microsoft.ContainerInstance-containerGroups"
+    service_delegation {
+      name    = "Microsoft.ContainerInstance/containerGroups"
+      actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
+    }
+  }
 }
 
 resource "azurerm_subnet_network_security_group_association" "app" {

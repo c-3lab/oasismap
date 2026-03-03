@@ -46,10 +46,10 @@ variable "app_keycloak_name" {
 }
 
 # --- ACI (Orion, Cygnus) ---
-variable "aci_orion_image" {
-  description = "Container image for Orion ACI."
+variable "aci_orion_image_tag" {
+  description = "Container image tag for Orion ACI."
   type        = string
-  default     = "placeholder/orion:latest"
+  default     = "orion:latest"
 }
 
 variable "aci_cygnus_image" {

@@ -15,13 +15,10 @@ resource "azurerm_key_vault" "main" {
 # Current client (Terraform runner) needs access to manage secrets / set policy.
 data "azurerm_client_config" "current" {}
 
-resource "azurerm_key_vault_access_policy" "terraform" {
-  key_vault_id = azurerm_key_vault.main.id
-  tenant_id    = data.azurerm_client_config.current.tenant_id
-  object_id    = data.azurerm_client_config.current.object_id
-  secret_permissions = [
-    "Get", "List", "Set", "Delete", "Recover", "Backup", "Restore"
-  ]
+resource "azurerm_role_assignment" "kv_rbac_terraform_admin" {
+  principal_id         = data.azurerm_client_config.current.object_id
+  role_definition_name = "Key Vault Administrator"
+  scope                = azurerm_key_vault.main.id
 }
 
 resource "azurerm_user_assigned_identity" "orion" {
@@ -46,6 +43,17 @@ resource "azurerm_role_assignment" "kv_rbac_cygnus" {
   principal_id         = azurerm_user_assigned_identity.cygnus.principal_id
   role_definition_name = "Key Vault Secrets User"
   scope                = azurerm_key_vault.main.id
+}
+
+resource "azurerm_key_vault_secret" "orion_mongo_uri" {
+  name             = "orion-mongo-uri"
+  value_wo         = azurerm_cosmosdb_account.mongo.primary_mongodb_connection_string
+  value_wo_version = 1
+  key_vault_id     = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_role_assignment.kv_rbac_terraform_admin
+  ]
 }
 
 # Do NOT create azurerm_key_vault_secret here. Secrets (e.g. postgres_password, pfx_password)

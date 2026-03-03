@@ -14,7 +14,7 @@ subnet_db_prefix     = "10.0.2.0/24"
 
 # Cosmos DB
 mongo_api_version       = "6.0"
-cosmosdb_database_name  = "oriondb-government"
+cosmosdb_database_name  = "oriondb"
 
 # PostgreSQL (password: set via tfvars or rotate after create; store in Key Vault)
 postgres_admin_login          = "postgres"
