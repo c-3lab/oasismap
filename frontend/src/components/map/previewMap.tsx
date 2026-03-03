@@ -9,7 +9,7 @@ import {
 } from 'react-leaflet'
 import { getIconByType } from '@/components/utils/icon'
 import { HappinessKey } from '@/types/happiness-key'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 type Props = {
   latitude: number
@@ -32,6 +32,7 @@ const MapUpdater: React.FC<{ latitude: number; longitude: number }> = ({
 }
 
 const PreviewMap: React.FC<Props> = ({ latitude, longitude, answer }) => {
+  const [useFallback, setUseFallback] = useState(false)
   const previewIcon = () => {
     for (const [key, value] of Object.entries(answer) as [
       HappinessKey,
@@ -54,12 +55,25 @@ const PreviewMap: React.FC<Props> = ({ latitude, longitude, answer }) => {
     >
       <MapUpdater latitude={latitude} longitude={longitude} />
       <ZoomControl position={'bottomleft'} />
-      <TileLayer
-        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-        url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-        maxZoom={18}
-        minZoom={5}
-      />
+      {!useFallback && (
+        <TileLayer
+          attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+          url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={18}
+          minZoom={5}
+          eventHandlers={{
+            tileerror: () => setUseFallback(true),
+          }}
+        />
+      )}
+      {useFallback && (
+        <TileLayer
+          attribution='&copy; <a href="https://maps.gsi.go.jp/development/ichiran.html">国土地理院</a>'
+          url="https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png"
+          maxZoom={18}
+          minZoom={5}
+        />
+      )}
       <Marker position={[latitude, longitude]} icon={previewIcon()} />
     </MapContainer>
   )
