@@ -40,6 +40,12 @@ variable "app_backend_name" {
   type        = string
 }
 
+variable "orion_fiware_service" {
+  description = "Fiware service name for Orion."
+  type        = string
+  default     = "Government"
+}
+
 variable "app_keycloak_name" {
   description = "App Service name for Keycloak (globally unique)."
   type        = string
@@ -56,6 +62,13 @@ variable "aci_cygnus_image" {
   description = "Container image for Cygnus ACI."
   type        = string
   default     = "placeholder/cygnus:latest"
+}
+
+# --- ACI mongo-cli (one-shot index creation) ---
+variable "aci_mongo_cli_image_tag" {
+  description = "Container image tag for mongo-cli ACI (one-shot MongoDB index creation)."
+  type        = string
+  default     = "mongo-cli:latest"
 }
 
 # --- Application Gateway ---

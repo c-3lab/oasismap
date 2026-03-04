@@ -77,8 +77,8 @@ resource "azurerm_container_group" "orion" {
 
   lifecycle {
     action_trigger {
-      events = [ before_create ]
-      actions = [ action.local_command.build_orion ]
+      events  = [before_create]
+      actions = [action.local_command.build_orion]
     }
   }
 
@@ -89,21 +89,64 @@ resource "azurerm_container_group" "orion" {
   ]
 }
 
-resource "azurerm_container_group" "cygnus" {
-  name                = "${var.prefix}-aci-cygnus"
-  location            = var.location
-  resource_group_name = data.terraform_remote_state.platform.outputs.resource_group_name
-  ip_address_type     = "Private"
-  os_type             = "Linux"
-  subnet_ids          = [data.terraform_remote_state.platform.outputs.subnet_app_id]
+# One-shot: create MongoDB indexes (including 2dsphere on location.coords) then exit.
+# Note: Container ports must be exposed for ACI requirement. Dummy port is 65534.
+resource "azurerm_container_group" "mongo_cli" {
+  name                                = "${var.prefix}-aci-mongo-cli"
+  location                            = var.location
+  resource_group_name                 = data.terraform_remote_state.platform.outputs.resource_group_name
+  ip_address_type                     = "Private"
+  os_type                             = "Linux"
+  restart_policy                      = "Never"
+  subnet_ids                          = [data.terraform_remote_state.platform.outputs.subnet_app_id]
+  key_vault_user_assigned_identity_id = data.azurerm_user_assigned_identity.mongo_cli.id
+
+  image_registry_credential {
+    server                    = azurerm_container_registry.main.login_server
+    user_assigned_identity_id = data.azurerm_user_assigned_identity.mongo_cli.id
+  }
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [data.azurerm_user_assigned_identity.mongo_cli.id]
+  }
 
   container {
-    name   = "cygnus"
-    image  = var.aci_cygnus_image
-    cpu    = "0.5"
-    memory = "1"
+    name   = "mongo-cli"
+    image  = "${azurerm_container_registry.main.login_server}/${var.aci_mongo_cli_image_tag}"
+    cpu    = "0.25"
+    memory = "0.5"
+
+    ports {
+      port     = 65534
+      protocol = "TCP"
+    }
+
     environment_variables = {
-      # PostgreSQL etc.; use Key Vault or placeholders
+      MONGO_DATABASE = format("%s_%s", data.terraform_remote_state.platform.outputs.cosmosdb_database_name, lower(var.orion_fiware_service))
+    }
+
+    secure_environment_variables = {
+      ORION_MONGO_URI = data.azurerm_key_vault_secret.orion_mongo_uri.value
     }
   }
+
+  diagnostics {
+    log_analytics {
+      workspace_id  = data.azurerm_log_analytics_workspace.main.workspace_id
+      workspace_key = data.azurerm_log_analytics_workspace.main.primary_shared_key
+    }
+  }
+
+  lifecycle {
+    action_trigger {
+      events  = [before_create]
+      actions = [action.local_command.build_mongo_cli]
+    }
+  }
+
+  depends_on = [
+    azurerm_cosmosdb_mongo_collection.entities,
+    azurerm_role_assignment.acr_rbac_mongo_cli_pull
+  ]
 }

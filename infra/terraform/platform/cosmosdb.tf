@@ -40,6 +40,23 @@ resource "azurerm_cosmosdb_account" "mongo" {
   virtual_network_rule {
     id = azurerm_subnet.app.id
   }
+
+  ip_range_filter = [
+    "20.245.161.131",
+    "20.253.192.12",
+    "20.43.245.209",
+    "20.66.22.66",
+    "40.118.133.244",
+    "57.154.182.51",
+    "13.88.56.148",
+    "13.91.105.215",
+    "13.95.130.121",
+    "20.245.81.54",
+    "4.210.172.107",
+    "40.118.23.126",
+    "40.80.152.199",
+    "40.91.218.243",
+  ]
 }
 
 resource "azurerm_cosmosdb_mongo_database" "orion" {

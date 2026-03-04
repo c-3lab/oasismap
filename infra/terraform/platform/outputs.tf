@@ -80,6 +80,11 @@ output "user_assigned_identity_orion_name" {
   value       = azurerm_user_assigned_identity.orion.name
 }
 
+output "user_assigned_identity_mongo_cli_name" {
+  description = "User Assigned Identity Name for mongo-cli."
+  value       = azurerm_user_assigned_identity.mongo_cli.name
+}
+
 output "user_assigned_identity_cygnus_name" {
   description = "User Assigned Identity Name for cygnus."
   value       = azurerm_user_assigned_identity.cygnus.name

@@ -33,6 +33,18 @@ resource "azurerm_role_assignment" "kv_rbac_orion" {
   scope                = azurerm_key_vault.main.id
 }
 
+resource "azurerm_user_assigned_identity" "mongo_cli" {
+  location            = var.location
+  name                = "${var.prefix}-uai-mongo-cli"
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+resource "azurerm_role_assignment" "kv_rbac_mongo_cli" {
+  principal_id         = azurerm_user_assigned_identity.mongo_cli.principal_id
+  role_definition_name = "Key Vault Secrets User"
+  scope                = azurerm_key_vault.main.id
+}
+
 resource "azurerm_user_assigned_identity" "cygnus" {
   location            = var.location
   name                = "${var.prefix}-uai-cygnus"

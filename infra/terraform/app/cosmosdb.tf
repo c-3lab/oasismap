@@ -30,9 +30,4 @@ resource "azurerm_cosmosdb_mongo_collection" "entities" {
     keys   = ["expDate"]
     unique = false
   }
-
-  index {
-    keys   = ["location.coords"]
-    unique = false
-  }
 }
