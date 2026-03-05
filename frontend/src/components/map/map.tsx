@@ -42,6 +42,7 @@ import { MeModal } from '../happiness/me-modal'
 import { Pin } from '@/types/pin'
 import { HAPPINESS_KEYS, PROFILE_TYPE } from '@/libs/constants'
 import { MePopup } from './mePopup'
+import { handleTileError } from '@/components/utils/tile-fallback-log'
 import { MessageType } from '@/types/message-type'
 import { HappinessKey } from '@/types/happiness-key'
 
@@ -628,7 +629,8 @@ const Map: React.FC<Props> = ({
             maxZoom={18}
             minZoom={5}
             eventHandlers={{
-              tileerror: () => setUseFallback(true),
+              tileerror: (e: L.TileErrorEvent) =>
+                handleTileError(setUseFallback),
             }}
           />
         )}

@@ -8,6 +8,7 @@ import {
   useMap,
 } from 'react-leaflet'
 import { getIconByType } from '@/components/utils/icon'
+import { handleTileError } from '@/components/utils/tile-fallback-log'
 import { HappinessKey } from '@/types/happiness-key'
 import { useEffect, useState } from 'react'
 
@@ -62,7 +63,8 @@ const PreviewMap: React.FC<Props> = ({ latitude, longitude, answer }) => {
           maxZoom={18}
           minZoom={5}
           eventHandlers={{
-            tileerror: () => setUseFallback(true),
+            tileerror: (e: L.TileErrorEvent) =>
+              handleTileError(setUseFallback),
           }}
         />
       )}
