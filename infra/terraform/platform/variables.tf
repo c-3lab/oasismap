@@ -71,6 +71,10 @@ variable "postgres_admin_password" {
   type        = string
   sensitive   = true
   default     = "CHANGE_ME_PLACEHOLDER"
+  validation {
+    condition     = can(regex("^[a-zA-Z0-9]+$", var.postgres_admin_password))
+    error_message = "PostgreSQL administrator password must only contain alphanumeric characters."
+  }
 }
 
 

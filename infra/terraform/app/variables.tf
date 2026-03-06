@@ -64,11 +64,18 @@ variable "aci_cygnus_image_tag" {
   default     = "cygnus:latest"
 }
 
-# --- ACI mongo-cli (one-shot index creation) ---
+# --- ACI mongo-cli (one-shot MongoDB index creation) ---
 variable "aci_mongo_cli_image_tag" {
   description = "Container image tag for mongo-cli ACI (one-shot MongoDB index creation)."
   type        = string
   default     = "mongo-cli:latest"
+}
+
+# --- ACI postgres-cli (one-shot PostgreSQL database initialization) ---
+variable "aci_postgres_cli_image_tag" {
+  description = "Container image tag for postgres-cli ACI (one-shot PostgreSQL database initialization)."
+  type        = string
+  default     = "postgres-cli:latest"
 }
 
 # --- Application Gateway ---

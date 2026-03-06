@@ -85,6 +85,11 @@ output "user_assigned_identity_mongo_cli_name" {
   value       = azurerm_user_assigned_identity.mongo_cli.name
 }
 
+output "user_assigned_identity_postgres_cli_name" {
+  description = "User Assigned Identity Name for postgres-cli."
+  value       = azurerm_user_assigned_identity.postgres_cli.name
+}
+
 output "user_assigned_identity_cygnus_name" {
   description = "User Assigned Identity Name for cygnus."
   value       = azurerm_user_assigned_identity.cygnus.name

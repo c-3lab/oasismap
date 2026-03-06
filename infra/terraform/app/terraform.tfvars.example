@@ -14,6 +14,8 @@ app_keycloak_name    = "YOUR_UNIQUE_KEYCLOAK_APP_NAME"
 
 aci_orion_image_tag  = "orion:latest"
 aci_cygnus_image_tag = "cygnus:latest"
+aci_mongo_cli_image_tag = "mongo-cli:latest"
+aci_postgres_cli_image_tag = "postgres-cli:latest"
 
 agw_sku          = "WAF_v2"
 agw_min_capacity = 1

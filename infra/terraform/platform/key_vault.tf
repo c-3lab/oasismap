@@ -45,6 +45,18 @@ resource "azurerm_role_assignment" "kv_rbac_mongo_cli" {
   scope                = azurerm_key_vault.main.id
 }
 
+resource "azurerm_user_assigned_identity" "postgres_cli" {
+  location            = var.location
+  name                = "${var.prefix}-uai-postgres-cli"
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+resource "azurerm_role_assignment" "kv_rbac_postgres_cli" {
+  principal_id         = azurerm_user_assigned_identity.postgres_cli.principal_id
+  role_definition_name = "Key Vault Secrets User"
+  scope                = azurerm_key_vault.main.id
+}
+
 resource "azurerm_user_assigned_identity" "cygnus" {
   location            = var.location
   name                = "${var.prefix}-uai-cygnus"
@@ -70,9 +82,13 @@ resource "azurerm_key_vault_secret" "orion_mongo_uri" {
 
 resource "azurerm_key_vault_secret" "cygnus_postgres_password" {
   name             = "cygnus-postgres-password"
-  value            = azurerm_postgresql_flexible_server.main.administrator_password
+  value_wo         = azurerm_postgresql_flexible_server.main.administrator_password
   value_wo_version = 1
   key_vault_id     = azurerm_key_vault.main.id
+
+  depends_on = [
+    azurerm_role_assignment.kv_rbac_terraform_admin
+  ]
 }
 
 # Do NOT create azurerm_key_vault_secret here. Secrets (e.g. postgres_password, pfx_password)

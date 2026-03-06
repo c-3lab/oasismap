@@ -151,6 +151,66 @@ resource "azurerm_container_group" "mongo_cli" {
   ]
 }
 
+# One-shot: create PostgreSQL database initialization then exit.
+# Note: Container ports must be exposed for ACI requirement. Dummy port is 65534.
+resource "azurerm_container_group" "postgres_cli" {
+  name                                = "${var.prefix}-aci-postgres-cli"
+  location                            = var.location
+  resource_group_name                 = data.terraform_remote_state.platform.outputs.resource_group_name
+  ip_address_type                     = "Private"
+  os_type                             = "Linux"
+  restart_policy                      = "Never"
+  subnet_ids                          = [data.terraform_remote_state.platform.outputs.subnet_app_id]
+  key_vault_user_assigned_identity_id = data.azurerm_user_assigned_identity.postgres_cli.id
+
+  image_registry_credential {
+    server                    = azurerm_container_registry.main.login_server
+    user_assigned_identity_id = data.azurerm_user_assigned_identity.postgres_cli.id
+  }
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [data.azurerm_user_assigned_identity.postgres_cli.id]
+  }
+
+  container {
+    name   = "postgres-cli"
+    image  = "${azurerm_container_registry.main.login_server}/${var.aci_postgres_cli_image_tag}"
+    cpu    = "0.25"
+    memory = "0.5"
+
+    ports {
+      port     = 65534
+      protocol = "TCP"
+    }
+    secure_environment_variables = {
+      POSTGRES_HOST     = data.azurerm_postgresql_flexible_server.main.fqdn
+      POSTGRES_PORT     = "5432"
+      POSTGRES_USER     = data.azurerm_postgresql_flexible_server.main.administrator_login
+      POSTGRES_PASSWORD = data.azurerm_key_vault_secret.cygnus_postgres_password.value
+      POSTGRES_DB       = "postgres"
+    }
+  }
+
+  diagnostics {
+    log_analytics {
+      workspace_id  = data.azurerm_log_analytics_workspace.main.workspace_id
+      workspace_key = data.azurerm_log_analytics_workspace.main.primary_shared_key
+    }
+  }
+
+  lifecycle {
+    action_trigger {
+      events  = [before_create]
+      actions = [action.local_command.build_postgres_cli]
+    }
+  }
+
+  depends_on = [
+    azurerm_role_assignment.acr_rbac_postgres_cli_pull
+  ]
+}
+
 resource "azurerm_container_group" "cygnus" {
   name                                = "${var.prefix}-aci-cygnus"
   location                            = var.location
