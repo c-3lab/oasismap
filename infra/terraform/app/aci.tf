@@ -234,7 +234,7 @@ resource "azurerm_container_group" "cygnus" {
     name   = "cygnus"
     image  = "${azurerm_container_registry.main.login_server}/${var.aci_cygnus_image_tag}"
     cpu    = "0.5"
-    memory = "1"
+    memory = "4"
 
     ports {
       port     = 5055
@@ -265,7 +265,7 @@ resource "azurerm_container_group" "cygnus" {
     }
 
     readiness_probe {
-      initial_delay_seconds = 15
+      initial_delay_seconds = 30
       period_seconds        = 10
       timeout_seconds       = 5
       success_threshold     = 1
@@ -278,7 +278,7 @@ resource "azurerm_container_group" "cygnus" {
     }
 
     liveness_probe {
-      initial_delay_seconds = 15
+      initial_delay_seconds = 30
       period_seconds        = 10
       timeout_seconds       = 5
       success_threshold     = 1

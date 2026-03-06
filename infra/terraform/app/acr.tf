@@ -60,7 +60,7 @@ resource "azurerm_role_assignment" "acr_rbac_cygnus_pull" {
 action "local_command" "build_cygnus" {
   config {
     command   = "az"
-    arguments = ["acr", "build", "-r", azurerm_container_registry.main.name, "-t", var.aci_cygnus_image_tag, "../../../fiware/cygnus"]
+    arguments = ["acr", "build", "--no-logs", "-r", azurerm_container_registry.main.name, "-t", var.aci_cygnus_image_tag, "../../../fiware/cygnus"]
   }
 }
 
