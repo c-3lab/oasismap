@@ -58,10 +58,10 @@ variable "aci_orion_image_tag" {
   default     = "orion:latest"
 }
 
-variable "aci_cygnus_image" {
-  description = "Container image for Cygnus ACI."
+variable "aci_cygnus_image_tag" {
+  description = "Container image tag for Cygnus ACI."
   type        = string
-  default     = "placeholder/cygnus:latest"
+  default     = "cygnus:latest"
 }
 
 # --- ACI mongo-cli (one-shot index creation) ---

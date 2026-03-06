@@ -9,3 +9,8 @@ data "azurerm_key_vault_secret" "orion_mongo_uri" {
   name         = "orion-mongo-uri"
   key_vault_id = data.azurerm_key_vault.main.id
 }
+
+data "azurerm_key_vault_secret" "cygnus_postgres_password" {
+  name         = "cygnus-postgres-password"
+  key_vault_id = data.azurerm_key_vault.main.id
+}

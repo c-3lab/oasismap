@@ -68,5 +68,12 @@ resource "azurerm_key_vault_secret" "orion_mongo_uri" {
   ]
 }
 
+resource "azurerm_key_vault_secret" "cygnus_postgres_password" {
+  name             = "cygnus-postgres-password"
+  value            = azurerm_postgresql_flexible_server.main.administrator_password
+  value_wo_version = 1
+  key_vault_id     = azurerm_key_vault.main.id
+}
+
 # Do NOT create azurerm_key_vault_secret here. Secrets (e.g. postgres_password, pfx_password)
 # are populated by script or manual step; Terraform only references them.
