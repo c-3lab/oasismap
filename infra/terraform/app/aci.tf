@@ -306,6 +306,7 @@ resource "azurerm_container_group" "cygnus" {
   }
 
   depends_on = [
+    azurerm_container_group.postgres_cli,
     azurerm_role_assignment.acr_rbac_cygnus_pull
   ]
 }
