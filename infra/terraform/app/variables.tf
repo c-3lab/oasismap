@@ -49,6 +49,28 @@ variable "orion_fiware_service" {
 variable "app_keycloak_name" {
   description = "App Service name for Keycloak (globally unique)."
   type        = string
+  validation {
+    condition     = length(var.app_keycloak_name) < 60 && can(regex("^[a-zA-Z0-9-]+$", var.app_keycloak_name))
+    error_message = "App Service name for Keycloak must be less than 60 characters and only contain alphanumeric characters and dashes."
+  }
+}
+
+variable "app_keycloak_image_tag" {
+  description = "App Service image tag for Keycloak."
+  type        = string
+  default     = "keycloak:latest"
+}
+
+variable "app_keycloak_admin" {
+  description = "App Service admin username for Keycloak."
+  type        = string
+  sensitive   = true
+}
+
+variable "app_keycloak_admin_password" {
+  description = "App Service admin password for Keycloak."
+  type        = string
+  sensitive   = true
 }
 
 # --- ACI (Orion, Cygnus) ---

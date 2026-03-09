@@ -103,6 +103,14 @@ resource "azurerm_subnet" "dmz" {
   address_prefixes                              = [var.subnet_dmz_prefix]
   private_endpoint_network_policies             = "Enabled"
   private_link_service_network_policies_enabled = true
+
+  delegation {
+    name = "dlg-MicrosoftWeb-serverFarms"
+    service_delegation {
+      name    = "Microsoft.Web/serverFarms"
+      actions = ["Microsoft.Network/virtualNetworks/subnets/action"]
+    }
+  }
 }
 
 resource "azurerm_subnet_network_security_group_association" "dmz" {

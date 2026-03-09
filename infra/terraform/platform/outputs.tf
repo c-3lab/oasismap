@@ -94,3 +94,9 @@ output "user_assigned_identity_cygnus_name" {
   description = "User Assigned Identity Name for cygnus."
   value       = azurerm_user_assigned_identity.cygnus.name
 }
+
+output "user_assigned_identity_keycloak_name" {
+  description = "User Assigned Identity Name for keycloak."
+  value       = azurerm_user_assigned_identity.keycloak.name
+}
+

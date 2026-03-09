@@ -24,7 +24,7 @@ resource "azurerm_role_assignment" "acr_rbac_orion_pull" {
 action "local_command" "build_orion" {
   config {
     command   = "az"
-    arguments = ["acr", "build", "-r", azurerm_container_registry.main.name, "-t", var.aci_orion_image_tag, "../../../fiware/orion"]
+    arguments = ["acr", "build", "--no-logs", "-r", azurerm_container_registry.main.name, "-t", var.aci_orion_image_tag, "../../../fiware/orion"]
   }
 }
 
@@ -42,7 +42,7 @@ resource "azurerm_role_assignment" "acr_rbac_mongo_cli_pull" {
 action "local_command" "build_mongo_cli" {
   config {
     command   = "az"
-    arguments = ["acr", "build", "-r", azurerm_container_registry.main.name, "-t", var.aci_mongo_cli_image_tag, "../../../mongo-cli-azure"]
+    arguments = ["acr", "build", "--no-logs", "-r", azurerm_container_registry.main.name, "-t", var.aci_mongo_cli_image_tag, "../../../mongo-cli-azure"]
   }
 }
 
@@ -78,6 +78,24 @@ resource "azurerm_role_assignment" "acr_rbac_postgres_cli_pull" {
 action "local_command" "build_postgres_cli" {
   config {
     command   = "az"
-    arguments = ["acr", "build", "-r", azurerm_container_registry.main.name, "-t", var.aci_postgres_cli_image_tag, "../../../postgres-cli-azure"]
+    arguments = ["acr", "build", "--no-logs", "-r", azurerm_container_registry.main.name, "-t", var.aci_postgres_cli_image_tag, "../../../postgres-cli-azure"]
+  }
+}
+
+data "azurerm_user_assigned_identity" "keycloak" {
+  name                = data.terraform_remote_state.platform.outputs.user_assigned_identity_keycloak_name
+  resource_group_name = data.terraform_remote_state.platform.outputs.resource_group_name
+}
+
+resource "azurerm_role_assignment" "acr_rbac_keycloak_pull" {
+  principal_id         = data.azurerm_user_assigned_identity.keycloak.principal_id
+  role_definition_name = "AcrPull"
+  scope                = azurerm_container_registry.main.id
+}
+
+action "local_command" "build_keycloak" {
+  config {
+    command   = "az"
+    arguments = ["acr", "build", "--no-logs", "-r", azurerm_container_registry.main.name, "-t", var.app_keycloak_image_tag, "../../../keycloak"]
   }
 }
