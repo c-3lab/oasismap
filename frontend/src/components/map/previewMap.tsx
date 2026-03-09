@@ -63,8 +63,7 @@ const PreviewMap: React.FC<Props> = ({ latitude, longitude, answer }) => {
           maxZoom={18}
           minZoom={5}
           eventHandlers={{
-            tileerror: (e: L.TileErrorEvent) =>
-              handleTileError(setUseFallback),
+            tileerror: () => handleTileError(setUseFallback),
           }}
         />
       )}
