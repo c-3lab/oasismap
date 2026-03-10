@@ -321,7 +321,7 @@ OASIS Mapでは現在の位置情報を利用します。
 
 ## 利用バージョン
 
-- [next 15.5.9](https://nextjs.org/)
+- [next 15.5.10](https://nextjs.org/)
 - [nest 10.4.15](https://nestjs.com/)
 - [react 19系](https://ja.reactjs.org/)
 - [typescript 5系](https://www.typescriptlang.org/)
