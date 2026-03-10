@@ -1,6 +1,6 @@
 'use client'
 import dynamic from 'next/dynamic'
-import React, { useContext, useState, useEffect } from 'react'
+import React, { useContext, useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
 import {
@@ -27,6 +27,7 @@ import { useFetchData } from '@/libs/fetch'
 import { HappinessRequestBody } from '@/libs/fetch'
 import { getCurrentPosition } from '@/libs/geolocation'
 import { timestampToDateTime } from '@/libs/date-converter'
+import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 import { HappinessKey } from '@/types/happiness-key'
 import exifr from 'exifr'
 
@@ -41,9 +42,19 @@ type Exif = {
   timestamp?: Date
 }
 
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+const DEFAULT_LATITUDE = 35.6581064
+const DEFAULT_LONGITUDE = 139.7413637
 
 const HappinessInput: React.FC = () => {
+  const config = useRuntimeConfig()
+  const backendUrl = config.NEXT_PUBLIC_BACKEND_URL ?? ''
+  const defaultLatitude =
+    parseFloat(config.NEXT_PUBLIC_MAP_DEFAULT_LATITUDE ?? '') ||
+    DEFAULT_LATITUDE
+  const defaultLongitude =
+    parseFloat(config.NEXT_PUBLIC_MAP_DEFAULT_LONGITUDE ?? '') ||
+    DEFAULT_LONGITUDE
+
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -63,22 +74,28 @@ const HappinessInput: React.FC = () => {
     longitude: number
   } | null>(null)
 
-  // Get current position on component mount
-  useEffect(() => {
-    updateCurrentPosition()
-  }, [])
-
   // Common function to update current position
-  const updateCurrentPosition = async () => {
+  const updateCurrentPosition = useCallback(async () => {
     try {
-      const position = await getCurrentPosition()
+      const position = await getCurrentPosition({
+        defaultLatitude,
+        defaultLongitude,
+      })
       if (position.latitude !== undefined && position.longitude !== undefined) {
-        setCurrentPosition(position)
+        setCurrentPosition({
+          latitude: position.latitude,
+          longitude: position.longitude,
+        })
       }
     } catch (error) {
       console.error('Error getting current position:', error)
     }
-  }
+  }, [defaultLatitude, defaultLongitude])
+
+  // Get current position on component mount
+  useEffect(() => {
+    updateCurrentPosition()
+  }, [updateCurrentPosition])
 
   const createAnswersFromSelected = (
     selectedHappiness: string

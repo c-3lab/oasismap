@@ -1,9 +1,16 @@
-export const getCurrentPosition = async () => {
-  // 環境変数の取得に失敗した場合は日本経緯度原点を設定
-  const defaultLatitude =
-    parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_LATITUDE!) || 35.6581064
-  const defaultLongitude =
-    parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_LONGITUDE!) || 139.7413637
+const DEFAULT_LATITUDE = 35.6581064
+const DEFAULT_LONGITUDE = 139.7413637
+
+export type GetCurrentPositionOptions = {
+  defaultLatitude?: number
+  defaultLongitude?: number
+}
+
+export const getCurrentPosition = async (
+  options?: GetCurrentPositionOptions
+): Promise<{ latitude?: number; longitude?: number }> => {
+  const defaultLatitude = options?.defaultLatitude ?? DEFAULT_LATITUDE
+  const defaultLongitude = options?.defaultLongitude ?? DEFAULT_LONGITUDE
 
   // geolocation が http に対応していないため固定値を返却
   if (location.protocol === 'http:') {

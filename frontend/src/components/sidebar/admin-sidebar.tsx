@@ -14,15 +14,16 @@ import { MessageType } from '@/types/message-type'
 import { useFetchData } from '@/libs/fetch'
 import { signOut, useSession } from 'next-auth/react'
 import { ERROR_TYPE } from '@/libs/constants'
+import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 
 interface AdminSidebarProps {
   isOpen?: boolean
   handleDrawerClose: () => void
 }
 
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
-
 const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
+  const config = useRuntimeConfig()
+  const backendUrl = config.NEXT_PUBLIC_BACKEND_URL ?? ''
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
   const { update } = useSession()

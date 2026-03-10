@@ -17,14 +17,15 @@ import { Data } from '@/types/happiness-me-response'
 import { DateTime as OasismapDateTime } from '@/types/datetime'
 import { useSearchContext } from '@/contexts/search-context'
 import { SearchParams, DateTimeProps } from '@/types/search-context'
-
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 
 type UseHappinessDataProps = {
   type: 'me' | 'all'
 }
 
 export const useHappinessData = ({ type }: UseHappinessDataProps) => {
+  const config = useRuntimeConfig()
+  const backendUrl = config.NEXT_PUBLIC_BACKEND_URL ?? ''
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
   const [pinData, setPinData] = useState<Pin[]>([])
@@ -161,6 +162,7 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
     [
       isLoading,
       type,
+      backendUrl,
       initialEntityId,
       timestamp,
       entityByEntityId,
