@@ -11,10 +11,11 @@ import { HappinessListResponse, Data } from '@/types/happiness-list-response'
 import { useFetchData } from '@/libs/fetch'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 import { LoadingContext } from '@/contexts/loading-context'
-
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 
 const HappinessList: React.FC = () => {
+  const config = useRuntimeConfig()
+  const backendUrl = config.NEXT_PUBLIC_BACKEND_URL ?? ''
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
   const { isTokenFetched } = useTokenFetchStatus()

@@ -49,12 +49,7 @@ import { HappinessKey } from '@/types/happiness-key'
 import { HappinessFields } from '@/types/happiness-set'
 import { Data } from '@/types/happiness-me-response'
 import { mapColors } from '@/theme/color'
-
-// 環境変数の取得に失敗した場合は日本経緯度原点を設定
-const defaultLatitude =
-  parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_LATITUDE!) || 35.6581064
-const defaultLongitude =
-  parseFloat(process.env.NEXT_PUBLIC_MAP_DEFAULT_LONGITUDE!) || 139.7413637
+import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 
 const loadEnvAsNumber = (
   variable: string | undefined,
@@ -66,10 +61,11 @@ const loadEnvAsNumber = (
   return value
 }
 
-const defaultZoom = loadEnvAsNumber(
-  String(process.env.NEXT_PUBLIC_MAP_DEFAULT_ZOOM),
-  15
-)
+const DEFAULT_LATITUDE = 35.6581064
+const DEFAULT_LONGITUDE = 139.7413637
+const DEFAULT_ZOOM = 15
+const DEFAULT_MAX_CLUSTER_RADIUS = 200
+
 const maxBounds = new LatLngBounds(new LatLng(-90, -180), new LatLng(90, 180))
 const maxBoundsViscosity = 1.0
 
@@ -161,11 +157,13 @@ const HybridClusterGroup = ({
   setSelectedPin,
   session,
   targetEntity,
+  maxClusterRadius = DEFAULT_MAX_CLUSTER_RADIUS,
 }: {
   pinData: Pin[]
   setSelectedPin: React.Dispatch<React.SetStateAction<Pin | null>>
   session: any
   targetEntity?: Data
+  maxClusterRadius?: number
 }) => {
   const map = useMap()
   const happinessClustersRef = useRef<{
@@ -181,10 +179,7 @@ const HybridClusterGroup = ({
   const getMarkerClusterGroupProps = useCallback(
     () => ({
       chunkedLoading: true,
-      maxClusterRadius: loadEnvAsNumber(
-        process.env.NEXT_PUBLIC_MAX_CLUSTER_RADIUS,
-        200
-      ),
+      maxClusterRadius,
       disableClusteringAtZoom: 12, // Cluster when zoom < 12
       spiderfyOnMaxZoom: true,
       showCoverageOnHover: true,
@@ -193,7 +188,7 @@ const HybridClusterGroup = ({
       animate: true,
       animateAddingMarkers: false,
     }),
-    []
+    [maxClusterRadius]
   )
 
   const getHappinessColorPalette = useCallback(
@@ -436,6 +431,22 @@ const Map: React.FC<Props> = ({
   showAddHappiness,
   onAddHappiness,
 }) => {
+  const config = useRuntimeConfig()
+  const defaultLatitude =
+    parseFloat(config.NEXT_PUBLIC_MAP_DEFAULT_LATITUDE ?? '') ||
+    DEFAULT_LATITUDE
+  const defaultLongitude =
+    parseFloat(config.NEXT_PUBLIC_MAP_DEFAULT_LONGITUDE ?? '') ||
+    DEFAULT_LONGITUDE
+  const defaultZoom = loadEnvAsNumber(
+    config.NEXT_PUBLIC_MAP_DEFAULT_ZOOM,
+    DEFAULT_ZOOM
+  )
+  const maxClusterRadius = loadEnvAsNumber(
+    config.NEXT_PUBLIC_MAX_CLUSTER_RADIUS,
+    DEFAULT_MAX_CLUSTER_RADIUS
+  )
+
   const { data: session } = useSession()
   const [center, setCenter] = useState<LatLngTuple | null>(null)
   const [currentPosition, setCurrentPosition] = useState<LatLngTuple | null>(
@@ -491,8 +502,7 @@ const Map: React.FC<Props> = ({
     return () => {
       navigator.geolocation.clearWatch(watchId)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [defaultLatitude, defaultLongitude, noticeMessageContext])
 
   const currentPositionIconHTML = renderToString(
     <CurrentPositionIcon style={{ fill: '#20B2AA' }} />
@@ -649,6 +659,7 @@ const Map: React.FC<Props> = ({
           setSelectedPin={setSelectedPin}
           session={session}
           targetEntity={targetEntity}
+          maxClusterRadius={maxClusterRadius}
         />
         {onPopupClose && <OnPopupClose onPopupClose={onPopupClose} />}
         {currentPosition && (

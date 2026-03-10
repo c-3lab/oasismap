@@ -15,10 +15,11 @@ import { signOut, useSession } from 'next-auth/react'
 import { messageContext } from '@/contexts/message-context'
 import { useFetchData } from '@/libs/fetch'
 import { useRouter } from 'next/navigation'
-
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 
 const Import: React.FC = () => {
+  const config = useRuntimeConfig()
+  const backendUrl = config.NEXT_PUBLIC_BACKEND_URL ?? ''
   const noticeMessageContext = useContext(messageContext)
   const router = useRouter()
   const [file, setFile] = useState<File | null>(null)
