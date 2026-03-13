@@ -99,3 +99,21 @@ action "local_command" "build_keycloak" {
     arguments = ["acr", "build", "--no-logs", "-r", azurerm_container_registry.main.name, "-t", var.app_keycloak_image_tag, "../../../keycloak"]
   }
 }
+
+data "azurerm_user_assigned_identity" "backend" {
+  name                = data.terraform_remote_state.platform.outputs.user_assigned_identity_backend_name
+  resource_group_name = data.terraform_remote_state.platform.outputs.resource_group_name
+}
+
+resource "azurerm_role_assignment" "acr_rbac_backend_pull" {
+  principal_id         = data.azurerm_user_assigned_identity.backend.principal_id
+  role_definition_name = "AcrPull"
+  scope                = azurerm_container_registry.main.id
+}
+
+action "local_command" "build_backend" {
+  config {
+    command   = "az"
+    arguments = ["acr", "build", "--no-logs", "-r", azurerm_container_registry.main.name, "-t", var.app_backend_image_tag, "../../../backend"]
+  }
+}

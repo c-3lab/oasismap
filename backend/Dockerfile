@@ -22,7 +22,7 @@ FROM base AS production
 WORKDIR /app/backend
 
 ENV NODE_ENV=production
-COPY --chown=node:node package*.json .
+COPY --chown=node:node package*.json ./
 RUN npm ci --omit=dev --ignore-scripts
 COPY --chown=node:node --from=build /app/backend/dist ./dist
 

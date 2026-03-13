@@ -100,3 +100,7 @@ output "user_assigned_identity_keycloak_name" {
   value       = azurerm_user_assigned_identity.keycloak.name
 }
 
+output "user_assigned_identity_backend_name" {
+  description = "User Assigned Identity Name for backend."
+  value       = azurerm_user_assigned_identity.backend.name
+}

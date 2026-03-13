@@ -38,12 +38,34 @@ variable "app_frontend_name" {
 variable "app_backend_name" {
   description = "App Service name for Backend (globally unique)."
   type        = string
+  validation {
+    condition     = length(var.app_backend_name) < 60 && can(regex("^[a-zA-Z0-9-]+$", var.app_backend_name))
+    error_message = "App Service name for Backend must be less than 60 characters and only contain alphanumeric characters and dashes."
+  }
+}
+
+variable "app_backend_image_tag" {
+  description = "App Service image tag for Backend."
+  type        = string
+  default     = "backend:latest"
 }
 
 variable "orion_fiware_service" {
   description = "Fiware service name for Orion."
   type        = string
   default     = "Government"
+}
+
+variable "orion_fiware_service_path" {
+  description = "Fiware service path for Orion (e.g. /Happiness)."
+  type        = string
+  default     = "/Happiness"
+}
+
+variable "reverse_geocoding_url" {
+  description = "Optional reverse geocoding API URL for backend."
+  type        = string
+  default     = "https://nominatim.openstreetmap.org/reverse"
 }
 
 variable "app_keycloak_name" {

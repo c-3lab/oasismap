@@ -103,5 +103,18 @@ resource "azurerm_role_assignment" "kv_rbac_keycloak" {
   scope                = azurerm_key_vault.main.id
 }
 
+# --- Backend ---
+resource "azurerm_user_assigned_identity" "backend" {
+  location            = var.location
+  name                = "${var.prefix}-uai-backend"
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+resource "azurerm_role_assignment" "kv_rbac_backend" {
+  principal_id         = azurerm_user_assigned_identity.backend.principal_id
+  role_definition_name = "Key Vault Secrets User"
+  scope                = azurerm_key_vault.main.id
+}
+
 # Do NOT create azurerm_key_vault_secret here. Secrets (e.g. postgres_password, pfx_password)
 # are populated by script or manual step; Terraform only references them.

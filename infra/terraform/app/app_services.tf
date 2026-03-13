@@ -19,19 +19,57 @@ resource "azurerm_linux_web_app" "frontend" {
 }
 
 resource "azurerm_linux_web_app" "backend" {
-  name                = var.app_backend_name
-  location            = var.location
-  resource_group_name = data.terraform_remote_state.platform.outputs.resource_group_name
-  service_plan_id     = azurerm_service_plan.main.id
+  name                            = var.app_backend_name
+  location                        = var.location
+  resource_group_name             = data.terraform_remote_state.platform.outputs.resource_group_name
+  service_plan_id                 = azurerm_service_plan.main.id
+  key_vault_reference_identity_id = data.azurerm_user_assigned_identity.backend.id
   site_config {
     application_stack {
-      docker_image     = "placeholder/backend"
-      docker_image_tag = "latest"
+      docker_registry_url = "https://${azurerm_container_registry.main.login_server}"
+      docker_image_name   = var.app_backend_image_tag
+    }
+
+    container_registry_managed_identity_client_id = data.azurerm_user_assigned_identity.backend.client_id
+    container_registry_use_managed_identity       = true
+    health_check_path                             = "/"
+    health_check_eviction_time_in_min             = 2
+  }
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [data.azurerm_user_assigned_identity.backend.id]
+  }
+
+  app_settings = {
+    API_PORT                  = "4000"
+    ORION_URI                 = "http://${azurerm_container_group.orion.ip_address}:1026"
+    ORION_FIWARE_SERVICE      = var.orion_fiware_service
+    ORION_FIWARE_SERVICE_PATH = var.orion_fiware_service_path
+    ADMIN_KEYCLOAK_CLIENT_ID  = "admin-client"
+    KEYCLOAK_CLIENT_ISSUER    = "https://${azurerm_linux_web_app.keycloak.default_hostname}/realms/oasismap"
+    FRONTEND_URL              = "https://${var.root_domain_name}"
+    POSTGRES_HOST             = data.azurerm_postgresql_flexible_server.main.fqdn
+    POSTGRES_PORT             = "5432"
+    POSTGRES_USER             = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${azurerm_key_vault_secret.kc_db_username.name})"
+    POSTGRES_PASSWORD         = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${data.azurerm_key_vault_secret.cygnus_postgres_password.name})"
+    POSTGRES_DATABASE         = "cygnus"
+    REVERSE_GEOCODING_URL     = var.reverse_geocoding_url
+  }
+
+  https_only                = true
+  virtual_network_subnet_id = data.terraform_remote_state.platform.outputs.subnet_dmz_id
+
+  lifecycle {
+    action_trigger {
+      events  = [before_create]
+      actions = [action.local_command.build_backend]
     }
   }
-  app_settings = {
-    # BACKEND_URL, Orion/Cosmos/PostgreSQL etc. Key Vault Reference for secrets
-  }
+
+  depends_on = [
+    azurerm_container_group.orion,
+    azurerm_role_assignment.acr_rbac_backend_pull,
+  ]
 }
 
 resource "azurerm_linux_web_app" "keycloak" {
