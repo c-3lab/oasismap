@@ -35,3 +35,37 @@ resource "azurerm_key_vault_secret" "kc_db_username" {
   value_wo_version = 2
   key_vault_id     = data.azurerm_key_vault.main.id
 }
+
+# Keycloak の general-user-client の Client Secret を生成する。
+ephemeral "random_password" "kc_general_user_client_secret" {
+  length  = 32
+  special = false
+}
+
+resource "azurerm_key_vault_secret" "kc_general_user_client_secret" {
+  name             = "kc-general-user-client-secret"
+  value_wo         = ephemeral.random_password.kc_general_user_client_secret.result
+  value_wo_version = 1
+  key_vault_id     = data.azurerm_key_vault.main.id
+}
+
+# Keycloak の admin-client の Client Secret を生成する。
+ephemeral "random_password" "kc_admin_client_secret" {
+  length  = 32
+  special = false
+}
+
+resource "azurerm_key_vault_secret" "kc_admin_client_secret" {
+  name             = "kc-admin-client-secret"
+  value_wo         = ephemeral.random_password.kc_admin_client_secret.result
+  value_wo_version = 1
+  key_vault_id     = data.azurerm_key_vault.main.id
+}
+
+# Frontend NextAuth secret (NEXTAUTH_SECRET).
+resource "azurerm_key_vault_secret" "nextauth_secret" {
+  name             = "nextauth-secret"
+  value_wo         = var.app_frontend_nextauth_secret
+  value_wo_version = 1
+  key_vault_id     = data.azurerm_key_vault.main.id
+}

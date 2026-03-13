@@ -433,6 +433,8 @@ resource "keycloak_openid_client" "general_user_client" {
   access_type                  = "CONFIDENTIAL"
   standard_flow_enabled        = true
   direct_access_grants_enabled = true
+  client_secret_wo             = ephemeral.random_password.kc_general_user_client_secret.result
+  client_secret_wo_version     = 1
   valid_redirect_uris = [
     "${local.keycloak_client_base_url}/api/auth/callback/general-user-keycloak-client"
   ]
@@ -463,6 +465,8 @@ resource "keycloak_openid_client" "admin_client" {
   access_type                  = "CONFIDENTIAL"
   standard_flow_enabled        = true
   direct_access_grants_enabled = true
+  client_secret_wo             = ephemeral.random_password.kc_admin_client_secret.result
+  client_secret_wo_version     = 1
   valid_redirect_uris = [
     "${local.keycloak_client_base_url}/api/auth/callback/admin-keycloak-client"
   ]

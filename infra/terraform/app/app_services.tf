@@ -3,19 +3,55 @@
 # FQDN is used by Application Gateway backends.
 
 resource "azurerm_linux_web_app" "frontend" {
-  name                = var.app_frontend_name
-  location            = var.location
-  resource_group_name = data.terraform_remote_state.platform.outputs.resource_group_name
-  service_plan_id     = azurerm_service_plan.main.id
+  name                            = var.app_frontend_name
+  location                        = var.location
+  resource_group_name             = data.terraform_remote_state.platform.outputs.resource_group_name
+  service_plan_id                 = azurerm_service_plan.main.id
+  key_vault_reference_identity_id = data.azurerm_user_assigned_identity.frontend.id
   site_config {
     application_stack {
-      docker_image     = "placeholder/frontend"
-      docker_image_tag = "latest"
+      docker_registry_url = "https://${azurerm_container_registry.main.login_server}"
+      docker_image_name   = var.app_frontend_image_tag
+    }
+
+    container_registry_managed_identity_client_id = data.azurerm_user_assigned_identity.frontend.client_id
+    container_registry_use_managed_identity       = true
+    health_check_path                             = "/"
+    health_check_eviction_time_in_min             = 2
+  }
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [data.azurerm_user_assigned_identity.frontend.id]
+  }
+
+  app_settings = {
+    NEXTAUTH_URL                                  = "https://${var.root_domain_name}"
+    NEXTAUTH_SECRET                               = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${azurerm_key_vault_secret.nextauth_secret.name})"
+    NEXT_PUBLIC_MAP_DEFAULT_LATITUDE              = var.map_default_latitude
+    NEXT_PUBLIC_MAP_DEFAULT_LONGITUDE             = var.map_default_longitude
+    NEXT_PUBLIC_MAP_DEFAULT_ZOOM                  = var.map_default_zoom
+    NEXT_PUBLIC_DEFAULT_ZOOM_FOR_COLLECTION_RANGE = var.default_zoom_for_collection_range
+    NEXT_PUBLIC_DATASET_LIST_BY                   = var.dataset_list_by
+    NEXT_PUBLIC_BACKEND_URL                       = "https://backend.${var.root_domain_name}"
+    GENERAL_USER_KEYCLOAK_CLIENT_ID               = "general-user-client"
+    GENERAL_USER_KEYCLOAK_CLIENT_SECRET           = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${azurerm_key_vault_secret.kc_general_user_client_secret.name})"
+    ADMIN_KEYCLOAK_CLIENT_ID                      = "admin-client"
+    ADMIN_KEYCLOAK_CLIENT_SECRET                  = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${azurerm_key_vault_secret.kc_admin_client_secret.name})"
+    KEYCLOAK_CLIENT_ISSUER                        = "https://${azurerm_linux_web_app.keycloak.default_hostname}/realms/oasismap"
+    NEXT_PUBLIC_MAX_CLUSTER_RADIUS                = var.next_public_max_cluster_radius
+  }
+
+  https_only                = true
+  virtual_network_subnet_id = data.terraform_remote_state.platform.outputs.subnet_dmz_id
+
+  lifecycle {
+    action_trigger {
+      events  = [before_create]
+      actions = [action.local_command.build_frontend]
     }
   }
-  app_settings = {
-    # NEXTAUTH_URL etc. from Key Vault Reference or output
-  }
+
+  depends_on = [azurerm_role_assignment.acr_rbac_frontend_pull]
 }
 
 resource "azurerm_linux_web_app" "backend" {

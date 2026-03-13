@@ -33,6 +33,58 @@ variable "app_service_plan_sku" {
 variable "app_frontend_name" {
   description = "App Service name for Frontend (globally unique)."
   type        = string
+  validation {
+    condition     = length(var.app_frontend_name) < 60 && can(regex("^[a-zA-Z0-9-]+$", var.app_frontend_name))
+    error_message = "App Service name for Frontend must be less than 60 characters and only contain alphanumeric characters and dashes."
+  }
+}
+
+variable "app_frontend_image_tag" {
+  description = "App Service image tag for Frontend."
+  type        = string
+  default     = "frontend:latest"
+}
+
+variable "map_default_latitude" {
+  description = "Default map center latitude for frontend (e.g. NEXT_PUBLIC_MAP_DEFAULT_LATITUDE)."
+  type        = string
+  default     = "35.6812"
+}
+
+variable "map_default_longitude" {
+  description = "Default map center longitude for frontend (e.g. NEXT_PUBLIC_MAP_DEFAULT_LONGITUDE)."
+  type        = string
+  default     = "139.7671"
+}
+
+variable "map_default_zoom" {
+  description = "Default map zoom level for frontend (e.g. NEXT_PUBLIC_MAP_DEFAULT_ZOOM)."
+  type        = string
+  default     = "10"
+}
+
+variable "default_zoom_for_collection_range" {
+  description = "Default zoom for collection range (e.g. NEXT_PUBLIC_DEFAULT_ZOOM_FOR_COLLECTION_RANGE)."
+  type        = string
+  default     = "14"
+}
+
+variable "dataset_list_by" {
+  description = "Dataset list sort key for frontend (e.g. NEXT_PUBLIC_DATASET_LIST_BY: menu, createdAt)."
+  type        = string
+  default     = "createdAt"
+}
+
+variable "next_public_max_cluster_radius" {
+  description = "Max cluster radius for map clustering (e.g. NEXT_PUBLIC_MAX_CLUSTER_RADIUS)."
+  type        = string
+  default     = "50"
+}
+
+variable "app_frontend_nextauth_secret" {
+  description = "NextAuth secret for frontend (NEXTAUTH_SECRET). Stored in Key Vault."
+  type        = string
+  sensitive   = true
 }
 
 variable "app_backend_name" {
