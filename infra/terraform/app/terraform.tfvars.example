@@ -24,3 +24,8 @@ agw_waf_mode     = "Prevention"
 
 dns_resource_group_name = "oasismap-dns"
 root_domain_name        = "YOUR_DOMAIN_NAME"
+
+keycloak_google_client_id                 = "YOUR_GOOGLE_CLIENT_ID"
+keycloak_google_client_secret             = "YOUR_GOOGLE_CLIENT_SECRET"
+# Postman の PostBrokerLoginFlowAlias と同様。未使用なら空でよい。
+keycloak_google_post_broker_login_flow_alias = ""

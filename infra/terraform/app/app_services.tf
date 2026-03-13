@@ -92,3 +92,41 @@ resource "azurerm_linux_web_app" "keycloak" {
     data.azurerm_key_vault_secret.cygnus_postgres_password
   ]
 }
+
+# -----------------------------------------------------------------------------
+# Keycloak 稼働待ち: /realms/master/.well-known/openid-configuration が
+# HTTP 200 を返すまでリトライしてから keycloak_realm 等を適用するため。
+# terraform_data は組み込みリソース（provider 不要）。provisioner のコンテナとして使用。
+# 実行環境: Windows の場合は PowerShell。Linux/CI や Git Bash 利用時は
+# 下記の Linux 向けコマンドを local-exec に差し替える想定。
+# -----------------------------------------------------------------------------
+# Linux (Bash/curl) で同じ待機を行う場合の例:
+#   interpreter = ["/bin/sh", "-c"]
+#   command     = "url=\"$KEYCLOAK_HEALTH_URL\"; max=60; int=5; i=0; while [ $i -lt $max ]; do code=$(curl -sf -o /dev/null -w '%{http_code}' \"$url\" 2>/dev/null || echo 000); [ \"$code\" = \"200\" ] && exit 0; i=$((i+1)); sleep $int; done; echo 'Timeout waiting for Keycloak'; exit 1"
+# -----------------------------------------------------------------------------
+resource "terraform_data" "keycloak_ready" {
+  triggers_replace = [azurerm_linux_web_app.keycloak.id]
+
+  provisioner "local-exec" {
+    interpreter = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
+    environment = {
+      KEYCLOAK_HEALTH_URL = "https://${azurerm_linux_web_app.keycloak.default_hostname}/realms/master/.well-known/openid-configuration"
+    }
+    command = <<-EOT
+      $url = $env:KEYCLOAK_HEALTH_URL
+      $maxAttempts = 60
+      $intervalSec = 5
+      $timeoutSec = 15
+      for ($i = 0; $i -lt $maxAttempts; $i++) {
+        try {
+          $r = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec $timeoutSec
+          if ($r.StatusCode -eq 200) { exit 0 }
+        } catch {}
+        Start-Sleep -Seconds $intervalSec
+      }
+      Write-Error 'Timeout waiting for Keycloak health (HTTP 200)'; exit 1
+    EOT
+  }
+
+  depends_on = [azurerm_linux_web_app.keycloak]
+}
