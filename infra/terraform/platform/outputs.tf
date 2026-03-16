@@ -109,3 +109,8 @@ output "user_assigned_identity_frontend_name" {
   description = "User Assigned Identity Name for frontend."
   value       = azurerm_user_assigned_identity.frontend.name
 }
+
+output "user_assigned_identity_agw_name" {
+  description = "User Assigned Identity Name for application gateway."
+  value       = azurerm_user_assigned_identity.agw.name
+}

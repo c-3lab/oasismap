@@ -129,5 +129,19 @@ resource "azurerm_role_assignment" "kv_rbac_frontend" {
   scope                = azurerm_key_vault.main.id
 }
 
+# --- Application Gateway ---
+# Application Gateway が Key Vault から SSL 証明書を取得するための User Assigned Identity
+resource "azurerm_user_assigned_identity" "agw" {
+  name                = "${var.prefix}-uai-agw"
+  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+}
+
+resource "azurerm_role_assignment" "kv_rbac_agw" {
+  principal_id         = azurerm_user_assigned_identity.agw.principal_id
+  role_definition_name = "Key Vault Secrets User"
+  scope                = azurerm_key_vault.main.id
+}
+
 # Do NOT create azurerm_key_vault_secret here. Secrets (e.g. postgres_password, pfx_password)
 # are populated by script or manual step; Terraform only references them.

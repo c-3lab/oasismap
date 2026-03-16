@@ -1,5 +1,5 @@
 # Application Gateway v2 / WAF. Backends point to App Service FQDNs.
-# Certificate for HTTPS: add Key Vault reference or upload manually; listener is HTTP only in this template.
+# HTTPS listener uses certificate from Key Vault (acme_agw_cert.tf). HTTP(80) redirects to HTTPS(443).
 
 resource "azurerm_public_ip" "agw" {
   name                = "${var.prefix}-AGWIP"
@@ -9,13 +9,24 @@ resource "azurerm_public_ip" "agw" {
   sku                 = "Standard"
 }
 
+data "azurerm_user_assigned_identity" "agw" {
+  name                = data.terraform_remote_state.platform.outputs.user_assigned_identity_agw_name
+  resource_group_name = data.terraform_remote_state.platform.outputs.resource_group_name
+}
+
+# azurerm documentation: https://registry.terraform.io/providers/hashicorp/azurerm/4.62.1/docs/resources/application_gateway
 resource "azurerm_application_gateway" "main" {
   name                              = "${var.prefix}-AGW"
   resource_group_name               = data.terraform_remote_state.platform.outputs.resource_group_name
   location                          = var.location
-  enable_http2                      = true
+  http2_enabled                     = true
   zones                             = null
   force_firewall_policy_association = false
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [data.azurerm_user_assigned_identity.agw.id]
+  }
 
   sku {
     name     = var.agw_sku
@@ -38,12 +49,19 @@ resource "azurerm_application_gateway" "main" {
     port = 80
   }
 
-  # HTTPS: add frontend_port 443 and frontend_ip_configuration; certificate from Key Vault or file.
-  # frontend_port { name = "https"; port = 443 }
+  frontend_port {
+    name = "https"
+    port = 443
+  }
 
   frontend_ip_configuration {
     name                 = "frontend-ip"
     public_ip_address_id = azurerm_public_ip.agw.id
+  }
+
+  ssl_certificate {
+    name                = "agw-ssl"
+    key_vault_secret_id = azurerm_key_vault_certificate.agw_ssl.versionless_secret_id
   }
 
   backend_address_pool {
@@ -75,13 +93,73 @@ resource "azurerm_application_gateway" "main" {
     protocol                       = "Http"
   }
 
+  http_listener {
+    name                           = "https-frontend"
+    frontend_ip_configuration_name = "frontend-ip"
+    frontend_port_name             = "https"
+    protocol                       = "Https"
+    ssl_certificate_name           = "agw-ssl"
+    host_name                      = var.root_domain_name
+  }
+
+  http_listener {
+    name                           = "https-backend"
+    frontend_ip_configuration_name = "frontend-ip"
+    frontend_port_name             = "https"
+    protocol                       = "Https"
+    ssl_certificate_name           = "agw-ssl"
+    host_name                      = "backend.${var.root_domain_name}"
+  }
+
+  http_listener {
+    name                           = "https-keycloak"
+    frontend_ip_configuration_name = "frontend-ip"
+    frontend_port_name             = "https"
+    protocol                       = "Https"
+    ssl_certificate_name           = "agw-ssl"
+    host_name                      = "keycloak.${var.root_domain_name}"
+  }
+
+  redirect_configuration {
+    name                 = "redirect-http-to-https"
+    redirect_type        = "Permanent"
+    target_listener_name = "https-frontend"
+    include_path         = true
+    include_query_string = true
+  }
+
   request_routing_rule {
-    name                       = "default-rule"
+    name                        = "default-rule"
+    rule_type                   = "Basic"
+    http_listener_name          = "http"
+    redirect_configuration_name = "redirect-http-to-https"
+    priority                    = 100
+  }
+
+  request_routing_rule {
+    name                       = "rule-frontend"
     rule_type                  = "Basic"
-    http_listener_name         = "http"
+    http_listener_name         = "https-frontend"
     backend_address_pool_name  = "frontend-pool"
     backend_http_settings_name = "default-settings"
-    priority                   = 100
+    priority                   = 110
   }
-  # Add path-based rules for /api -> backend-pool, /keycloak -> keycloak-pool as needed.
+
+  request_routing_rule {
+    name                       = "rule-backend"
+    rule_type                  = "Basic"
+    http_listener_name         = "https-backend"
+    backend_address_pool_name  = "backend-pool"
+    backend_http_settings_name = "default-settings"
+    priority                   = 120
+  }
+
+  request_routing_rule {
+    name                       = "rule-keycloak"
+    rule_type                  = "Basic"
+    http_listener_name         = "https-keycloak"
+    backend_address_pool_name  = "keycloak-pool"
+    backend_http_settings_name = "default-settings"
+    priority                   = 130
+  }
 }
