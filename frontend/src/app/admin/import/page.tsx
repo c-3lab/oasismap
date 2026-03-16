@@ -1,4 +1,5 @@
 'use client'
+import { ActionLogButton, ActionLogInput } from '@/components/mui'
 import {
   Button,
   Checkbox,
@@ -15,6 +16,7 @@ import { signOut, useSession } from 'next-auth/react'
 import { messageContext } from '@/contexts/message-context'
 import { useFetchData } from '@/libs/fetch'
 import { useRouter } from 'next/navigation'
+import { reportError } from '@/libs/client-error-reporting'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 
 const Import: React.FC = () => {
@@ -46,7 +48,7 @@ const Import: React.FC = () => {
     setImportError('') // Clear import error when selecting new file
   }
 
-  const VisuallyHiddenInput = styled('input')({
+  const VisuallyHiddenInput = styled(ActionLogInput)({
     clip: 'rect(0 0 0 0)',
     clipPath: 'inset(50%)',
     overflow: 'hidden',
@@ -79,6 +81,7 @@ const Import: React.FC = () => {
       )
       router.push('/happiness/all')
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
       if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
         noticeMessageContext.showMessage(
@@ -123,6 +126,7 @@ const Import: React.FC = () => {
           <VisuallyHiddenInput
             accept=".csv"
             type="file"
+            actionLog="importFileSelect"
             onChange={fileChange}
           />
         </Button>
@@ -146,14 +150,15 @@ const Import: React.FC = () => {
           />
         </Grid>
         <Grid container justifyContent="flex-end">
-          <Button
+          <ActionLogButton
+            actionLog="importUpload"
             variant="contained"
             color="primary"
-            onClick={() => uploadCsv()}
+            onClick={uploadCsv}
             disabled={isUploading}
           >
             インポート
-          </Button>
+          </ActionLogButton>
         </Grid>
       </Grid>
       {/* Display import errors below the form */}

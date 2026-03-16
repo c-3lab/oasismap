@@ -11,6 +11,7 @@ import { HappinessListResponse, Data } from '@/types/happiness-list-response'
 import { useFetchData } from '@/libs/fetch'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 import { LoadingContext } from '@/contexts/loading-context'
+import { reportError } from '@/libs/client-error-reporting'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 
 const HappinessList: React.FC = () => {
@@ -53,6 +54,7 @@ const HappinessList: React.FC = () => {
         offset += data['count']
       }
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error fetching data:', error)
       if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
         noticeMessageContext.showMessage(
@@ -87,6 +89,7 @@ const HappinessList: React.FC = () => {
         prevListData.filter((data) => data.id !== id)
       )
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
       if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
         noticeMessageContext.showMessage(

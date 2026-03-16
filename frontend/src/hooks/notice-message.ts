@@ -1,18 +1,21 @@
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { MessageType } from '@/types/message-type'
 
 export const useNoticeMessage = () => {
   const [message, setMessage] = useState<string | null>(null)
   const [type, setType] = useState<MessageType>(MessageType.Success)
 
-  const showMessage = (text: string, type: MessageType) => {
+  const showMessage = useCallback((text: string, type: MessageType) => {
     setMessage(text)
     setType(type)
-  }
+  }, [])
 
-  const clearMessage = () => {
+  const clearMessage = useCallback(() => {
     setMessage(null)
-  }
+  }, [])
 
-  return { message, type, showMessage, clearMessage }
+  return useMemo(
+    () => ({ message, type, showMessage, clearMessage }),
+    [message, type, showMessage, clearMessage]
+  )
 }

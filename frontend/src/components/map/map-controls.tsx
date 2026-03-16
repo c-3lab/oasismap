@@ -1,4 +1,4 @@
-import { IconButton } from '@mui/material'
+import { ActionLogIconButton } from '@/components/mui'
 import NavigationIcon from '@mui/icons-material/Navigation'
 import EditIcon from '@mui/icons-material/Edit'
 import { LatLngTuple } from 'leaflet'
@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { useMap } from 'react-leaflet'
 import L from 'leaflet'
+import { skipMapInteractionLogs } from './map-interaction-logger'
 
 type MoveToCurrentPositionControlProps = {
   currentPositionRef: React.RefObject<LatLngTuple | null>
@@ -31,7 +32,8 @@ export const MoveToCurrentPositionControl = ({
       root = createRoot(div)
 
       root.render(
-        <IconButton
+        <ActionLogIconButton
+          actionLog="mapCurrentPosition"
           style={{
             backgroundColor: '#f7f7f7',
             border: '1px solid #ccc',
@@ -41,6 +43,7 @@ export const MoveToCurrentPositionControl = ({
           }}
           onClick={() => {
             if (currentPositionRef.current) {
+              skipMapInteractionLogs('pan', 'zoom')
               map.flyTo(currentPositionRef.current, defaultZoom)
             }
           }}
@@ -52,7 +55,7 @@ export const MoveToCurrentPositionControl = ({
               fontSize: 45,
             }}
           />
-        </IconButton>
+        </ActionLogIconButton>
       )
 
       return div
@@ -112,7 +115,8 @@ export const AddHappinessControl = ({
       root = createRoot(div)
 
       root.render(
-        <IconButton
+        <ActionLogIconButton
+          actionLog="mapAddHappiness"
           style={{
             backgroundColor: '#20B2AA',
             borderRadius: 100,
@@ -129,7 +133,7 @@ export const AddHappinessControl = ({
               fontSize: 45,
             }}
           />
-        </IconButton>
+        </ActionLogIconButton>
       )
 
       return div

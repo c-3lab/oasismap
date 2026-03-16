@@ -7,8 +7,9 @@ import { Box, CssBaseline, Toolbar, ThemeProvider } from '@mui/material'
 import Header from '@/components/header'
 import Sidebar from '@/components/sidebar/sidebar'
 import SearchDrawer from '@/components/search-drawer'
-import { SessionProvider } from 'next-auth/react'
+import { SessionProvider, useSession } from 'next-auth/react'
 import { SearchProvider, useSearchContext } from '@/contexts/search-context'
+import { setActionLogNickname } from '@/libs/client-error-reporting'
 
 interface LayoutProps {
   simple?: boolean
@@ -28,6 +29,7 @@ const Layout: React.FC<LayoutProps> = ({ simple = false, children }) => {
 
   return (
     <SessionProvider refetchOnWindowFocus={false}>
+      <ActionLogSessionSync />
       <ThemeProvider theme={theme}>
         <SearchProvider>
           {simple ? (
@@ -70,6 +72,16 @@ const Layout: React.FC<LayoutProps> = ({ simple = false, children }) => {
       </ThemeProvider>
     </SessionProvider>
   )
+}
+
+const ActionLogSessionSync = () => {
+  const { data: session } = useSession()
+
+  useEffect(() => {
+    setActionLogNickname(session?.user?.nickname)
+  }, [session?.user?.nickname])
+
+  return null
 }
 
 const SearchDrawerWrapper: React.FC<{

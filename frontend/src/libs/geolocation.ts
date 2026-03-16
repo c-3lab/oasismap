@@ -1,3 +1,9 @@
+import {
+  setGeolocationStatus,
+  reportPositionError,
+  positionErrorCodeToStatus,
+} from './client-error-reporting'
+
 const DEFAULT_LATITUDE = 35.6581064
 const DEFAULT_LONGITUDE = 139.7413637
 
@@ -14,6 +20,14 @@ export const getCurrentPosition = async (
 
   // geolocation が http に対応していないため固定値を返却
   if (location.protocol === 'http:') {
+    setGeolocationStatus('not_supported')
+    return {
+      latitude: defaultLatitude,
+      longitude: defaultLongitude,
+    }
+  }
+  if (!navigator.geolocation) {
+    setGeolocationStatus('not_supported')
     return {
       latitude: defaultLatitude,
       longitude: defaultLongitude,
@@ -22,9 +36,18 @@ export const getCurrentPosition = async (
   try {
     const position: GeolocationPosition = await new Promise(
       (resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-        })
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            setGeolocationStatus('available')
+            resolve(pos)
+          },
+          (err: GeolocationPositionError) => {
+            setGeolocationStatus(positionErrorCodeToStatus(err.code))
+            reportPositionError(err.code)
+            reject(err)
+          },
+          { enableHighAccuracy: true }
+        )
       }
     )
     return {
