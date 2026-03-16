@@ -193,6 +193,16 @@ variable "agw_max_capacity" {
   default     = 2
 }
 
+variable "agw_waf_enabled" {
+  description = "WAF state: Enabled or Disabled (ARM wafEnabled)."
+  type        = string
+  default     = "Enabled"
+  validation {
+    condition     = contains(["Enabled", "Disabled"], var.agw_waf_enabled)
+    error_message = "agw_waf_enabled must be Enabled or Disabled."
+  }
+}
+
 variable "agw_waf_mode" {
   description = "WAF mode: Prevention or Detection."
   type        = string

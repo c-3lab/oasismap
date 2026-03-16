@@ -41,6 +41,12 @@ variable "subnet_db_prefix" {
   default     = "10.0.2.0/24"
 }
 
+variable "subnet_agw_prefix" {
+  description = "Application Gateway dedicated subnet address prefix."
+  type        = string
+  default     = "10.0.3.0/26"
+}
+
 # --- Cosmos DB (02) ---
 variable "mongo_api_version" {
   description = "MongoDB API version for Cosmos DB."

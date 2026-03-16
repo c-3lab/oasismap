@@ -21,7 +21,8 @@ resource "azurerm_application_gateway" "main" {
   location                          = var.location
   http2_enabled                     = true
   zones                             = null
-  force_firewall_policy_association = false
+  force_firewall_policy_association = true
+  firewall_policy_id                = azurerm_web_application_firewall_policy.default.id
 
   identity {
     type         = "UserAssigned"
@@ -29,9 +30,9 @@ resource "azurerm_application_gateway" "main" {
   }
 
   sku {
-    name     = var.agw_sku
-    tier     = var.agw_sku
-    capacity = var.agw_min_capacity
+    name = var.agw_sku
+    tier = var.agw_sku
+    # capacity is omitted when using autoscale_configuration (Azure allows either capacity or autoscale, not both).
   }
 
   autoscale_configuration {
@@ -41,7 +42,7 @@ resource "azurerm_application_gateway" "main" {
 
   gateway_ip_configuration {
     name      = "gateway-ip"
-    subnet_id = data.terraform_remote_state.platform.outputs.subnet_dmz_id
+    subnet_id = data.terraform_remote_state.platform.outputs.subnet_agw_id
   }
 
   frontend_port {
@@ -118,6 +119,7 @@ resource "azurerm_application_gateway" "main" {
     protocol                       = "Https"
     ssl_certificate_name           = "agw-ssl"
     host_name                      = "keycloak.${var.root_domain_name}"
+    firewall_policy_id             = azurerm_web_application_firewall_policy.keycloak.id
   }
 
   redirect_configuration {
@@ -162,4 +164,9 @@ resource "azurerm_application_gateway" "main" {
     backend_http_settings_name = "default-settings"
     priority                   = 130
   }
+
+  depends_on = [
+    azurerm_web_application_firewall_policy.default,
+    azurerm_web_application_firewall_policy.keycloak,
+  ]
 }

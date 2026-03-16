@@ -18,10 +18,11 @@ aci_cygnus_image_tag = "cygnus:latest"
 aci_mongo_cli_image_tag = "mongo-cli:latest"
 aci_postgres_cli_image_tag = "postgres-cli:latest"
 
-agw_sku          = "WAF_v2"
-agw_min_capacity = 1
-agw_max_capacity = 2
-agw_waf_mode     = "Prevention"
+agw_sku           = "WAF_v2"
+agw_min_capacity  = 1
+agw_max_capacity  = 2
+agw_waf_enabled   = "Enabled"
+agw_waf_mode      = "Prevention"
 
 dns_resource_group_name = "oasismap-dns"
 root_domain_name        = "YOUR_DOMAIN_NAME"

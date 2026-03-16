@@ -69,6 +69,40 @@ resource "azurerm_network_security_rule" "app_http_from_dmz" {
 #   network_security_group_name = azurerm_network_security_group.app.name
 # }
 
+resource "azurerm_network_security_group" "agw" {
+  name                = "${var.prefix}-NSG-AGW"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+resource "azurerm_network_security_rule" "agw_https" {
+  name                        = "AllowInternetHTTPSInbound"
+  priority                    = 200
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "443"
+  source_address_prefix       = "Internet"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.main.name
+  network_security_group_name = azurerm_network_security_group.agw.name
+}
+
+resource "azurerm_network_security_rule" "agw_gateway_manager" {
+  name                        = "AllowGateWayManagerAnyInbound"
+  priority                    = 210
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "65200-65535"
+  source_address_prefix       = "GatewayManager"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.main.name
+  network_security_group_name = azurerm_network_security_group.agw.name
+}
+
 resource "azurerm_network_security_group" "db" {
   name                = "${var.prefix}-NSG-DB"
   location            = var.location
@@ -160,4 +194,19 @@ resource "azurerm_subnet" "db" {
 resource "azurerm_subnet_network_security_group_association" "db" {
   subnet_id                 = azurerm_subnet.db.id
   network_security_group_id = azurerm_network_security_group.db.id
+}
+
+# Application Gateway dedicated subnet (no delegation; AGW only).
+resource "azurerm_subnet" "agw" {
+  name                                          = "${var.prefix}-SN-AGW"
+  resource_group_name                           = azurerm_resource_group.main.name
+  virtual_network_name                          = azurerm_virtual_network.main.name
+  address_prefixes                              = [var.subnet_agw_prefix]
+  private_endpoint_network_policies             = "Enabled"
+  private_link_service_network_policies_enabled = true
+}
+
+resource "azurerm_subnet_network_security_group_association" "agw" {
+  subnet_id                 = azurerm_subnet.agw.id
+  network_security_group_id = azurerm_network_security_group.agw.id
 }

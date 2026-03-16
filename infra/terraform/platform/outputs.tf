@@ -21,8 +21,13 @@ output "vnet_name" {
 }
 
 output "subnet_dmz_id" {
-  description = "DMZ subnet ID (e.g. for Application Gateway in app layer)."
+  description = "DMZ subnet ID (App Service VNet integration)."
   value       = azurerm_subnet.dmz.id
+}
+
+output "subnet_agw_id" {
+  description = "Application Gateway dedicated subnet ID (app layer AGW references this)."
+  value       = azurerm_subnet.agw.id
 }
 
 output "subnet_app_id" {
