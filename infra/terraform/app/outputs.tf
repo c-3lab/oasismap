@@ -20,6 +20,13 @@ output "agw_public_ip" {
   value       = azurerm_public_ip.agw.ip_address
 }
 
+# ACME で取得した AGW 用証明書の Key Vault secret ID（AGW の ssl_certificate.key_vault_secret_id に指定する）
+output "agw_ssl_certificate_versionless_secret_id" {
+  description = "Key Vault certificate secret ID for Application Gateway HTTPS listener (versionless)."
+  value       = azurerm_key_vault_certificate.agw_ssl.versionless_secret_id
+  sensitive   = true
+}
+
 output "dns_resource_group_name" {
   description = "DNS-dedicated resource group name."
   value       = azurerm_resource_group.dns.name

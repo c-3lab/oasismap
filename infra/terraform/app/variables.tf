@@ -199,6 +199,28 @@ variable "agw_waf_mode" {
   default     = "Prevention"
 }
 
+# --- ACME (Let's Encrypt) for AGW server certificate ---
+# 本番: https://acme-v02.api.letsencrypt.org/directory
+# 開発時（レート制限を避けたい場合）: Let's Encrypt ステージング URL を使用する。
+#   https://acme-staging-v02.api.letsencrypt.org/directory
+# ステージングで発行された証明書はブラウザで信頼されないため、動作確認後に本番 URL に切り替えること。
+variable "acme_server_url" {
+  description = "ACME directory URL. Use staging for development to avoid rate limits."
+  type        = string
+  default     = "https://acme-v02.api.letsencrypt.org/directory"
+}
+
+variable "acme_registration_email" {
+  description = "Email address for Let's Encrypt account registration (used for expiry notices)."
+  type        = string
+}
+
+variable "agw_ssl_certificate_name" {
+  description = "Key Vault certificate name for Application Gateway HTTPS listener."
+  type        = string
+  default     = "agw-ssl"
+}
+
 # --- DNS (dedicated RG and zone in app layer) ---
 variable "dns_resource_group_name" {
   description = "Name of the DNS-dedicated resource group (e.g. prefix-dns)."
