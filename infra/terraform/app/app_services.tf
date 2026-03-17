@@ -132,8 +132,8 @@ resource "azurerm_linux_web_app" "keycloak" {
 
   app_settings = {
     # KC_HOSTNAME_URL, KEYCLOAK_CLIENT_SECRET etc. Key Vault Reference for secrets
-    KC_HOSTNAME             = "https://${var.app_keycloak_name}.azurewebsites.net"
-    KC_HOSTNAME_ADMIN       = "https://${var.app_keycloak_name}.azurewebsites.net"
+    KC_HOSTNAME             = "https://keycloak.${var.root_domain_name}"
+    KC_HOSTNAME_ADMIN       = "https://keycloak.${var.root_domain_name}"
     KC_HTTPS_PORT           = "443"
     KEYCLOAK_ADMIN          = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${azurerm_key_vault_secret.keycloak_admin.name})"
     KEYCLOAK_ADMIN_PASSWORD = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${azurerm_key_vault_secret.keycloak_admin_password.name})"
@@ -184,7 +184,7 @@ resource "terraform_data" "keycloak_ready" {
   provisioner "local-exec" {
     interpreter = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command"]
     environment = {
-      KEYCLOAK_HEALTH_URL = "https://${azurerm_linux_web_app.keycloak.default_hostname}/realms/master/.well-known/openid-configuration"
+      KEYCLOAK_HEALTH_URL = "https://keycloak.${var.root_domain_name}/realms/master/.well-known/openid-configuration"
     }
     command = <<-EOT
       $url = $env:KEYCLOAK_HEALTH_URL
@@ -202,5 +202,5 @@ resource "terraform_data" "keycloak_ready" {
     EOT
   }
 
-  depends_on = [azurerm_linux_web_app.keycloak]
+  depends_on = [azurerm_linux_web_app.keycloak, azurerm_application_gateway.main]
 }
