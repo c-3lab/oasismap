@@ -310,3 +310,53 @@ resource "azurerm_container_group" "cygnus" {
     azurerm_role_assignment.acr_rbac_cygnus_pull
   ]
 }
+
+# One-shot: register Orion subscription (happiness entity change -> Cygnus notify).
+# Runs inside VNet so it can reach Orion and Cygnus by private IP. Uses public image only.
+resource "azurerm_container_group" "orion_subscription" {
+  name                = "${var.prefix}-aci-orion-subscription"
+  location            = var.location
+  resource_group_name = data.terraform_remote_state.platform.outputs.resource_group_name
+  ip_address_type     = "Private"
+  os_type             = "Linux"
+  restart_policy      = "Never"
+  subnet_ids          = [data.terraform_remote_state.platform.outputs.subnet_app_id]
+
+  container {
+    name   = "orion-subscription"
+    image  = "curlimages/curl:latest"
+    cpu    = "0.25"
+    memory = "0.5"
+
+    ports {
+      port     = 65534
+      protocol = "TCP"
+    }
+
+    environment_variables = {
+      ORION_IP            = azurerm_container_group.orion.ip_address
+      CYGNUS_IP           = azurerm_container_group.cygnus.ip_address
+      FIWARE_SERVICE      = var.orion_fiware_service
+      FIWARE_SERVICE_PATH = var.orion_fiware_service_path
+      SUBSCRIPTION_BODY = jsonencode({
+        description = "Notice of entities change"
+        subject = {
+          entities  = [{ idPattern = ".*", type = "happiness" }]
+          condition = { attrs = [] }
+        }
+        notification = {
+          http = {
+            url = "http://${azurerm_container_group.cygnus.ip_address}:5055/notify"
+          }
+        }
+      })
+    }
+
+    commands = ["/bin/sh", "-c", "echo \"$SUBSCRIPTION_BODY\" > /tmp/body.json && curl -f -sS -X POST -H 'Content-Type: application/json' -H \"Fiware-Service: $FIWARE_SERVICE\" -H \"Fiware-ServicePath: $FIWARE_SERVICE_PATH\" -d @/tmp/body.json \"http://$ORION_IP:1026/v2/subscriptions\""]
+  }
+
+  depends_on = [
+    azurerm_container_group.orion,
+    azurerm_container_group.cygnus
+  ]
+}
