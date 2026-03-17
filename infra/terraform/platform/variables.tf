@@ -114,6 +114,23 @@ variable "postgres_geo_redundant_backup" {
   default     = "Disabled"
 }
 
+# --- Monitoring / Alerts (08) ---
+variable "alert_mail_dest_address" {
+  description = "Destination email address for alert notifications (README ALERT_MAIL_DEST_ADDRESS equivalent)."
+  type        = string
+  default     = ""
+}
+
+variable "action_group_short_name" {
+  description = "Short name for the Action Group (up to 12 characters)."
+  type        = string
+  default     = "ActionGroup"
+  validation {
+    condition     = length(var.action_group_short_name) <= 12
+    error_message = "Action group short name must be at most 12 characters."
+  }
+}
+
 # --- Log Analytics (07) ---
 variable "log_analytics_sku" {
   description = "Log Analytics workspace SKU (e.g. PerGB2018)."

@@ -119,3 +119,8 @@ output "user_assigned_identity_agw_name" {
   description = "User Assigned Identity Name for application gateway."
   value       = azurerm_user_assigned_identity.agw.name
 }
+
+output "action_group_id" {
+  description = "Monitor Action Group ID for alert notifications (empty when alert_mail_dest_address is not set)."
+  value       = length(azurerm_monitor_action_group.main) > 0 ? azurerm_monitor_action_group.main[0].id : ""
+}
