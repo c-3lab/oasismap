@@ -132,6 +132,6 @@ resource "azurerm_role_assignment" "acr_rbac_frontend_pull" {
 action "local_command" "build_frontend" {
   config {
     command   = "az"
-    arguments = ["acr", "build", "--no-logs", "-r", azurerm_container_registry.main.name, "-t", var.app_frontend_image_tag, "../../../frontend"]
+    arguments = ["acr", "build", "--no-logs", "-r", azurerm_container_registry.main.name, "-t", var.app_frontend_image_tag, "--build-arg", "NEXT_PUBLIC_TERMS_MUNICIPALITY_NAME=${var.terms_municipality_name}", "--build-arg", "NEXT_PUBLIC_TERMS_DATE=${var.terms_date}", "--build-arg", "NEXT_PUBLIC_TERMS_TITLE_SUFFIX=${var.terms_title_suffix}", "../../../frontend"]
   }
 }

@@ -2,6 +2,12 @@
 import React from 'react'
 import { Grid, Typography } from '@mui/material'
 
+const TERMS_MUNICIPALITY_NAME =
+  process.env.NEXT_PUBLIC_TERMS_MUNICIPALITY_NAME ?? '【自治体名】'
+const TERMS_DATE = process.env.NEXT_PUBLIC_TERMS_DATE ?? 'yyyy年mm月dd日'
+const TERMS_TITLE_PREFIX =
+  process.env.NEXT_PUBLIC_TERMS_TITLE_PREFIX ?? '（雛形）'
+
 const TermsOfService: React.FC = () => {
   return (
     <Grid
@@ -13,15 +19,15 @@ const TermsOfService: React.FC = () => {
       <Grid item xs={12} md={6}>
         <Grid item textAlign="center" sx={{ my: 2 }}>
           <Typography variant="h5">
-            （雛形）地域幸福度可視化アプリ オープンベータ版 実証実験参加同意事項
+            {TERMS_TITLE_PREFIX}地域幸福度可視化アプリ オープンベータ版 実証実験参加同意事項
           </Typography>
         </Grid>
         <Grid item textAlign="right">
-          <Typography variant="body1">【自治体名】 </Typography>
-          <Typography variant="body1">yyyy年mm月dd日</Typography>
+          <Typography variant="body1">{TERMS_MUNICIPALITY_NAME} </Typography>
+          <Typography variant="body1">{TERMS_DATE}</Typography>
         </Grid>
         <Grid item textAlign="left" sx={{ my: 2 }}>
-          この度は、【自治体名】が実施する“地域幸福度可視化アプリ
+          この度は、{TERMS_MUNICIPALITY_NAME}が実施する“地域幸福度可視化アプリ
           オープンベータ版”の実証実験にご協力いただき、誠にありがとうございます。本実証実験への参加にあたり、以下の内容をご確認のうえ、アカウント入力画面にチェックをお入れください。
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 2 }}>
             １．実証実験の概要
@@ -50,7 +56,7 @@ const TermsOfService: React.FC = () => {
             ４．個人情報の取扱い
           </Typography>
           <Typography variant="body1">
-            本実証実験において収集される情報は、サービス提供事業者であるTIS株式会社および【自治体名】が厳重に管理し、プライバシーマークおよび情報セキュリティマネジメントシステムの要求事項に準拠して取り扱います。
+            本実証実験において収集される情報は、サービス提供事業者であるTIS株式会社および{TERMS_MUNICIPALITY_NAME}が厳重に管理し、プライバシーマークおよび情報セキュリティマネジメントシステムの要求事項に準拠して取り扱います。
             また、提供された個人情報は、実証実験の目的以外には使用されません。
           </Typography>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 2 }}>
@@ -59,7 +65,7 @@ const TermsOfService: React.FC = () => {
           <Typography variant="body1">
             ・本サービスを利用した営業活動
             <br />
-            ・TIS株式会社および【自治体名】による本サービスの運営を妨害する行為
+            ・TIS株式会社および{TERMS_MUNICIPALITY_NAME}による本サービスの運営を妨害する行為
             <br />
             ・他のユーザ、第三者の権利を侵害する行為
           </Typography>

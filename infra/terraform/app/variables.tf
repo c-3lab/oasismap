@@ -87,6 +87,24 @@ variable "app_frontend_nextauth_secret" {
   sensitive   = true
 }
 
+variable "terms_municipality_name" {
+  description = "Municipality name for terms of use page (NEXT_PUBLIC_TERMS_MUNICIPALITY_NAME). Set per event in tfvars."
+  type        = string
+  default     = "【自治体名】"
+}
+
+variable "terms_date" {
+  description = "Terms of use date for terms page (NEXT_PUBLIC_TERMS_DATE). Set per event in tfvars, e.g. 2025年3月1日."
+  type        = string
+  default     = "yyyy年mm月dd日"
+}
+
+variable "terms_title_suffix" {
+  description = "Optional title suffix for terms page (NEXT_PUBLIC_TERMS_TITLE_SUFFIX). Use empty string for production, default shows (雛形)."
+  type        = string
+  default     = "（雛形）"
+}
+
 variable "app_backend_name" {
   description = "App Service name for Backend (globally unique)."
   type        = string
