@@ -105,14 +105,15 @@ variable "keycloak_google_post_broker_login_flow_alias" {
 }
 
 # -----------------------------------------------------------------------------
-# Provider 設定（keycloak_url 未設定時は app_keycloak_name、認証は app_keycloak_admin / app_keycloak_admin_password）
+# Provider 設定（keycloak_url 未設定時は keycloak.${var.root_domain_name}、認証は app_keycloak_admin / app_keycloak_admin_password）
 # -----------------------------------------------------------------------------
 provider "keycloak" {
-  url       = var.keycloak_url != "" ? var.keycloak_url : "https://${var.app_keycloak_name}.azurewebsites.net"
+  url       = var.keycloak_url != "" ? var.keycloak_url : "https://keycloak.${var.root_domain_name}"
   realm     = "master"
   client_id = "admin-cli"
   username  = var.app_keycloak_admin
   password  = var.app_keycloak_admin_password
+  tls_insecure_skip_verify = var.acme_server_url == "https://acme-staging-v02.api.letsencrypt.org/directory" ? true : false
 }
 
 # -----------------------------------------------------------------------------
