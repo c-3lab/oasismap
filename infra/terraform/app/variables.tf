@@ -259,3 +259,26 @@ variable "root_domain_name" {
   description = "Root domain name for the DNS zone and A records (e.g. example.com)."
   type        = string
 }
+
+# Optional: when set, creates NS delegation in the parent zone (old ARM-style child zone).
+variable "parent_domain_name" {
+  description = "Parent DNS zone name (e.g. example.com). When set, an NS record is created in the parent zone to delegate this root_domain_name. Leave null or empty for standalone zone only."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.parent_domain_name == null || trimspace(var.parent_domain_name) == "" || (var.root_domain_name != var.parent_domain_name && endswith(var.root_domain_name, ".${var.parent_domain_name}"))
+    error_message = "When parent_domain_name is set, root_domain_name must be a subdomain of it (e.g. app.example.com when parent is example.com)."
+  }
+}
+
+variable "parent_zone_resource_group_name" {
+  description = "Resource group name where the parent DNS zone exists. Required when parent_domain_name is set. May be the same as dns_resource_group_name if the parent zone is in the same RG."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.parent_domain_name == null || trimspace(var.parent_domain_name) == "" || (var.parent_zone_resource_group_name != null && trimspace(var.parent_zone_resource_group_name) != "")
+    error_message = "parent_zone_resource_group_name must be set when parent_domain_name is set and non-empty."
+  }
+}

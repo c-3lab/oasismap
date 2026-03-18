@@ -37,6 +37,11 @@ output "dns_zone_name" {
   value       = azurerm_dns_zone.main.name
 }
 
+output "dns_parent_delegation_enabled" {
+  description = "Whether NS delegation was created in the parent zone (true when parent_domain_name is set)."
+  value       = local.create_parent_delegation
+}
+
 output "root_url" {
   description = "Root URL (https://root_domain_name) for NEXTAUTH_URL etc."
   value       = "https://${var.root_domain_name}"
