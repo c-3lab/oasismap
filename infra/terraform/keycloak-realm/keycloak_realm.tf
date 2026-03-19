@@ -84,6 +84,8 @@ resource "keycloak_realm_optional_client_scopes" "optional" {
     "organization",
     "phone"
   ]
+
+  depends_on = [keycloak_realm_default_client_scopes.default]
 }
 
 # -----------------------------------------------------------------------------
