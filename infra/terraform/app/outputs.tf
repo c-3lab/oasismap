@@ -56,3 +56,13 @@ output "keycloak_url" {
   description = "Keycloak URL for KC_HOSTNAME_URL etc."
   value       = "https://keycloak.${var.root_domain_name}"
 }
+
+output "root_domain_name" {
+  description = "Root domain name (for keycloak-realm layer)."
+  value       = var.root_domain_name
+}
+
+output "key_vault_id" {
+  description = "Key Vault ID (for keycloak-realm layer to read client secrets)."
+  value       = data.azurerm_key_vault.main.id
+}
