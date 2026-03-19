@@ -5,12 +5,7 @@ output "realm_id" {
   value       = keycloak_realm.oasismap.id
 }
 
-output "general_user_client_redirect_uris" {
-  description = "General user client redirect URIs."
-  value       = keycloak_openid_client.general_user_client.redirect_uris
-}
-
-output "admin_client_redirect_uris" {
-  description = "Admin client redirect URIs."
-  value       = keycloak_openid_client.admin_client.redirect_uris
+output "oidc_google_identity_provider_redirect_uri" {
+  description = "OIDC Google identity provider redirect URI."
+  value       = "https://keycloak.${data.terraform_remote_state.app.outputs.root_domain_name}/realms/${keycloak_realm.oasismap.id}/broker/google/endpoint"
 }
