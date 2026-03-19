@@ -19,8 +19,7 @@ cosmosdb_database_name  = "oriondb"
 # PostgreSQL (password: set via tfvars or rotate after create; store in Key Vault)
 postgres_admin_login          = "postgres"
 postgres_admin_password       = "CHANGE_ME_PLACEHOLDER"
-postgres_sku_name             = "Standard_D2ds_v4"
-postgres_sku_tier             = "GeneralPurpose"
+postgres_sku_name             = "GP_Standard_D2ds_v4"
 postgres_storage_mb            = 32768
 postgres_version              = "16"
 postgres_backup_retention_days = 7

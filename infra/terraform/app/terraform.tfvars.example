@@ -26,8 +26,6 @@ agw_waf_mode      = "Prevention"
 
 dns_resource_group_name = "oasismap-dns"
 root_domain_name        = "YOUR_DOMAIN_NAME"
-
-keycloak_google_client_id                 = "YOUR_GOOGLE_CLIENT_ID"
-keycloak_google_client_secret             = "YOUR_GOOGLE_CLIENT_SECRET"
-# Postman の PostBrokerLoginFlowAlias と同様。未使用なら空でよい。
-keycloak_google_post_broker_login_flow_alias = ""
+# Optional: for parent-zone NS delegation (old ARM --parent-name style). Omit for standalone zone only.
+# parent_domain_name                = "example.com"
+# parent_zone_resource_group_name   = "example-dns-rg"
