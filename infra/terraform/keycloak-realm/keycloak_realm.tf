@@ -325,6 +325,13 @@ resource "keycloak_openid_client" "general_user_client" {
   authentication_flow_binding_overrides {
     browser_id = keycloak_authentication_flow.general_user_browser.id
   }
+
+  extra_config = {
+    "policyUri" = "${local.keycloak_client_base_url}/terms/privacy-policy"
+    "tosUri"    = "${local.keycloak_client_base_url}/terms/use"
+  }
+
+  depends_on = [keycloak_realm_optional_client_scopes.optional]
 }
 
 resource "keycloak_openid_hardcoded_claim_protocol_mapper" "general_user_client_usertype" {
@@ -352,6 +359,8 @@ resource "keycloak_openid_client" "admin_client" {
     "${local.keycloak_client_base_url}/api/auth/callback/admin-keycloak-client"
   ]
   web_origins = [local.keycloak_client_base_url]
+
+  depends_on = [keycloak_realm_optional_client_scopes.optional]
 }
 
 resource "keycloak_openid_hardcoded_claim_protocol_mapper" "admin_client_usertype" {
