@@ -123,7 +123,7 @@ resource "azurerm_container_group" "mongo_cli" {
     }
 
     environment_variables = {
-      MONGO_DATABASE = format("%s_%s", data.terraform_remote_state.platform.outputs.cosmosdb_database_name, lower(var.orion_fiware_service))
+      MONGO_DATABASE = format("%s-%s", data.terraform_remote_state.platform.outputs.cosmosdb_database_name, lower(var.orion_fiware_service))
     }
 
     secure_environment_variables = {

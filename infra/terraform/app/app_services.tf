@@ -37,7 +37,7 @@ resource "azurerm_linux_web_app" "frontend" {
     GENERAL_USER_KEYCLOAK_CLIENT_SECRET           = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${azurerm_key_vault_secret.kc_general_user_client_secret.name})"
     ADMIN_KEYCLOAK_CLIENT_ID                      = "admin-client"
     ADMIN_KEYCLOAK_CLIENT_SECRET                  = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${azurerm_key_vault_secret.kc_admin_client_secret.name})"
-    KEYCLOAK_CLIENT_ISSUER                        = "https://${azurerm_linux_web_app.keycloak.default_hostname}/realms/oasismap"
+    KEYCLOAK_CLIENT_ISSUER                        = "https://keycloak.${var.root_domain_name}/realms/oasismap"
     NEXT_PUBLIC_MAX_CLUSTER_RADIUS                = var.next_public_max_cluster_radius
   }
 
@@ -82,7 +82,7 @@ resource "azurerm_linux_web_app" "backend" {
     ORION_FIWARE_SERVICE      = var.orion_fiware_service
     ORION_FIWARE_SERVICE_PATH = var.orion_fiware_service_path
     ADMIN_KEYCLOAK_CLIENT_ID  = "admin-client"
-    KEYCLOAK_CLIENT_ISSUER    = "https://${azurerm_linux_web_app.keycloak.default_hostname}/realms/oasismap"
+    KEYCLOAK_CLIENT_ISSUER    = "https://keycloak.${var.root_domain_name}/realms/oasismap"
     FRONTEND_URL              = "https://${var.root_domain_name}"
     POSTGRES_HOST             = data.azurerm_postgresql_flexible_server.main.fqdn
     POSTGRES_PORT             = "5432"

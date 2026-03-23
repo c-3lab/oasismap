@@ -43,7 +43,7 @@ resource "acme_certificate" "agw" {
   # Key Vault は PFX インポートを標準サポート。空で P12 を生成し、そのままインポートする。
   certificate_p12_password = ""
 
-  depends_on = [azurerm_dns_zone.main]
+  depends_on = [azurerm_dns_a_record.root, azurerm_dns_a_record.backend, azurerm_dns_a_record.keycloak]
 }
 
 # 取得した証明書を platform の Key Vault に PFX（certificate_p12）でインポートする。
