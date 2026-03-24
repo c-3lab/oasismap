@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { ERROR_TYPE } from './constants'
 import { LoadingContext } from '@/contexts/loading-context'
+import { reportError } from '@/libs/client-error-reporting'
 
 interface HappinessParams {
   limit: number
@@ -68,6 +69,7 @@ export const useFetchData = () => {
 
       return jsonData
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
       throw error
     } finally {
@@ -104,6 +106,7 @@ export const useFetchData = () => {
 
       return jsonData
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
       throw error
     } finally {
@@ -135,6 +138,7 @@ export const useFetchData = () => {
       }
       return jsonData
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
       throw error
     } finally {
@@ -166,6 +170,7 @@ export const useFetchData = () => {
 
       return response
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
       throw error
     } finally {
@@ -204,6 +209,7 @@ export const useFetchData = () => {
         window.URL.revokeObjectURL(objectUrl)
       }, 250)
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
       throw error
     } finally {
@@ -228,6 +234,7 @@ export const useFetchData = () => {
         throw Error(jsonData?.message)
       }
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
       throw error
     } finally {
