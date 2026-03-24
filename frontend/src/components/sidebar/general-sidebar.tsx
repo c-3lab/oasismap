@@ -1,4 +1,5 @@
 import { useRouter } from 'next/navigation'
+import { pushActionLog } from '@/libs/client-error-reporting'
 import Box from '@mui/material/Box'
 import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
@@ -30,29 +31,52 @@ const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
         <Divider />
         <List>
           <ListItem key="happiness" disablePadding>
-            <ListItemButton onClick={() => router.push('/happiness/me')}>
+            <ListItemButton
+              onClick={() => {
+                pushActionLog('click', 'sidebarNav')
+                router.push('/happiness/me')
+              }}
+            >
               <ListItemText primary="利用者の幸福度" />
             </ListItemButton>
           </ListItem>
           <ListItem key="happiness-all" disablePadding>
-            <ListItemButton onClick={() => router.push('/happiness/all')}>
+            <ListItemButton
+              onClick={() => {
+                pushActionLog('click', 'sidebarNav')
+                router.push('/happiness/all')
+              }}
+            >
               <ListItemText primary="全体の幸福度" />
             </ListItemButton>
           </ListItem>
           <ListItem key="happiness-list" disablePadding>
-            <ListItemButton onClick={() => router.push('/happiness/list')}>
+            <ListItemButton
+              onClick={() => {
+                pushActionLog('click', 'sidebarNav')
+                router.push('/happiness/list')
+              }}
+            >
               <ListItemText primary="一覧表示" />
             </ListItemButton>
           </ListItem>
           <ListItem key="license" disablePadding>
             <ListItemButton
-              onClick={() => router.push('/terms/third-party-license')}
+              onClick={() => {
+                pushActionLog('click', 'sidebarNav')
+                router.push('/terms/third-party-license')
+              }}
             >
               <ListItemText primary="サードパーティライセンス" />
             </ListItemButton>
           </ListItem>
           <ListItem key="logout" disablePadding>
-            <ListItemButton onClick={() => signOut({ callbackUrl: '/login' })}>
+            <ListItemButton
+              onClick={() => {
+                pushActionLog('click', 'sidebarSignOut')
+                signOut({ callbackUrl: '/login' })
+              }}
+            >
               <ListItemText primary="ログアウト" />
             </ListItemButton>
           </ListItem>
