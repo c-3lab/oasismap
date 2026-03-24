@@ -26,6 +26,7 @@ import { ERROR_TYPE } from '@/libs/constants'
 import { useFetchData } from '@/libs/fetch'
 import { HappinessRequestBody } from '@/libs/fetch'
 import { getCurrentPosition } from '@/libs/geolocation'
+import { pushActionLog, reportError } from '@/libs/client-error-reporting'
 import { timestampToDateTime } from '@/libs/date-converter'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 import { HappinessKey } from '@/types/happiness-key'
@@ -88,6 +89,7 @@ const HappinessInput: React.FC = () => {
         })
       }
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error getting current position:', error)
     }
   }, [defaultLatitude, defaultLongitude])
@@ -191,6 +193,7 @@ const HappinessInput: React.FC = () => {
       }
       setExif(exif)
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
       setErrors((prev) => {
         return [
@@ -206,6 +209,8 @@ const HappinessInput: React.FC = () => {
 
   const submitForm = async () => {
     try {
+      pushActionLog('click', 'inputSubmit')
+      pushActionLog('apiCall', 'happiness/post')
       const answers = createAnswersFromSelected(selectedHappiness)
       let payload: HappinessRequestBody = {
         latitude: 0,
@@ -238,6 +243,7 @@ const HappinessInput: React.FC = () => {
       )
       router.push(`/happiness/${referral}`)
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
       if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
         noticeMessageContext.showMessage(
