@@ -1,445 +1,262 @@
-# Microsoft Azure上での環境構築手順
+# Microsoft Azure 上での環境構築手順（Terraform）
 
-## 構成図
+本書は **Terraform** により Azure 上に OASIS Map 向けインフラストラクチャを構築する手順をまとめたものである。旧来の Azure Resource Manager テンプレートとシェルスクリプト、および **Azure VM 上の Docker Compose による手順は対象外** である。  
+旧来の手順については[こちら](https://github.com/c-3lab/oasismap/blob/v1.2.4/infra/README.md)を参照する。
+
+**環境ごとに** サブスクリプション、ドメイン、`terraform.tfvars` の値は異なる。例示はプレースホルダである。
+
+## 1. 構成図
 
 ![azure-diagram](/doc/img/azure-diagram.png)
 
+## 2. アーキテクチャ概要
 
-## 環境構築手順
+Terraform は次の **3 レイヤー**を **platform → app → keycloak-realm** の順に適用する。
 
-### 事前準備
-1. （作業用PC）aptやHomebrew等のパッケージマネージャを用いて、作業用PCに下記のツールをインストールする
+| レイヤー | 主なリソース |
+| --- | --- |
+| **platform** | リソースグループ、Virtual Network（DMZ / App / DB / Application Gateway 用サブネット）、Cosmos DB（Mongo API・サーバーレス）、PostgreSQL Flexible Server、Log Analytics、Key Vault、ユーザー割り当てマネージド ID など |
+| **app** | Azure Container Registry、Linux App Service（**frontend / backend / Keycloak**）、Azure Container Instances（**Orion、Cygnus**、Mongo/PostgreSQL 用ワンショット CLI、**Orion サブスクリプション登録用ワンショット** など）、Application Gateway（WAF）、DNS ゾーン・レコード、Let's Encrypt（ACME DNS-01）による証明書 |
+| **keycloak-realm** | Keycloak のレルム・クライアント・IdP 等（**Keycloak Terraform プロバイダ**） |
 
-    |ツール|概要|動作確認済みバージョン（OS）|
-    |:--|:--|:--|
-    |az|Azure Commandline Interface(CLI)|2.62.0(macOS 13.6.9) or 2.65.0(Ubuntu 22.04.5 LTS)|
-    |openssl|公開鍵暗号や署名等に関する機能をもつツール|3.3.1 4(macOS 13.6.9) or 3.3.2(Ubuntu 22.04.5 LTS)|
-    |lego|Let's Encrypt/ACMEクライアントツール|4.17.4(macOS 13.6.9) or 4.19.2(Ubuntu 22.04.5 LTS)|
-    |bash|bash(macOS or Ubuntu)|3.2.57(1)(macOS 13.6.9) or  5.1.16(1)(Ubuntu 22.04.5 LTS)|
-    |sed|sed(BSD or GNU)|BSD sed(macOS 13.6.9) or GNU sed 4.8(Ubuntu 22.04.5 LTS)|
+実行時の依存関係のイメージは次のとおりである。
 
-1. （作業用PC）oasismapリポジトリをcloneする
+- **platform** がネットワーク・データストア・ログ基盤を用意する。
+- **app** が platform の remote state を参照し、アプリとゲートウェイ、ACI、DNS、証明書を構築する（初回などに **`az acr build`** によりイメージをビルド・プッシュする）。
+- **keycloak-realm** が app の remote state と Key Vault を参照し、HTTPS で Keycloak 管理 API に接続してレルムを構成する。
 
-    ```sh
-    workPC$ git clone https://github.com/c-3lab/oasismap.git
+## 3. 前提ツール
+
+| ツール | 備考 |
+| --- | --- |
+| [Terraform](https://www.terraform.io/) | **Version 1.14.5 以上**（各レイヤーの `terraform` ブロックに準拠） |
+| [Azure CLI](https://learn.microsoft.com/ja-jp/cli/azure/install-azure-cli) (`az`) | 認証は `az login` など。サブスクリプション上でリソース作成に必要な権限が必要である。 |
+| **app レイヤー** | リソース作成時に **`az acr build`** が実行される（`infra/terraform/app` からの相対パスで `frontend` / `backend` / `keycloak` / `fiware` 等を参照）。実行時の作業ディレクトリに注意する。 |
+
+## 4. リポジトリの配置
+
+**app レイヤー**の Terraform は、モノレポ **ルート**（`frontend`、`backend`、`keycloak`、`fiware/orion` 等が直下にある状態）を前提とする。  
+例:
+
+```text
+<リポジトリルート>/
+  frontend/
+  backend/
+  keycloak/
+  fiware/
+  infra/terraform/app/   ← ここで terraform を実行
+```
+
+ルート以外から実行する場合は `terraform -chdir=infra/terraform/app` のように **作業ディレクトリを合わせる**。
+
+## 5. Terraform リモート state（Azure ストレージ）の準備
+
+各レイヤーは **azurerm バックエンド**で state を Azure Storage に保存する。ストレージアカウントは 別途用意するか、[infra/terraform/create-storage-tfstate.sh](terraform/create-storage-tfstate.sh) または [infra/terraform/create-storage-tfstate.ps1](terraform/create-storage-tfstate.ps1) を実行して作成する。  
+作成後、次のような **コンテナと state キー**を使う（`backend.tf` の定義に一致させる）。
+
+| レイヤー | コンテナ名 | state キー（ファイル名） |
+| --- | --- | --- |
+| platform | `platform` | `terraform.tfstate` |
+| app | `app` | `terraform.tfstate` |
+| keycloak-realm | `app` | `keycloak-realm.tfstate` |
+
+### 5.1. 事前準備
+
+[create-storage-tfstate.sh](terraform/create-storage-tfstate.sh) または [create-storage-tfstate.ps1](terraform/create-storage-tfstate.ps1) を実行する前に、次を満たすこと。
+
+| 項目 | 内容 |
+| --- | --- |
+| **必須環境変数（4 つ）** | 未設定または空だとスクリプトは終了する。 |
+| `TF_STATE_RESOURCE_GROUP_NAME` | tfstate 用の **リソースグループ名**（存在しなければ作成）。 |
+| `TF_STATE_LOCATION` | 上記 RG・ストレージの **Azure リージョン**（例: `japaneast`）。 |
+| `TF_STATE_PREFIX` | ストレージアカウント名の **接頭辞**。実名は `prefix` + `st` + RG 名由来の MD5（最大 24 文字に収まるようハッシュを切り詰め）として生成される。 |
+| `AZURE_TENANT_ID` | `az login --tenant` に渡す **テナント ID**。 |
+| **必須ツール** | **Azure CLI**（`az`）が PATH にあること。 |
+| **認証** | スクリプトが `az login --tenant "${AZURE_TENANT_ID}"` を実行するため、ブラウザ／デバイスコード等でのログインが可能であること。 |
+| **権限** | 対象サブスクリプションで、RG 作成・ストレージアカウント作成・コンテナ作成ができること（具体的なロールは運用ポリシーに合わせて定める）。 |
+| **サブスクリプション** | スクリプトは `az account set` を実行しない。複数サブスクリプションがある場合は、**実行前に** `az account set --subscription ...` で既定のサブスクリプションを tfstate 用に合わせる。 |
+| **実行場所** | `infra/terraform` に `cd` してから実行する。 |
+
+### 5.2. ストレージアカウントの作成
+
+1. 専用のリソースグループとストレージアカウント、上記コンテナを作成する。
+
+   ```sh
+    # macOS / Linux 向け
+    cd infra/terraform
+    ./create-storage-tfstate.sh
     ```
 
-1. （作業用PC）作業ディレクトリに移動する
-
-    ```sh
-    workPC$ cd oasismap/infra
+    ```powershell
+    # Windows 向け
+    cd infra\terraform
+    .\create-storage-tfstate.ps1
     ```
 
-1. （作業用PC）インフラ構築に必要な設定を、作業用PCのinfraディレクトリの.envに設定する
+2. **infra/terraform/platform**、**infra/terraform/app**、**infra/terraform/keycloak-realm**、それぞれのディレクトリに **`config.azurerm.tfbackend`** が作成されていることを確認する。
 
-    ```sh
-    workPC$ cp _env .env
-    workPC$ vi .env
-    ```
+3. 各レイヤーで `terraform init` 時に `-backend-config=config.azurerm.tfbackend` を渡す（後述）。
 
-    |環境変数名|概要|デフォルト値|
-    |:--|:--|:--|
-    |RESOURCE_GROUP_NAME|oasismapを構築するリソースグループ名||
-    |PREFIX|Azure上に構築する各種リソース名のプレフィックス||
-    |LOCATION|各種リソースを構築するAzureリージョン名|Japan East|
-    |POSTGRES_USER|Azure Database for PostgreSQLのサーバー管理者アカウント名|postgres|
-    |POSTGRES_PASSWORD|Azure Database for PostgreSQLのサーバー管理者パスワード||
-    |POSTGRES_SKU|Azure Database for PostgreSQLのフレキシブルサーバのサイズ|Standard_D2ds_v4|
-    |POSTGRES_STORAGE_GB|Azure Database for PostgreSQLのフレキシブルサーバのディスク容量（GB）|32|
-    |VM_ADMIN|Azure VMの管理者アカウント名|azureuser|
-    |VM_ADMIN_PUBLIC_KEY_PATH|Azure VMの管理者アカウントでSSH接続するための公開鍵の絶対パス||
-    |VM_SKU|Azure VMのサイズ|Standard_D4s_v3|
-    |VM_OSDISK_SKU|Azure VMのディスクのSKU|Standard_LRS|
-    |PARENT_DOMAIN_NAME|親DNSゾーン名||
-    |ROOT_DOMAIN_NAME|oasismapを起動するルートドメイン名||
-    |LEGO_EMAIL|Let's EncryptでSSL証明書を取得するために必要なEmailアドレス||
-    |PFX_PASSWORD|Let's Encryptから発行されたサーバ証明書と秘密鍵をPKCS#12(pfx)へ変換するためのパスワード||
-    |DNS_RESOURCE_GROUP_NAME|ルートドメインのAzure DNSのリソースグループ名||
-    |AGW_SKU|Azure Application GatewayのSKU|WAF_v2|
-    |AGW_MIN_CAPACITY|Azure Application Gatewayの容量ユニット(最小）|1|
-    |AGW_MAX_CAPACITY|Azure Application Gatewayの容量ユニット(最大）|2|
-    |WAF_MODE|Azure WAFのモード|Prevention|
-    |ALERT_MAIL_DEST_ADDRESS|アラートメールの送信先Emailアドレス||
+`terraform.tfvars` の雛形は各レイヤーの `terraform.tfvars.example` を参照する。
 
-    * 上記以外に設定可能なパラメータは、`templates`以下のARMテンプレートを確認
-    * WAFがリクエストをブロックしてアプリケーションが動作しない場合、`WAF_MODE`を**Detection**で構築し、Azure　Application　Gatewayの`AGWFirewallLogs`ログを確認してWAFがブロックする理由を確認すること
+## 6. 各レイヤーの変数ファイル
 
-### Azureリソースの構築（業務系）
-1. （作業用PC）Azure上にoasismap用のリソースグループを作成する
+各レイヤーで `terraform.tfvars.example` を `terraform.tfvars` にコピーし、値を編集する。
 
-    ```sh
-    workPC$ ./00_create_resource_group.bash
-    ```
+- [platform/terraform.tfvars.example](terraform/platform/terraform.tfvars.example)
+- [app/terraform.tfvars.example](terraform/app/terraform.tfvars.example)
+- [keycloak-realm/terraform.tfvars.example](terraform/keycloak-realm/terraform.tfvars.example)
 
-1. （作業用PC）Azure Virtual Networkを構築する
+**app** と **keycloak-realm** では、state 用ストレージの `backend_resource_group_name` / `backend_storage_account_name` を **同一**に揃える（app と keycloak-realm は同じストレージアカウントの `app` コンテナを使用する）。
 
-    ```sh
-    workPC$ ./01_create_vnet.bash
-    ```
+### 6.1. 主要な変数の説明
 
-1. （作業用PC）Azure Cosmos DB for mongoDBを構築する
+#### 6.1.1. terraform/platform/terraform.tfvars
 
-    ```sh
-    workPC$ ./02_create_cosmosdb-mongodb.bash
-    ```
+変数の詳細については[terraform/platform/variables.tf](terraform/platform/variables.tf)を参照する。
 
-1. （作業用PC）Azure Database for PostgreSQL(フレキシブル サーバー)を構築する
+| 変数名 | 概要 | デフォルト値 |
+| --- | --- | --- |
+| resource_group_name | リソースグループ名 | |
+| prefix | リソース名の接頭辞 | |
+| location | リソースの場所 | japaneast |
+| postgres_admin_login | PostgreSQL Flexible Server の管理者ログイン名 | postgres |
+| postgres_admin_password | PostgreSQL Flexible Server の管理者パスワード | |
+| alert_mail_dest_address | 監視用メールアドレス | |
 
-    ```sh
-    workPC$ ./03_create_postgresql.bash
-    ```
+#### 6.1.2. terraform/app/terraform.tfvars
 
-1. （作業用PC）Azure Virtual　Machineを構築する
+変数の詳細については[terraform/app/variables.tf](terraform/app/variables.tf)を参照する。
 
-    ```sh
-    workPC$ ./04_create_vm.bash
-    ```
+| 変数名 | 概要 | デフォルト値 |
+| --- | --- | --- |
+| backend_resource_group_name | リモート state 用リソースグループ名 | |
+| backend_storage_account_name | リモート state 用ストレージアカウント名 | |
+| prefix | リソース名の接頭辞 | |
+| location | リソースの場所 | japaneast |
+| app_frontend_name | Frontend アプリケーション名 | |
+| app_frontend_nextauth_secret | Frontend アプリケーションの NextAuth シークレット | |
+| terms_municipality_name | 参加同意書の自治体名 | 【自治体名】 |
+| terms_date | 参加同意書の日付 | yyyy年mm月dd日 |
+| terms_title_suffix | 参加同意書のタイトルの接尾辞 | （雛形） |
+| app_backend_name | Backend アプリケーション名 | |
+| app_keycloak_name | Keycloak アプリケーション名 | |
+| app_keycloak_admin | Keycloak の管理者ユーザー名 | |
+| app_keycloak_admin_password | Keycloak の管理者パスワード | |
+| acme_server_url | ACME サーバー URL | `https://acme-v02.api.letsencrypt.org/directory` |
+| acme_registration_email | ACME 登録メールアドレス | |
+| dns_resource_group_name | DNS リソースグループ名 | |
+| root_domain_name | ルートドメイン名 | |
+| parent_domain_name | 親ドメイン名 | null |
+| parent_zone_resource_group_name | 親ドメインのリソースグループ名 | null |
 
-    * 構築完了後にVMの管理者アカウント名とPublicIPが表示されるので、メモしておくこと
+#### 6.1.3. terraform/keycloak-realm/terraform.tfvars
 
-1. （作業用PC）Let's EncryptからSSL証明書を取得し、Azure Application Gatewayを構築する
+変数の詳細については[terraform/keycloak-realm/variables.tf](terraform/keycloak-realm/variables.tf)を参照する。
 
-    ```sh
-    workPC$ ./05_create_application-gateway.bash
-    ```
+| 変数名 | 概要 | デフォルト値 |
+| --- | --- | --- |
+| backend_resource_group_name | リモート state 用リソースグループ名 | |
+| backend_storage_account_name | リモート state 用ストレージアカウント名 | |
+| app_keycloak_admin | Keycloak の管理者ユーザー名 | |
+| app_keycloak_admin_password | Keycloak の管理者パスワード | |
+| keycloak_google_client_id | Google クライアント ID | |
+| keycloak_google_client_secret | Google クライアントシークレット | |
 
-1. （作業用PC）Azure　DNSにoasismap用のAレコードを追加する
+### 6.2. Google Cloud 事前準備
 
-    ```sh
-    workPC$ ./06_create_dns-A-record.bash
-    ```
-
-### Azure VMに設定ファイルを転送
-1. （作業用PC）自動生成されたOASIS　Mapアプリケーション用設定ファイルを編集する
-
-    ```sh
-    workPC$ mv _env-azure.gen _env-azure
-    workPC$ vi _env-azure
-    ```
-    
-    |編集すべき環境変数名|概要|
-    |:--|:--|
-    |KEYCLOAK_ADMIN|keycloakの管理者アカウント名|
-    |KEYCLOAK_ADMIN_PASSWORD|keycloakの管理者アカウントのパスワード|
-    |NEXTAUTH_SECRET|NextAuth.js用のシークレット|
-  
-1. （作業用PC）編集したOASIS　Mapアプリケーション用設定ファイルをAzure VMにscpで転送する
-
-    ```sh
-    workPC$ scp -i <Azure VMの管理者アカウントでSSH接続するための秘密鍵のパス> ./_env-azure <Azure VMの管理者アカウント名>@<表示されたAzure　VMのPublicIP>:~
-    ```
-    
-### Azure VM上でoasismapアプリケーションを準備
-1. （作業用PC）Azure VMにsshで接続する
-
-    ```sh
-    workPC$ ssh -i <Azure VMの管理者アカウントでSSH接続するための秘密鍵のパス> <Azure VMの管理者アカウント名>@<表示されたAzure　VMのPublicIP>
-    ```
-
-1. （Azure VM）oasismapリポジトリをcloneする
-
-    ```sh
-    VM$ git clone https://github.com/c-3lab/oasismap.git
-    ```
-
-1. （Azure VM）oasismapのディレクトリに移動する
-
-    ```sh
-    VM$ cd oasismap
-    ```
-    
-    * 必要に応じてブランチを変更する
-
-1. （Azure VM）oasismapの設定ファイルをコピーする
-
-    ```sh
-    VM$ cp ~/_env-azure ./.env
-    ```
-    
-1. （Azure VM）oasismapを起動するsystemdユニットファイルを配置する
-
-    ```sh
-    VM$ sudo cp infra/systemd/oasismap.service /etc/systemd/system/
-    ```
-
-    * Azure　VMの管理者アカウント名やoasismapをcloneしたディレクトリを変更した場合、`oasismap.service`の**COMPOSE_FILE**の絶対パスを適切に変更する
-
-1. （Azure VM）systemdにoasismap serviceを認識させる
-
-    ```sh
-    VM$ sudo systemctl daemon-reload
-    ```
-
-1. （Azure VM）oasismapの自動起動を許可する
-
-    ```sh
-    VM$ sudo systemctl enable oasismap
-    ```
-
-### 参加同意書の自治体名を更新
-
-1. （Azure VM）参加同意書を更新する（ `<対象自治体名>` と `<実証実験の日付>` は適切な値に変更すること）
-
-    ```sh
-    VM$ sed -i 's/ （雛形）//g' frontend/src/app/terms/use/page.tsx
-    VM$ sed -i 's/【自治体名】/<対象自治体名>/g' frontend/src/app/terms/use/page.tsx
-    VM$ sed -i 's/yyyy年mm月dd日/<実証実験の日付>/g' frontend/src/app/terms/use/page.tsx
-    ```
-
-1. （Azure VM）参加同意書を更新を確認する
-
-    ```sh
-    VM$ git diff frontend/src/app/terms/use/page.tsx
-    ```
-
-### Azure VM上でoasismapアプリケーションを起動
-1. （Azure VM）oasismap serviceを開始する
-
-    ```sh
-    VM$ sudo systemctl start oasismap
-    ```
-
-1. （Azure VM）oasismap serviceの起動ログを確認する
-
-    ```sh
-    VM$ sudo journalctl -f -u oasismap
-    ```
-
-    * 初回はコンテナビルドが実行されるため、起動に時間がかかることに注意する
-
-1. （Azure VM）oasismapアプリケーションが起動したことを確認する
-
-    ```sh
-    VM$ sudo docker compose ps
-    ```
-
-    * `backend`, `frontend`, `keycloak`, `orion`, `cygnus`のコンテナが起動し**healthy**であること
-
-    ```sh
-    VM$ sudo docker compose logs
-    ```
-    
-    * errorやexceptionが記録されていないこと
-
-### Google Cloud 事前準備
-
-1. [Google Cloud](https://console.cloud.google.com/apis/credentials)に接続
+1. [Google Cloud - 認証情報 - API とサービス](https://console.cloud.google.com/apis/credentials)に接続
 2. `プロジェクトを選択` から新しいプロジェクトを作成
 3. `認証情報を作成` を選択して `OAuth クライアント ID` を作成
 4. アプリケーションの種類に `ウェブアプリケーション` を選択して作成
+5. クライアント ID とクライアントシークレットを `infra/terraform/keycloak-realm/terraform.tfvars` に設定する
 
-### Azure VM上のkeycloakを自動設定
-1. （Azure VM）Google Cloud認証システムの設定をAzure VM上のkeycloak自動設定ファイルへ転記する
+## 7. platform レイヤー
 
-    ```sh
-    VM$ vi keycloak/variables.json
-    ```
+ディレクトリ: `infra/terraform/platform`
 
-    * `GoogleClientID` `GoogleClientSecret` へGoogle Cloud認証システムから得たクライアントID、シークレットを転記
-    * `ClientBaseURL` を `https://<設定したルートドメイン>` に変更
+実行例:
 
-1. （Azure VM）keycloakディレクトリに移動する
+```sh
+cd infra/terraform/platform
+terraform init -backend-config=config.azurerm.tfbackend
+terraform plan
+terraform apply
+```
 
-    ```sh
-    VM$ cd keycloak
-    ```
+## 8. app レイヤー
 
-1. （Azure VM）`formatting-variables.sh` を実行して都道府県名/市区町村名の情報を `variables.json` に設定する
+[7. platform レイヤー](#7-platform-レイヤー) が完了していることを前提とする。  
+ディレクトリ: **`infra/terraform/app`**（リポジトリルートからの相対パスで `../../../frontend` 等が解決されること）  
 
-    ```sh
-    VM$ bash formatting-variables.sh cities.json
-    ```
+実行例:
 
-1. （Azure VM）設定ファイルを読み込み、自動設定スクリプトで利用する環境変数を確認する
+```sh
+cd infra/terraform/app
+terraform init -backend-config=config.azurerm.tfbackend
+terraform plan
+terraform apply
+```
 
-    ```sh
-    VM$ source ../.env
-    VM$ echo $KEYCLOAK_ADMIN
-    VM$ echo $KEYCLOAK_ADMIN_PASSWORD
-    ```
+### 8.1. 注意事項
 
-1. （Azure VM）以下のコマンドを実行
+- **platform** の apply が完了し、remote state が読める状態にする。
+- 初回など、コンテナイメージ作成リソースの前に **`action` 経由で `az acr build`** が実行される。Azure にログイン済みであり、パスがモノレポ構成と一致している必要がある。
+- **Let's Encrypt**
+  - 本番向け: `acme_server_url` は既定の本番 ACME ディレクトリ（`variables.tf` のコメント参照）。
+  - 検証時: レート制限回避のため **ステージング URL** に切り替え可能である。ステージング証明書はブラウザで信頼されない。運用前に本番 URL へ戻し、再 apply する。
+- **DNS**
+  - `root_domain_name` と `dns_resource_group_name` で DNS ゾーンとレコードを管理する。
+  - 親ゾーンに **NS 委任**が必要な場合は、`parent_domain_name` と `parent_zone_resource_group_name` を設定する（`terraform.tfvars.example` のコメント参照）。
+- **Application Gateway（WAF）**  
+  アプリがブロックされる場合は、まず **Detection** モードでログを確認するなど、従来どおり WAF とアプリの整合を取る（`agw_waf_mode` 等）。
 
-    ```sh
-    VM$ sudo docker run --network oasismap_backend-network --volume $(pwd):/etc/newman/keycloak \
-    postman/newman:latest run --bail --environment /etc/newman/keycloak/variables.json \
-    --env-var "KeycloakAdminUser=$KEYCLOAK_ADMIN" \
-    --env-var "KeycloakAdminPassword=$KEYCLOAK_ADMIN_PASSWORD" \
-    /etc/newman/keycloak/postman-collection.json
-    ```
+### 8.2. apply 後に確認する出力例
 
-1. （Azure VM）oasismapのディレクトリに戻る
+`terraform output` で、Application Gateway のパブリック IP、ルート URL、バックエンド／Keycloak の URL などが取得できる。DNS の A レコードや委任が正しければ、HTTPS で各サービスに到達できるようになる。
 
-    ```sh
-    VM$ cd ..
-    ```
+## 9. keycloak-realm レイヤー
 
-### Azure VM上のkeycloakをGUIから設定
-#### keycloakにログイン
+[8. app レイヤー](#8-app-レイヤー) が完了していることを前提とする。  
+Keycloak が HTTPS で応答する状態になっていることを確認してから実行する。  
 
-1. ブラウザから `https://keycloak.<設定したルートドメイン>`でAzure VM上のkeycloakに接続する
+ディレクトリ: `infra/terraform/keycloak-realm`
+
+実行例:
+
+```sh
+cd infra/terraform/keycloak-realm
+terraform init -backend-config=config.azurerm.tfbackend
+terraform plan
+terraform apply
+```
+
+- Keycloak プロバイダは **app** の出力する Keycloak URL（`https://keycloak.<ドメイン>`）に接続する。
+- **app** で Let's Encrypt を **ステージング**にしている場合、プロバイダ側で証明書検証を緩和する設定が有効になる（本番証明書への切り替え後に再 apply することを推奨する）。
+- Google IdP を使う場合は `keycloak-realm/terraform.tfvars` に `keycloak_google_client_id` / `keycloak_google_client_secret` 等を設定する（空なら IdP 作成をスキップする動きになる）。
+
+### 9.1. Google Cloud（OAuth）とリダイレクト URI
+
+1. Google Cloud コンソールで OAuth クライアントを用意する（従来の「ウェブアプリケーション」手順と同様）。
+2. Keycloak の **Google IdP 用リダイレクト URI** は、`terraform apply` 後に **keycloak-realm** の出力 `oidc_google_identity_provider_redirect_uri` を参照するか、Keycloak 管理コンソールの IdP 画面に表示される URI を Google Cloud の「承認済みのリダイレクト URI」に登録する。
+
+## 10. 自治体管理者アカウントの準備
+
+1. ブラウザから `https://keycloak.<設定したルートドメイン>` にアクセスし、keycloak の管理コンソールに接続する
 2. 「Administration Console」をクリックする
-3. 環境変数 `KEYCLOAK_ADMIN` `KEYCLOAK_ADMIN_PASSWORD` に指定した認証情報でログインする
-
-#### Google CloudにリダイレクトURIを設定
-
-1. keycloakの`realm` から `oasismap` を選択する
-2. 左のメニューバーから `Identity providers` を選択する
-3. `google` をクリックする
-4. `Redirect URI` の値をコピーして控えておく
-5. [Google Cloud](https://console.cloud.google.com/apis/credentials)に接続する
-6. 事前準備にて作成した認証情報を選択する
-7. `承認済みのリダイレクトURI` に控えておいた `Redirect URI` を転記し、`保存`をクリックする
-
-#### 利用者向けクライアントシークレットの設定
-
-1. keycloakの`realm` から `oasismap` を選択する
-2. 左のメニューバーから `Clients` をクリック
-3. `general-user-client` をクリック
-4. `Credentials` をクリックする
-5. `Client Secret` の値をAzure VM上のoasismapの環境変数 `GENERAL_USER_KEYCLOAK_CLIENT_SECRET` に転記する
-
-#### 自治体管理者向けクライアントシークレットの設定
-
-1. keycloakの`realm` に `oasismap` を選択する
-2. 左のメニューバーから `Clients` をクリックする
-3. `admin-client` をクリックする
-4. `Credentials` をクリックする
-5. `Client Secret` の値を環境変数 `ADMIN_KEYCLOAK_CLIENT_SECRET` に転記する
-
-### oasismap serviceを再起動して環境変数を反映
-1. （Azure VM）oasismap serviceを再起動する
-
-    ```sh
-    VM$ sudo systemctl restart oasismap
-    ```
-
-1. （Azure VM）oasismap serviceの起動ログを確認する
-
-    ```sh
-    VM$ sudo journalctl -f -u oasismap
-    ```
-
-1. （Azure VM）oasismapアプリケーションが起動したことを確認する
-
-    ```sh
-    VM$ sudo docker compose ps
-    ```
-
-    * `backend`, `frontend`, `keycloak`, `orion`, `cygnus`のコンテナが起動し**healthy**であること
-
-    ```sh
-    VM$ sudo docker compose logs
-    ```
-    
-    * errorやexceptionが記録されていないこと
-
-### orionにサブスクリプションを設定
-1. （Azure VM）バックエンドのコンテナに入る
-
-    ```sh
-    VM$ sudo docker exec -it backend /bin/bash
-    ```
-
-2. (backendコンテナ)コンテナ上で以下コマンドを実行してorionにサブスクリプションの設定を行う
-
-    ```sh
-    root@backend:/app/backend$ wget --post-data='{
-      "description": "Notice of entities change",
-      "subject": {
-        "entities": [
-          {
-            "idPattern": ".*",
-            "type": "happiness"
-          }
-        ],
-        "condition": {
-          "attrs": []
-        }
-      },
-      "notification": {
-        "http": {
-          "url": "http://cygnus:5055/notify"
-        }
-      }
-    }' \
-      --header='content-type: application/json' \
-      --header='Fiware-Service: Government' \
-      --header='Fiware-ServicePath: /Happiness' \
-      --server-response \
-      --output-document=- \
-      'http://orion:1026/v2/subscriptions'
-    ```
-
-3. (backendコンテナ)`201 Created`が返されたことを確認する
-
-4. (backendコンテナ)コンテナとの接続を解除する
-
-    ```sh
-    node@backend:/app/backend$ exit
-    ```
-
-### 自治体管理者アカウントの準備
-
-1. ブラウザから `https://keycloak.<設定したルートドメイン>`でAzure VM上のkeycloakに接続する
-2. 「Administration Console」をクリック
-3. 環境変数 `KEYCLOAK_ADMIN` `KEYCLOAK_ADMIN_PASSWORD` に指定した認証情報でログイン
-4. `realm` から `oasismap` を選択
+3. `infra/terraform/keycloak-realm/terraform.tfvars` で指定した認証情報（`keycloak_admin_username`、`keycloak_admin_password`）でログインする
+4. `realm` から `oasismap` を選択する
 5. 左のメニューバーから `Users` を選択
-6. `Add User` を選択
-7. `Username`,`profile.attribute.nickname` を入力して `Create` を選択
-    ※ `Username` と `profile.attribute.nickname` は同じ値を入れてください
-8. `Credentials` を選択して `Set password` からパスワードを入力してください
-9. パスワード入力後, `Temporary` のチェックを外して `Save`
-10. `Save password` から保存
+6. `Add User` を選択する
+7. `Username`,`profile.attribute.nickname` を入力して `Create` を選択する
+    ※ `Username` と `profile.attribute.nickname` は同じ値を入れる
+8. `Credentials` を選択して `Set password` を選択してパスワードを入力する
+9. パスワード入力後, `Temporary` のチェックを外して `Save` を選択する
+10. `Save password` を選択して保存する
 
-### 動作確認
-1. スマートフォンから **https://<設定したルートドメイン>** にアクセスし、oasismapが動作していることを確認する
-    * 参加同意書が正しく修正されていることも併せて確認する
-2. スマートフォンから **https://<設定したルートドメイン>/admin/login** にアクセスし、oasismapの管理者画面が動作していることを確認する
-    * 一般利用者と同様に住所や年代等の入力画面が表示された場合は、ダミーのデータを入力する
+## 11. 動作確認
 
-### Azureリソースの構築（監視系）
-1. （作業用PC）Azure Monitorワークスペース(Log Analytics　ワークスペース)を作成し、CosmosDB、PostgreSQL、Application　Gateway、VMから収集するメトリクスとログを設定する
-
-    ```sh
-    workPC$ ./07_create_log-analytics.bash
-    ```
-
-    * 必要に応じて収集するメトリクスやログを追加・変更する
-
-1. 15分程度待機し、メトリクスとログがAzure　Monitorへ収集されていることをAzure Portalから確認する
-    * Azureポータル > 作成したリソースグループ > Log Analytics ワークスペース(<設定したプレフィックス>-LOG) > 設定 > エージェント> Linuxサーバー
-        * **1 台の Linux コンピューターが接続されています** と表示されている
-    * Azureポータル > 作成したリソースグループ > Azure Cosmos DB API for MongoDB アカウント(<設定したプレフィックス>-mongo-<ランダム文字列>) > 監視
-        * ログ(クエリハブが表示されている場合はXをクリックして閉じる)
-            * **テーブルの選択 > AzureDiagnotics** を実行すると、MongoDB APIのログが表示されている
-        * メトリック
-            * メトリックとして **Mongo Requests** を選択すると、CosmosDB for MongoDBへのリクエスト数の推移が表示されている
-    * Azureポータル > 作成したリソースグループ > Azure Database for PostgreSQL のフレキシブル サーバー（<設定したプレフィックス>-postgres-<ランダム文字列>) > 監視 
-        * ログ(クエリハブが表示されている場合はXをクリックして閉じる)
-            * **テーブルの選択 > AzureDiagnotics** を実行すると、PostgreSQLのログが表示されている
-        * メトリック
-            * メトリックとして **CPU percent** を選択すると、PostgreSQLサーバのCPU使用率の推移が表示されている
-    * Azureポータル > 作成したリソースグループ > アプリケーション ゲートウェイ（<設定したプレフィックス>-AGW) > 監視
-        * ログ(クエリハブが表示されている場合はXをクリックして閉じる)
-            * **テーブルの選択 > AGWAccessLogs** を実行すると、AGWのアクセスログが表示されている
-        * メトリック
-            * メトリックとして **Total Requests** を選択すると、リクエスト数の推移が表示されている
-    * Azureポータル > 作成したリソースグループ > 仮想マシン（<設定したプレフィックス>-VM) > 監視
-        * ログ(クエリハブが表示されている場合はXをクリックして閉じる)
-            * **テーブルの選択 > Syslog** を実行すると、VMのOSから転送されたsyslogが表示されている
-            * KQLモードに変更し、クエリエディタに`Syslog | where Facility  == "local0" and ProcessName == "cygnus"`と入力し実行すると、cygnusのログが表示されている
-        * メトリック
-            * メトリック名前空間として **azure.vm.linux.guestmetrics** を選択し、メトリックとして **cpu/usage_active** を選択すると、VMのCPU使用率の推移が表示されている
-
-          
-1. （作業用PC）Azure Monitorのアラートルールを作成する
-
-    ```sh
-    workPC$ ./08_create_alerts.bash
-    ```
-
-    * 設定されたアラートルールは、Azureポータルから確認できる
-        * Azureポータル > Azure Monitor > アラート > アラートルール
-    * 必要に応じてアラートが発火する条件を変更する
+1. スマートフォンから `https://<設定したルートドメイン>` にアクセスし、oasismapが動作していることを確認する
+    - 参加同意書が正しく修正されていることも併せて確認する
+2. スマートフォンから `https://<設定したルートドメイン>/admin/login` にアクセスし、oasismapの管理者画面が動作していることを確認する
+    - 一般利用者と同様に住所や年代等の入力画面が表示された場合は、ダミーのデータを入力する
