@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 type ClientErrorBody = {
-  environment?: { userAgent?: string }
+  environment?: { userAgent?: string; geolocationStatus?: string }
   actionLog?: { entries?: unknown[] }
   error?: {
     message?: string
     stack?: string
     url?: string
     occurredAt?: string
+    geolocationErrorCode?: number
   }
 }
 
