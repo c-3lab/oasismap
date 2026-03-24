@@ -11,6 +11,7 @@ import { HappinessListResponse, Data } from '@/types/happiness-list-response'
 import { useFetchData } from '@/libs/fetch'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 import { LoadingContext } from '@/contexts/loading-context'
+import { pushActionLog, reportError } from '@/libs/client-error-reporting'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -27,6 +28,7 @@ const HappinessList: React.FC = () => {
 
   const getData = async () => {
     try {
+      pushActionLog('apiCall', 'happiness/list')
       setIsLoading(true)
       willStop.current = false
       setListData([])
@@ -52,6 +54,7 @@ const HappinessList: React.FC = () => {
         offset += data['count']
       }
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error fetching data:', error)
       if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
         noticeMessageContext.showMessage(
@@ -74,6 +77,7 @@ const HappinessList: React.FC = () => {
 
   const deleteListData = async (id: string) => {
     try {
+      pushActionLog('apiCall', 'happiness/delete')
       const url = `${backendUrl}/api/happiness/${id}`
       const updatedSession = await update()
 
@@ -86,6 +90,7 @@ const HappinessList: React.FC = () => {
         prevListData.filter((data) => data.id !== id)
       )
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
       if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
         noticeMessageContext.showMessage(
