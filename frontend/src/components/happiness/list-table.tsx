@@ -31,6 +31,7 @@ import { Data } from '@/types/happiness-list-response'
 import { timestampToDateTime } from '@/libs/date-converter'
 import DeleteConfirmationDialog from '@/components/happiness/delete-confirmation-dialog'
 import { HappinessKey } from '@/types/happiness-key'
+import { pushActionLog } from '@/libs/client-error-reporting'
 
 type Order = 'asc' | 'desc'
 
@@ -86,6 +87,7 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
   const open = Boolean(anchorElement)
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    pushActionLog('click', 'listRowMenu')
     setAnchorElement(event.currentTarget)
   }
   const handleClose = () => {
@@ -107,7 +109,10 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
           <IconButton
             aria-label={isCollapseOpen ? 'collapse row' : 'expand row'}
             size="small"
-            onClick={() => setIsCollapseOpen(!isCollapseOpen)}
+            onClick={() => {
+              pushActionLog('click', 'listRowExpand')
+              setIsCollapseOpen(!isCollapseOpen)
+            }}
             sx={{ px: '0px' }}
           >
             {isCollapseOpen ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
@@ -163,6 +168,7 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
       <Menu anchorEl={anchorElement} open={open} onClose={handleClose}>
         <MenuItem
           onClick={() => {
+            pushActionLog('click', 'listShowOnMap')
             const params = new URLSearchParams()
             params.set('entityId', row.id)
             params.set('timestamp', row.timestamp)
@@ -177,7 +183,12 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
             secondary="選択した幸福度を地図に表示します"
           />
         </MenuItem>
-        <MenuItem onClick={() => openDialog(row)}>
+        <MenuItem
+          onClick={() => {
+            pushActionLog('click', 'listDelete')
+            openDialog(row)
+          }}
+        >
           <ListItemIcon>
             <DeleteForever sx={{ color: 'black' }} />
           </ListItemIcon>
@@ -198,6 +209,7 @@ const ListTable: React.FC<ListTableProps> = ({
   const [orderBy, setOrderBy] = useState<HappinessKey | null>(null)
 
   const handleSort = (property: HappinessKey) => {
+    pushActionLog('click', 'listSort')
     if (orderBy === property) {
       if (order === undefined) {
         setOrder('desc')
@@ -225,6 +237,7 @@ const ListTable: React.FC<ListTableProps> = ({
 
   const deleteRowData = () => {
     if (selectedData) {
+      pushActionLog('click', 'deleteConfirmDelete')
       deleteListData(selectedData.id)
       setSelectedData(null)
     }
@@ -307,7 +320,10 @@ const ListTable: React.FC<ListTableProps> = ({
       </Table>
       <DeleteConfirmationDialog
         data={selectedData}
-        onClose={() => setSelectedData(null)}
+        onClose={() => {
+          pushActionLog('click', 'deleteConfirmCancel')
+          setSelectedData(null)
+        }}
         deleteRowData={deleteRowData}
       />
     </TableContainer>
