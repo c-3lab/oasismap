@@ -9,6 +9,7 @@ import { mapColors } from '@/theme/color'
 import { HAPPINESS_KEYS, PROFILE_TYPE } from '@/libs/constants'
 import { getIconByType } from '../utils/icon'
 import { MePopup } from './mePopup'
+import { pushActionLog } from '@/libs/client-error-reporting'
 import 'leaflet.markercluster'
 
 // MarkerClusterGroupの型定義（leaflet.markerclusterの型定義を参照）
@@ -185,7 +186,7 @@ export const HybridClusterGroup = ({
   const createMarkerClickHandler = useCallback(
     (pin: Pin) => {
       return () => {
-        // Set popup
+        pushActionLog('click', 'mapPinClick')
         setPopupPin(pin)
         setPopupPosition([pin.latitude, pin.longitude])
       }
@@ -291,12 +292,17 @@ export const HybridClusterGroup = ({
     // Update initial cluster display
     updateClusters()
 
-    // Listen to zoom events to update clusters
-    map.on('zoomend', updateClusters)
+    const onZoomEnd = () => {
+      updateClusters()
+      pushActionLog('mapInteraction', 'mapZoom')
+    }
+    const onMoveEnd = () => pushActionLog('mapInteraction', 'mapPan')
+    map.on('zoomend', onZoomEnd)
+    map.on('moveend', onMoveEnd)
 
     return () => {
-      // Remove event listener
-      map.off('zoomend', updateClusters)
+      map.off('zoomend', onZoomEnd)
+      map.off('moveend', onMoveEnd)
 
       // Remove all cluster groups
       Object.values(happinessClustersRef.current).forEach((clusterGroup) => {
@@ -324,6 +330,7 @@ export const HybridClusterGroup = ({
     if (!map) return
 
     const handleMapClick = () => {
+      pushActionLog('click', 'mapPopupClose')
       setPopupPin(null)
       setPopupPosition(null)
     }
@@ -344,6 +351,7 @@ export const HybridClusterGroup = ({
           offset={[0, -20]}
           eventHandlers={{
             remove: () => {
+              pushActionLog('click', 'mapPopupClose')
               setPopupPin(null)
               setPopupPosition(null)
             },

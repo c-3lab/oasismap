@@ -1,62 +1,49 @@
 'use client'
 
 import { useEffect } from 'react'
-
-const MAX_STRING_LENGTH = 2000
-
-function truncate(s: string | undefined, max: number): string {
-  if (s == null || s === '') return ''
-  return s.length <= max ? s : s.slice(0, max)
-}
-
-function buildPayload(error: {
-  message: string
-  stack?: string
-  url: string
-}): string {
-  const occurredAt = new Date().toISOString()
-  const payload = {
-    environment: { userAgent: navigator.userAgent },
-    actionLog: { entries: [] as unknown[] },
-    error: {
-      message: truncate(error.message, MAX_STRING_LENGTH),
-      stack: error.stack ? truncate(error.stack, MAX_STRING_LENGTH) : undefined,
-      url: truncate(error.url, MAX_STRING_LENGTH),
-      occurredAt,
-    },
-  }
-  return JSON.stringify(payload)
-}
-
-function sendClientError(payload: string): void {
-  fetch('/api/client-errors', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: payload,
-  }).catch(() => {
-    // fire-and-forget: 送信失敗は無視
-  })
-}
+import { usePathname } from 'next/navigation'
+import {
+  buildReportPayload,
+  sendClientError,
+  isDuplicate,
+  markSent,
+  pushActionLog,
+} from '@/libs/client-error-reporting'
 
 export default function ClientErrorReporter() {
+  const pathname = usePathname()
+
+  // ルート遷移を操作ログに記録
+  useEffect(() => {
+    if (pathname) {
+      pushActionLog('routeChange', pathname)
+    }
+  }, [pathname])
+
   useEffect(() => {
     const handleError = (e: ErrorEvent): void => {
       const url = typeof document !== 'undefined' ? document.location.href : ''
-      const payload = buildPayload({
-        message: e.message || (e.error as Error)?.message || 'Unknown error',
+      const message =
+        e.message || (e.error as Error)?.message || 'Unknown error'
+      if (isDuplicate(message, url)) return
+      const payload = buildReportPayload({
+        message,
         stack: (e.error as Error)?.stack,
         url,
       })
       sendClientError(payload)
+      markSent(message, url)
     }
 
     const handleUnhandledRejection = (event: PromiseRejectionEvent): void => {
       const reason = event.reason
       const url = typeof document !== 'undefined' ? document.location.href : ''
       const message = reason instanceof Error ? reason.message : String(reason)
+      if (isDuplicate(message, url)) return
       const stack = reason instanceof Error ? reason.stack : undefined
-      const payload = buildPayload({ message, stack, url })
+      const payload = buildReportPayload({ message, stack, url })
       sendClientError(payload)
+      markSent(message, url)
     }
 
     window.addEventListener('error', handleError)

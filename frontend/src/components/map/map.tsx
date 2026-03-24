@@ -14,6 +14,11 @@ import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { messageContext } from '@/contexts/message-context'
+import {
+  setGeolocationStatus,
+  reportPositionError,
+  positionErrorCodeToStatus,
+} from '@/libs/client-error-reporting'
 
 import CurrentPositionIcon from '@mui/icons-material/RadioButtonChecked'
 import { renderToString } from 'react-dom/server'
@@ -117,6 +122,7 @@ const Map: React.FC<Props> = ({
     }
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
+        setGeolocationStatus('available')
         const newPosition: LatLngTuple = [
           position.coords.latitude,
           position.coords.longitude,
@@ -131,7 +137,9 @@ const Map: React.FC<Props> = ({
 
         setError(null)
       },
-      (e) => {
+      (e: GeolocationPositionError) => {
+        setGeolocationStatus(positionErrorCodeToStatus(e.code))
+        reportPositionError(e.code)
         console.error(e)
         setError(e instanceof Error ? e : new Error(e.message))
         if (e.code === e.PERMISSION_DENIED) {

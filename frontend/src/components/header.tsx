@@ -7,6 +7,7 @@ import AppBar from '@mui/material/AppBar'
 import { PROFILE_TYPE } from '@/libs/constants'
 import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
+import { pushActionLog } from '@/libs/client-error-reporting'
 
 interface HeaderProps {
   simple?: boolean
@@ -41,7 +42,10 @@ const Header: React.FC<HeaderProps> = ({
             color="inherit"
             aria-label="open drawer"
             edge="start"
-            onClick={handleDrawerOpen}
+            onClick={() => {
+              pushActionLog('click', 'headerMenu')
+              handleDrawerOpen?.()
+            }}
             sx={{ mr: 2 }}
           >
             <MenuIcon />
@@ -68,7 +72,10 @@ const Header: React.FC<HeaderProps> = ({
                 color="inherit"
                 aria-label="open filter"
                 edge="end"
-                onClick={handleFilterOpen}
+                onClick={() => {
+                  pushActionLog('click', 'headerFilter')
+                  handleFilterOpen?.()
+                }}
               >
                 <FilterAltIcon />
               </IconButton>
