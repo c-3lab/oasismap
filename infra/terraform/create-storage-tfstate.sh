@@ -118,3 +118,8 @@ cat <<EOF > app/config.azurerm.tfbackend
 resource_group_name = "${TF_STATE_RESOURCE_GROUP_NAME}"
 storage_account_name = "${STORAGE_ACCOUNT_NAME}"
 EOF
+
+cat <<EOF > keycloak-realm/config.azurerm.tfbackend
+resource_group_name = "${TF_STATE_RESOURCE_GROUP_NAME}"
+storage_account_name = "${STORAGE_ACCOUNT_NAME}"
+EOF

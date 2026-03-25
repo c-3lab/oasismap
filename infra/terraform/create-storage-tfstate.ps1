@@ -117,6 +117,7 @@ if (-not $appContainerExists) {
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $platformBackendPath = Join-Path $scriptDir "platform\config.azurerm.tfbackend"
 $appBackendPath = Join-Path $scriptDir "app\config.azurerm.tfbackend"
+$keycloakRealmBackendPath = Join-Path $scriptDir "keycloak-realm\config.azurerm.tfbackend"
 
 $platformBackendContent = @"
 resource_group_name  = "$env:TF_STATE_RESOURCE_GROUP_NAME"
@@ -128,9 +129,16 @@ resource_group_name  = "$env:TF_STATE_RESOURCE_GROUP_NAME"
 storage_account_name = "$storageAccountName"
 "@
 
+$keycloakRealmBackendContent = @"
+resource_group_name  = "$env:TF_STATE_RESOURCE_GROUP_NAME"
+storage_account_name = "$storageAccountName"
+"@
+
 Set-Content -Path $platformBackendPath -Value $platformBackendContent -Encoding UTF8
 Set-Content -Path $appBackendPath -Value $appBackendContent -Encoding UTF8
+Set-Content -Path $keycloakRealmBackendPath -Value $keycloakRealmBackendContent -Encoding UTF8
 
 Write-Host "Backend configuration files created:"
 Write-Host "  - $platformBackendPath"
 Write-Host "  - $appBackendPath"
+Write-Host "  - $keycloakRealmBackendPath"
