@@ -13,7 +13,7 @@ variable "prefix" {
 variable "location" {
   description = "Azure region for resources."
   type        = string
-  default     = "Japan East"
+  default     = "japaneast"
 }
 
 # --- VNet (01) ---
@@ -85,9 +85,9 @@ variable "postgres_admin_password" {
 
 
 variable "postgres_sku_name" {
-  description = "Azure Database for PostgreSQL SKU name (e.g. Standard_D2ds_v4)."
+  description = "Azure Database for PostgreSQL SKU name (e.g. GP_Standard_D2ds_v4)."
   type        = string
-  default     = "Standard_D2ds_v4"
+  default     = "GP_Standard_D2ds_v4"
 }
 
 variable "postgres_storage_mb" {
