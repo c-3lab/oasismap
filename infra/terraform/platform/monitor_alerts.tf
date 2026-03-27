@@ -1,5 +1,5 @@
-# Action Group and metric alerts (aligned with 08_alerts.template.json).
-# Created only when alert_mail_dest_address is set.
+# アクショングループとメトリックアラート。
+# alert_mail_dest_address が設定されている場合のみ作成。
 
 resource "azurerm_monitor_action_group" "main" {
   count               = length(var.alert_mail_dest_address) > 0 ? 1 : 0
@@ -14,7 +14,7 @@ resource "azurerm_monitor_action_group" "main" {
   }
 }
 
-# Cosmos DB: ServiceAvailability < 100 (severity 1)
+# Cosmos DB: ServiceAvailability < 100（重大度 1）
 resource "azurerm_monitor_metric_alert" "cosmosdb_availability" {
   count               = length(var.alert_mail_dest_address) > 0 ? 1 : 0
   name                = "${azurerm_cosmosdb_account.mongo.name}-ALERT-Availability"
@@ -40,7 +40,7 @@ resource "azurerm_monitor_metric_alert" "cosmosdb_availability" {
   }
 }
 
-# PostgreSQL: cpu_percent > 70 (severity 2)
+# PostgreSQL: cpu_percent > 70（重大度 2）
 resource "azurerm_monitor_metric_alert" "postgres_cpu" {
   count               = length(var.alert_mail_dest_address) > 0 ? 1 : 0
   name                = "${azurerm_postgresql_flexible_server.main.name}-ALERT-CPU"
@@ -66,7 +66,7 @@ resource "azurerm_monitor_metric_alert" "postgres_cpu" {
   }
 }
 
-# PostgreSQL: memory_percent > 70 (severity 2)
+# PostgreSQL: memory_percent > 70（重大度 2）
 resource "azurerm_monitor_metric_alert" "postgres_memory" {
   count               = length(var.alert_mail_dest_address) > 0 ? 1 : 0
   name                = "${azurerm_postgresql_flexible_server.main.name}-ALERT-MEM"
@@ -92,7 +92,7 @@ resource "azurerm_monitor_metric_alert" "postgres_memory" {
   }
 }
 
-# PostgreSQL: storage_percent > 70 (severity 2)
+# PostgreSQL: storage_percent > 70（重大度 2）
 resource "azurerm_monitor_metric_alert" "postgres_storage" {
   count               = length(var.alert_mail_dest_address) > 0 ? 1 : 0
   name                = "${azurerm_postgresql_flexible_server.main.name}-ALERT-DISK"

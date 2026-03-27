@@ -1,4 +1,4 @@
-# Keycloak Realm 設定（keycloak-realm レイヤー）
+# Keycloak レルム設定（keycloak-realm レイヤー）
 # app レイヤー適用後に実行。Keycloak URL・root_domain_name は app の state から取得。
 # 認証フロー「general user browser」およびユーザープロファイルは本ファイルで実装。
 
@@ -10,7 +10,7 @@ locals {
 }
 
 # -----------------------------------------------------------------------------
-# Realm
+# レルム
 # -----------------------------------------------------------------------------
 resource "keycloak_realm" "oasismap" {
   realm                = var.keycloak_realm_name
@@ -32,7 +32,7 @@ resource "keycloak_realm" "oasismap" {
 }
 
 # -----------------------------------------------------------------------------
-# Groups
+# グループ
 # -----------------------------------------------------------------------------
 resource "keycloak_group" "managers" {
   realm_id = keycloak_realm.oasismap.id
@@ -45,7 +45,7 @@ resource "keycloak_group" "users" {
 }
 
 # -----------------------------------------------------------------------------
-# Client Scope: audience
+# クライアントスコープ: audience
 # -----------------------------------------------------------------------------
 resource "keycloak_openid_client_scope" "audience" {
   realm_id               = keycloak_realm.oasismap.id
@@ -89,7 +89,7 @@ resource "keycloak_realm_optional_client_scopes" "optional" {
 }
 
 # -----------------------------------------------------------------------------
-# Profile スコープへの protocol mapper 追加
+# プロファイルスコープへの protocol mapper 追加
 # -----------------------------------------------------------------------------
 data "keycloak_openid_client_scope" "profile" {
   realm_id = keycloak_realm.oasismap.id
@@ -277,7 +277,7 @@ resource "keycloak_realm_user_profile" "userprofile" {
 }
 
 # -----------------------------------------------------------------------------
-# Google Identity Provider
+# Google Identity Provider（Google アイデンティティプロバイダー）
 # -----------------------------------------------------------------------------
 resource "keycloak_oidc_google_identity_provider" "google" {
   count = (var.keycloak_google_client_id != "" && var.keycloak_google_client_secret != "") ? 1 : 0
@@ -305,7 +305,7 @@ resource "keycloak_oidc_google_identity_provider" "google" {
 }
 
 # -----------------------------------------------------------------------------
-# OpenID Clients (client secret は app レイヤーで KV に保存済みのものを data で参照)
+# OpenID クライアント（client secret は app レイヤーで KV に保存済みのものを data で参照）
 # -----------------------------------------------------------------------------
 resource "keycloak_openid_client" "general_user_client" {
   realm_id                     = keycloak_realm.oasismap.id
@@ -375,7 +375,7 @@ resource "keycloak_openid_hardcoded_claim_protocol_mapper" "admin_client_usertyp
 }
 
 # -----------------------------------------------------------------------------
-# Authentication flow: general user browser
+# 認証フロー: general user browser
 # -----------------------------------------------------------------------------
 resource "keycloak_authentication_flow" "general_user_browser" {
   realm_id    = keycloak_realm.oasismap.id

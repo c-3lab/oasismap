@@ -1,5 +1,5 @@
-# Application Gateway metric alert (aligned with 08_alerts.template.json).
-# Created only when platform Action Group exists (alert_mail_dest_address set).
+# Application Gateway のメトリックアラート（08_alerts.template.json に整合）。
+# プラットフォームのアクショングループが存在する場合のみ作成（alert_mail_dest_address 設定時）。
 
 resource "azurerm_monitor_metric_alert" "agw_unhealthy_hosts" {
   count               = length(data.terraform_remote_state.platform.outputs.action_group_id) > 0 ? 1 : 0

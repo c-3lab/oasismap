@@ -1,4 +1,4 @@
-# Log Analytics workspace (aligned with 07_log-analytics).
+# Log Analytics ワークスペース。
 
 resource "azurerm_log_analytics_workspace" "main" {
   name                = "${var.prefix}-LOG"

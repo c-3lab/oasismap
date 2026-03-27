@@ -1,5 +1,5 @@
-# Cosmos DB for MongoDB (aligned with 02_cosmosdb-mongodb).
-# Account name: prefix-mongo-<unique suffix> for global uniqueness.
+# MongoDB 用 Cosmos DB。
+# アカウント名: グローバル一意性のため prefix-mongo-<一意のサフィックス>。
 
 resource "azurerm_cosmosdb_account" "mongo" {
   name                = "${var.prefix}-mongo-${substr(md5(azurerm_resource_group.main.id), 0, 8)}"

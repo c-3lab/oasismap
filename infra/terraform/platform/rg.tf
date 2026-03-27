@@ -1,4 +1,4 @@
-# Main resource group for platform resources (aligned with 00_create_resource_group / ARM).
+# プラットフォームリソース用のメインリソースグループ。
 
 resource "azurerm_resource_group" "main" {
   name     = var.resource_group_name

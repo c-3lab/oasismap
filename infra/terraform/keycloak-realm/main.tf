@@ -1,5 +1,5 @@
-# Keycloak Realm layer. Apply after app layer.
-# Manages Keycloak realm, clients, identity providers, and user profile via keycloak provider.
+# Keycloak レルム層。app 層の後に適用する。
+# keycloak プロバイダーでレルム、クライアント、アイデンティティプロバイダー、ユーザープロファイルを管理する。
 
 terraform {
   required_version = ">= 1.14.5"

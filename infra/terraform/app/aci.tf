@@ -1,4 +1,4 @@
-# Azure Container Instances: Orion, Cygnus. VNet integration using platform subnet_app.
+# Azure Container Instances: Orion, Cygnus。platform の subnet_app を使った VNet 統合。
 
 resource "azurerm_container_group" "orion" {
   name                                = "${var.prefix}-aci-orion"
@@ -89,8 +89,8 @@ resource "azurerm_container_group" "orion" {
   ]
 }
 
-# One-shot: create MongoDB indexes (including 2dsphere on location.coords) then exit.
-# Note: Container ports must be exposed for ACI requirement. Dummy port is 65534.
+# ワンショット: MongoDB インデックス作成（location.coords の 2dsphere 含む）後に終了。
+# 注: ACI の要件でコンテナポートを公開する必要がある。ダミーポートは 65534。
 resource "azurerm_container_group" "mongo_cli" {
   name                                = "${var.prefix}-aci-mongo-cli"
   location                            = var.location
@@ -151,8 +151,8 @@ resource "azurerm_container_group" "mongo_cli" {
   ]
 }
 
-# One-shot: create PostgreSQL database initialization then exit.
-# Note: Container ports must be exposed for ACI requirement. Dummy port is 65534.
+# ワンショット: PostgreSQL データベース初期化後に終了。
+# 注: ACI の要件でコンテナポートを公開する必要がある。ダミーポートは 65534。
 resource "azurerm_container_group" "postgres_cli" {
   name                                = "${var.prefix}-aci-postgres-cli"
   location                            = var.location
@@ -311,8 +311,8 @@ resource "azurerm_container_group" "cygnus" {
   ]
 }
 
-# One-shot: register Orion subscription (happiness entity change -> Cygnus notify).
-# Runs inside VNet so it can reach Orion and Cygnus by private IP. Uses public image only.
+# ワンショット: Orion サブスクリプション登録（happiness エンティティ変更 → Cygnus 通知）。
+# VNet 内で実行し、プライベート IP で Orion / Cygnus に到達する。パブリックイメージのみ使用。
 resource "azurerm_container_group" "orion_subscription" {
   name                = "${var.prefix}-aci-orion-subscription"
   location            = var.location

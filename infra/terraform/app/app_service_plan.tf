@@ -1,6 +1,6 @@
-# App Service Plan (Linux) for Frontend, Backend, Keycloak.
+# App Service プラン（Linux）。Frontend, Backend, Keycloak 用。
 
-# Note: By default, no quotas for App Service plans are provided in Japan East.
+# 注: 既定では Japan East に App Service プラン用クォータが付与されない場合がある。
 # https://learn.microsoft.com/ja-jp/answers/questions/2112138/app-service-plan-validationforresourcefailed
 resource "azurerm_service_plan" "main" {
   name                   = "${var.prefix}-asp"

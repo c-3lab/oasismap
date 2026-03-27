@@ -1,5 +1,5 @@
-# Terraform settings and Azure provider (platform layer).
-# Apply order: platform first, then app.
+# Terraform 設定と Azure プロバイダー（プラットフォーム層）。
+# 適用順: 先に platform、その後 app。
 
 terraform {
   required_version = ">= 1.14.5"
@@ -14,5 +14,5 @@ terraform {
 
 provider "azurerm" {
   features {}
-  # Authentication: use Azure CLI (az login) or environment variables.
+  # 認証: Azure CLI（az login）または環境変数を使用する。
 }

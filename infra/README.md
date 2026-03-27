@@ -244,7 +244,7 @@ terraform apply
 
 1. ブラウザから `https://keycloak.<設定したルートドメイン>` にアクセスし、keycloak の管理コンソールに接続する
 2. 「Administration Console」をクリックする
-3. `infra/terraform/keycloak-realm/terraform.tfvars` で指定した認証情報（`keycloak_admin_username`、`keycloak_admin_password`）でログインする
+3. `app_keycloak_admin` と `app_keycloak_admin_password` でログインする（`infra/terraform/app/terraform.tfvars` および `infra/terraform/keycloak-realm/terraform.tfvars` に同一の値を設定すること）
 4. `realm` から `oasismap` を選択する
 5. 左のメニューバーから `Users` を選択
 6. `Add User` を選択する

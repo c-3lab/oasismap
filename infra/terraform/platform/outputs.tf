@@ -1,4 +1,4 @@
-# Outputs for app layer (terraform_remote_state). Do not change names/types without updating app.
+# app 層向け出力（terraform_remote_state）。app 側を更新せずに名前や型を変更しないこと。
 
 output "resource_group_name" {
   description = "Main resource group name for app deployment."

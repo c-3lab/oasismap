@@ -1,5 +1,5 @@
-# Azure Key Vault. Secrets are NOT created by Terraform; store them via Portal, CLI, or a one-off script.
-# App layer uses Key Vault Reference or data source to reference secrets.
+# Azure Key Vault。シークレットは Terraform では作成しない。ポータル、CLI、またはワンショットスクリプトで格納すること。
+# app 層は Key Vault 参照または data ソースでシークレットを参照する。
 
 resource "azurerm_key_vault" "main" {
   name                       = "${var.prefix}-kv-${substr(md5(azurerm_resource_group.main.id), 0, 10)}"
@@ -12,7 +12,7 @@ resource "azurerm_key_vault" "main" {
   rbac_authorization_enabled = true
 }
 
-# Current client (Terraform runner) needs access to manage secrets / set policy.
+# 現在のクライアント（Terraform 実行環境）がシークレット管理とポリシー設定のためにアクセスできる必要がある。
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_role_assignment" "kv_rbac_terraform_admin" {
@@ -103,7 +103,6 @@ resource "azurerm_role_assignment" "kv_rbac_keycloak" {
   scope                = azurerm_key_vault.main.id
 }
 
-# --- Backend ---
 resource "azurerm_user_assigned_identity" "backend" {
   location            = var.location
   name                = "${var.prefix}-uai-backend"
@@ -116,7 +115,6 @@ resource "azurerm_role_assignment" "kv_rbac_backend" {
   scope                = azurerm_key_vault.main.id
 }
 
-# --- Frontend ---
 resource "azurerm_user_assigned_identity" "frontend" {
   location            = var.location
   name                = "${var.prefix}-uai-frontend"
@@ -129,7 +127,7 @@ resource "azurerm_role_assignment" "kv_rbac_frontend" {
   scope                = azurerm_key_vault.main.id
 }
 
-# --- Application Gateway ---
+# --- Application Gateway（アプリケーションゲートウェイ）---
 # Application Gateway が Key Vault から SSL 証明書を取得するための User Assigned Identity
 resource "azurerm_user_assigned_identity" "agw" {
   name                = "${var.prefix}-uai-agw"
@@ -143,5 +141,5 @@ resource "azurerm_role_assignment" "kv_rbac_agw" {
   scope                = azurerm_key_vault.main.id
 }
 
-# Do NOT create azurerm_key_vault_secret here. Secrets (e.g. postgres_password, pfx_password)
-# are populated by script or manual step; Terraform only references them.
+# ここでは azurerm_key_vault_secret を作成しない。シークレット（例: postgres_password, pfx_password）は
+# スクリプトまたは手作業で投入し、Terraform は参照のみ行う。

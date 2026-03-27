@@ -1,11 +1,11 @@
-# DNS-dedicated resource group and Azure DNS zone (aligned with 06_create_dns-A-record).
-# Zone and A records (@, backend, keycloak) point to Application Gateway public IP.
-# When parent_domain_name is set, an NS record is created in the parent zone (old ARM-style delegation).
+# DNS 専用リソースグループと Azure DNS ゾーン。
+# ゾーンと A レコード（@, backend, keycloak）は Application Gateway のパブリック IP を指す。
+# parent_domain_name 設定時は親ゾーンに NS レコードを作成する（旧 ARM 方式の委任）。
 
 locals {
-  # coalesce(null, "") fails in Terraform; use try(trimspace(...), "") so null/empty is safe.
+  # coalesce(null, "") は Terraform で失敗するため、try(trimspace(...), "") で null/空を安全に扱う。
   create_parent_delegation = try(trimspace(var.parent_domain_name), "") != ""
-  # Subdomain label in parent zone (e.g. "app" when root_domain_name is app.example.com and parent is example.com)
+  # 親ゾーン内のサブドメインラベル（例: root_domain_name が app.example.com で親が example.com のとき "app"）
   parent_ns_record_name = local.create_parent_delegation ? replace(var.root_domain_name, ".${var.parent_domain_name}", "") : null
 }
 
@@ -19,14 +19,14 @@ resource "azurerm_dns_zone" "main" {
   resource_group_name = azurerm_resource_group.dns.name
 }
 
-# Parent zone must already exist in Azure DNS (same subscription). Used only when parent_domain_name is set.
+# 親ゾーンは Azure DNS に既に存在すること（同一サブスクリプション）。parent_domain_name 設定時のみ使用。
 data "azurerm_dns_zone" "parent" {
   count               = local.create_parent_delegation ? 1 : 0
   name                = var.parent_domain_name
   resource_group_name = var.parent_zone_resource_group_name
 }
 
-# NS delegation in parent zone so that the parent delegates root_domain_name to this zone's name servers.
+# 親ゾーンでの NS 委任。親が root_domain_name を本ゾーンのネームサーバーに委任する。
 resource "azurerm_dns_ns_record" "parent_delegation" {
   count               = local.create_parent_delegation ? 1 : 0
   name                = local.parent_ns_record_name

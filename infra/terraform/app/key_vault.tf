@@ -3,8 +3,8 @@ data "azurerm_key_vault" "main" {
   resource_group_name = data.terraform_remote_state.platform.outputs.resource_group_name
 }
 
-# To retrieve Key Vault secrets using Terraform and pass them to ACI's secure_environment_variables.
-# Note: The values ​​are stored in the Terraform state, so state encryption and access control are required.
+# Terraform で Key Vault のシークレットを取得し、ACI の secure_environment_variables に渡すため。
+# 注: 値は Terraform state に保存されるため、state の暗号化とアクセス制御が必要。
 data "azurerm_key_vault_secret" "orion_mongo_uri" {
   name         = "orion-mongo-uri"
   key_vault_id = data.azurerm_key_vault.main.id
@@ -62,7 +62,7 @@ resource "azurerm_key_vault_secret" "kc_admin_client_secret" {
   key_vault_id     = data.azurerm_key_vault.main.id
 }
 
-# Frontend NextAuth secret (NEXTAUTH_SECRET).
+# フロントエンド NextAuth のシークレット（NEXTAUTH_SECRET）。
 resource "azurerm_key_vault_secret" "nextauth_secret" {
   name             = "nextauth-secret"
   value_wo         = var.app_frontend_nextauth_secret

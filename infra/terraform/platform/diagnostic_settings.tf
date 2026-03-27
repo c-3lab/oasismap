@@ -1,5 +1,5 @@
-# Diagnostic settings to Log Analytics (aligned with 07_log-analytics.template.json).
-# Cosmos DB and PostgreSQL logs are sent to the platform Log Analytics workspace.
+# Log Analytics への診断設定。
+# Cosmos DB と PostgreSQL のログをプラットフォームの Log Analytics ワークスペースへ送信する。
 
 resource "azurerm_monitor_diagnostic_setting" "cosmosdb" {
   name                       = "${azurerm_cosmosdb_account.mongo.name}-diagSettings"

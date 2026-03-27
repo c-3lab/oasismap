@@ -1,6 +1,6 @@
 # Application Gateway 用サーバー証明書: Terraform ACME provider で Let's Encrypt を取得し、
 # PFX（certificate_p12）で Azure Key Vault にインポートする。
-# ACME 失敗時（DNS 未委任・レート制限など）は Terraform がエラーで停止する想定。作業者が修正後に再 apply する。
+# ACME 失敗時（DNS 未委任・レート制限など）は Terraform がエラーで停止する想定。作業者が修正後に再適用する。
 
 # ACME アカウント用の鍵（Let's Encrypt 登録に使用）
 resource "tls_private_key" "acme_account" {
@@ -40,7 +40,7 @@ resource "acme_certificate" "agw" {
     }
   }
 
-  # Key Vault は PFX インポートを標準サポート。空で P12 を生成し、そのままインポートする。
+  # Key Vault は PFX インポートを標準でサポート。パスワード空で P12 を生成し、そのままインポートする。
   certificate_p12_password = ""
 
   depends_on = [azurerm_dns_a_record.root, azurerm_dns_a_record.backend, azurerm_dns_a_record.keycloak]

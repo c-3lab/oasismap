@@ -1,4 +1,4 @@
-# Platform layer variables. Aligned with infra/_env and ARM templates.
+# プラットフォーム層の変数。
 
 variable "resource_group_name" {
   description = "Name of the resource group for all platform resources (main RG)."
@@ -16,7 +16,7 @@ variable "location" {
   default     = "japaneast"
 }
 
-# --- VNet (01) ---
+# --- VNet ---
 variable "vnet_address_prefix" {
   description = "VNet address prefix."
   type        = string
@@ -47,7 +47,7 @@ variable "subnet_agw_prefix" {
   default     = "10.0.3.0/26"
 }
 
-# --- Cosmos DB (02) ---
+# --- Cosmos DB ---
 variable "mongo_api_version" {
   description = "MongoDB API version for Cosmos DB."
   type        = string
@@ -64,14 +64,14 @@ variable "cosmosdb_database_name" {
   }
 }
 
-# --- PostgreSQL (03) ---
+# --- PostgreSQL ---
 variable "postgres_admin_login" {
   description = "PostgreSQL administrator login name."
   type        = string
   default     = "postgres"
 }
 
-# Administrator password: use placeholder for initial apply only; then rotate and store in Key Vault. Do not commit real value.
+# 管理者パスワード: 初回の適用のみプレースホルダーを使用し、その後ローテーションして Key Vault に保存すること。実値をコミットしないこと。
 variable "postgres_admin_password" {
   description = "PostgreSQL administrator password (placeholder for template; replace via tfvars or rotate after create)."
   type        = string
@@ -114,7 +114,7 @@ variable "postgres_geo_redundant_backup" {
   default     = "Disabled"
 }
 
-# --- Monitoring / Alerts (08) ---
+# --- モニタリング / アラート ---
 variable "alert_mail_dest_address" {
   description = "Destination email address for alert notifications (README ALERT_MAIL_DEST_ADDRESS equivalent)."
   type        = string
@@ -131,7 +131,7 @@ variable "action_group_short_name" {
   }
 }
 
-# --- Log Analytics (07) ---
+# --- Log Analytics ---
 variable "log_analytics_sku" {
   description = "Log Analytics workspace SKU (e.g. PerGB2018)."
   type        = string

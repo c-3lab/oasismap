@@ -1,5 +1,5 @@
-# Virtual Network and subnets (aligned with 01_vnet.template.json).
-# Naming: prefix-VNET, prefix-SN-DMZ, prefix-SN-App, prefix-SN-DB, prefix-NSG-*.
+# 仮想ネットワークとサブネット。
+# 命名: prefix-VNET, prefix-SN-DMZ, prefix-SN-App, prefix-SN-DB, prefix-NSG-*。
 
 resource "azurerm_network_security_group" "dmz" {
   name                = "${var.prefix}-NSG-DMZ"
@@ -168,7 +168,7 @@ resource "azurerm_subnet_network_security_group_association" "db" {
   network_security_group_id = azurerm_network_security_group.db.id
 }
 
-# Application Gateway dedicated subnet (no delegation; AGW only).
+# Application Gateway 専用サブネット（委任なし。AGW のみ）。
 resource "azurerm_subnet" "agw" {
   name                                          = "${var.prefix}-SN-AGW"
   resource_group_name                           = azurerm_resource_group.main.name

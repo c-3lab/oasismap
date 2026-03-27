@@ -1,4 +1,4 @@
-# App layer outputs (URLs, FQDNs for documentation and app settings).
+# app 層の出力（ドキュメントとアプリ設定用の URL、FQDN）。
 
 output "app_frontend_fqdn" {
   description = "Frontend App Service default hostname (for AGW backend)."

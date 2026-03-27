@@ -1,6 +1,6 @@
-# App layer variables. Platform outputs are read via data.tf (terraform_remote_state).
+# app 層の変数。プラットフォームの出力は data.tf（terraform_remote_state）で読み取る。
 
-# Backend / remote_state: same storage as platform, used for terraform init and for reading platform state.
+# バックエンド / remote_state: platform と同じストレージ。terraform init および platform state の読み取りに使用。
 variable "backend_resource_group_name" {
   description = "Resource group name of the storage account holding Terraform state (platform and app)."
   type        = string
@@ -22,14 +22,14 @@ variable "location" {
   default     = "japaneast"
 }
 
-# --- App Service Plan ---
+# --- App Service プラン ---
 variable "app_service_plan_sku" {
   description = "App Service Plan SKU (e.g. P1v2, B2)."
   type        = string
   default     = "P1v2"
 }
 
-# --- App Services (Frontend, Backend, Keycloak) ---
+# --- App Services（Frontend, Backend, Keycloak）---
 variable "app_frontend_name" {
   description = "App Service name for Frontend (globally unique)."
   type        = string
@@ -165,7 +165,7 @@ variable "app_keycloak_admin_password" {
   sensitive   = true
 }
 
-# --- ACI (Orion, Cygnus) ---
+# --- ACI（Orion, Cygnus）---
 variable "aci_orion_image_tag" {
   description = "Container image tag for Orion ACI."
   type        = string
@@ -178,21 +178,21 @@ variable "aci_cygnus_image_tag" {
   default     = "cygnus:latest"
 }
 
-# --- ACI mongo-cli (one-shot MongoDB index creation) ---
+# --- ACI mongo-cli（ワンショット MongoDB インデックス作成）---
 variable "aci_mongo_cli_image_tag" {
   description = "Container image tag for mongo-cli ACI (one-shot MongoDB index creation)."
   type        = string
   default     = "mongo-cli:latest"
 }
 
-# --- ACI postgres-cli (one-shot PostgreSQL database initialization) ---
+# --- ACI postgres-cli（ワンショット PostgreSQL DB 初期化）---
 variable "aci_postgres_cli_image_tag" {
   description = "Container image tag for postgres-cli ACI (one-shot PostgreSQL database initialization)."
   type        = string
   default     = "postgres-cli:latest"
 }
 
-# --- Application Gateway ---
+# --- Application Gateway（アプリケーションゲートウェイ）---
 variable "agw_sku" {
   description = "Application Gateway SKU (e.g. WAF_v2)."
   type        = string
@@ -227,7 +227,7 @@ variable "agw_waf_mode" {
   default     = "Prevention"
 }
 
-# --- ACME (Let's Encrypt) for AGW server certificate ---
+# --- ACME（Let's Encrypt）AGW 用サーバー証明書 ---
 # 本番: https://acme-v02.api.letsencrypt.org/directory
 # 開発時（レート制限を避けたい場合）: Let's Encrypt ステージング URL を使用する。
 #   https://acme-staging-v02.api.letsencrypt.org/directory
@@ -249,7 +249,7 @@ variable "agw_ssl_certificate_name" {
   default     = "agw-ssl"
 }
 
-# --- DNS (dedicated RG and zone in app layer) ---
+# --- DNS（app 層の専用 RG とゾーン）---
 variable "dns_resource_group_name" {
   description = "Name of the DNS-dedicated resource group (e.g. prefix-dns)."
   type        = string
@@ -260,7 +260,7 @@ variable "root_domain_name" {
   type        = string
 }
 
-# Optional: when set, creates NS delegation in the parent zone (old ARM-style child zone).
+# 任意: 設定時は親ゾーンに NS 委任を作成する（旧 ARM 方式の子ゾーン）。
 variable "parent_domain_name" {
   description = "Parent DNS zone name (e.g. example.com). When set, an NS record is created in the parent zone to delegate this root_domain_name. Leave null or empty for standalone zone only."
   type        = string

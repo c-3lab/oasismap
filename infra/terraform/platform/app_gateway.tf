@@ -1,2 +1,2 @@
-# Application Gateway is managed in the app layer (not here).
-# This file is intentionally empty to match the directory layout; do not add AGW resources to platform.
+# Application Gateway は app 層で管理する（ここではない）。
+# ディレクトリ構成に合わせるため本ファイルは意図的に空とする。platform に AGW リソースを追加しないこと。

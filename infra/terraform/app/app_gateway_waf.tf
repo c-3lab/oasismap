@@ -1,5 +1,5 @@
-# WAF policies for Application Gateway. Aligned with ARM template 05_application-gateway.template.json.
-# Default policy: frontend/backend (gateway-level). Keycloak policy: keycloak listener only (WAF disabled).
+# Application Gateway 用 WAF ポリシー（README §8.1: ブロック時は Detection でログ確認など）。
+# 既定ポリシー: frontend/backend（ゲートウェイレベル）。Keycloak 用ポリシー: keycloak リスナーのみ（WAF 無効）。
 
 resource "azurerm_web_application_firewall_policy" "keycloak" {
   name                = "${var.prefix}-WAFPolicy-keycloak"
@@ -98,7 +98,7 @@ resource "azurerm_web_application_firewall_policy" "default" {
       type    = "Microsoft_BotManagerRuleSet"
       version = "1.0"
     }
-    # Exclusions for __Secure-next-auth.session-token (ARM template parity).
+    # __Secure-next-auth.session-token 用の除外（NextAuth セッション Cookie と OWASP ルールの競合回避）。
     exclusion {
       match_variable          = "RequestCookieKeys"
       selector                = "__Secure-next-auth.session-token"

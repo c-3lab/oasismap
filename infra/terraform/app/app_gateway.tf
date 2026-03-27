@@ -1,5 +1,5 @@
-# Application Gateway v2 / WAF. Backends point to App Service FQDNs.
-# HTTPS listener uses certificate from Key Vault (acme_agw_cert.tf). HTTP(80) redirects to HTTPS(443).
+# Application Gateway v2 / WAF。バックエンドは App Service の FQDN を指す。
+# HTTPS リスナーは Key Vault の証明書を使用（acme_agw_cert.tf）。HTTP(80) は HTTPS(443) へリダイレクト。
 
 resource "azurerm_public_ip" "agw" {
   name                = "${var.prefix}-AGWIP"
@@ -14,7 +14,6 @@ data "azurerm_user_assigned_identity" "agw" {
   resource_group_name = data.terraform_remote_state.platform.outputs.resource_group_name
 }
 
-# azurerm documentation: https://registry.terraform.io/providers/hashicorp/azurerm/4.62.1/docs/resources/application_gateway
 resource "azurerm_application_gateway" "main" {
   name                              = "${var.prefix}-AGW"
   resource_group_name               = data.terraform_remote_state.platform.outputs.resource_group_name
@@ -32,7 +31,7 @@ resource "azurerm_application_gateway" "main" {
   sku {
     name = var.agw_sku
     tier = var.agw_sku
-    # capacity is omitted when using autoscale_configuration (Azure allows either capacity or autoscale, not both).
+    # autoscale_configuration 使用時は capacity を省略（Azure は capacity とオートスケールの併用不可）。
   }
 
   autoscale_configuration {

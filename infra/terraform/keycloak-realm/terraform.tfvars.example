@@ -1,24 +1,24 @@
-# Copy to terraform.tfvars and set real values. Do not commit terraform.tfvars.
-# Run after app layer is applied. Init: terraform init -backend-config=backend.tfvars
+# terraform.tfvars にコピーして実値を設定すること。terraform.tfvars はコミットしないこと。
+# app 層適用後に実行。初期化: terraform init -backend-config=config.azurerm.tfbackend
 
 backend_resource_group_name   = "YOUR_TF_STATE_RESOURCE_GROUP_NAME"
 backend_storage_account_name  = "YOUR_TF_STATE_STORAGE_ACCOUNT_NAME"
 
-# Same values as app layer (Keycloak admin for admin-cli).
+# app 層と同じ値（admin-cli 用 Keycloak 管理者）。
 app_keycloak_admin            = "YOUR_KEYCLOAK_ADMIN_USERNAME"
 app_keycloak_admin_password   = "YOUR_KEYCLOAK_ADMIN_PASSWORD"
 
-# Use staging for development to avoid Let's Encrypt rate limits; enables tls_insecure_skip_verify for Keycloak.
+# 開発時は Let's Encrypt のレート制限回避のためステージングを使用。Keycloak の tls_insecure_skip_verify が有効になる。
 acme_server_url               = "https://acme-v02.api.letsencrypt.org/directory"
 # acme_server_url             = "https://acme-staging-v02.api.letsencrypt.org/directory"
 
-# Realm (optional; defaults are applied)
+# レルム（任意。既定値が適用される）
 # keycloak_realm_name                  = "oasismap"
 # keycloak_realm_display_name          = "地域幸福度可視化アプリ"
 # keycloak_realm_municipal_group_name  = "managers"
 # keycloak_realm_event_group_name      = "users"
 
-# Google IdP (optional; leave empty to skip)
+# Google IdP（任意。空のままならスキップ）
 keycloak_google_client_id                 = ""
 keycloak_google_client_secret             = ""
 keycloak_google_post_broker_login_flow_alias = ""

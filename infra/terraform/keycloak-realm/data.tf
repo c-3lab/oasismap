@@ -1,4 +1,4 @@
-# Reference app layer state. App must be applied before running keycloak-realm.
+# app 層の state を参照する。keycloak-realm 実行前に app を適用済みであること。
 
 data "terraform_remote_state" "app" {
   backend = "azurerm"

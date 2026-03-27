@@ -1,5 +1,5 @@
-# Azure Database for PostgreSQL Flexible Server (aligned with 03_postgresql).
-# Private DNS Zone and VNet link for private access. Subnet delegation on DB subnet.
+# Azure Database for PostgreSQL フレキシブルサーバー。
+# プライベートアクセス用のプライベート DNS ゾーンと VNet リンク。DB サブネットへの委任。
 
 locals {
   postgres_server_name   = "${var.prefix}-postgres-${substr(md5(azurerm_resource_group.main.id), 0, 8)}"
@@ -43,7 +43,7 @@ resource "azurerm_postgresql_flexible_server" "main" {
   }
 }
 
-# Optional: ensure secure transport can be OFF for initial setup (align with ARM require_secure_transport).
+# 任意: 初回セットアップ時にセキュアトランスポートを OFF にできるようにする（ARM の require_secure_transport に整合）。
 resource "azurerm_postgresql_flexible_server_configuration" "require_secure_transport" {
   name      = "require_secure_transport"
   server_id = azurerm_postgresql_flexible_server.main.id

@@ -1,5 +1,5 @@
-# Log Analytics scheduled query alerts: Orion (Cygnus notify path) and Cygnus (PostgreSQL persistence).
-# Created only when platform Action Group exists (same pattern as monitor_alerts.tf).
+# Log Analytics スケジュールクエリアラート: Orion（Cygnus 通知経路）と Cygnus（PostgreSQL 永続化）。
+# プラットフォームのアクショングループが存在する場合のみ作成（monitor_alerts.tf と同様）。
 
 locals {
   orion_cygnus_alert_count = length(data.terraform_remote_state.platform.outputs.action_group_id) > 0 ? 1 : 0

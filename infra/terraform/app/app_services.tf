@@ -1,6 +1,6 @@
-# App Service for Containers: Frontend, Backend, Keycloak.
-# Set environment variables via app settings (or Key Vault Reference for secrets).
-# FQDN is used by Application Gateway backends.
+# コンテナ用 App Service: Frontend, Backend, Keycloak。
+# アプリ設定で環境変数を設定する（シークレットは Key Vault 参照でも可）。
+# FQDN は Application Gateway のバックエンドで使用する。
 
 resource "azurerm_linux_web_app" "frontend" {
   name                            = var.app_frontend_name
@@ -131,7 +131,7 @@ resource "azurerm_linux_web_app" "keycloak" {
   }
 
   app_settings = {
-    # KC_HOSTNAME_URL, KEYCLOAK_CLIENT_SECRET etc. Key Vault Reference for secrets
+    # KC_HOSTNAME_URL, KEYCLOAK_CLIENT_SECRET など。シークレットは Key Vault 参照
     KC_HOSTNAME             = "https://keycloak.${var.root_domain_name}"
     KC_HOSTNAME_ADMIN       = "https://keycloak.${var.root_domain_name}"
     KC_HTTPS_PORT           = "443"

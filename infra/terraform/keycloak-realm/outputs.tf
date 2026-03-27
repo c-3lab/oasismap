@@ -1,4 +1,4 @@
-# Keycloak-realm layer outputs.
+# keycloak-realm 層の出力。
 
 output "realm_id" {
   description = "Keycloak realm id (oasismap)."

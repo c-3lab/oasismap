@@ -1,5 +1,5 @@
-# Diagnostic settings to Log Analytics (aligned with 07_log-analytics).
-# Application Gateway and App Services send logs to platform Log Analytics (via data source).
+# Log Analytics への診断設定。
+# Application Gateway と App Services のログをプラットフォーム層の Log Analytics ワークスペースへ送信する（data ソース経由）。
 
 resource "azurerm_monitor_diagnostic_setting" "agw" {
   name                           = "${azurerm_application_gateway.main.name}-diagSettings"
@@ -18,7 +18,7 @@ resource "azurerm_monitor_diagnostic_setting" "agw" {
   }
 }
 
-# App Service: Frontend, Backend, Keycloak (recommended per migration list)
+# App Service: Frontend, Backend, Keycloak
 resource "azurerm_monitor_diagnostic_setting" "frontend" {
   name                       = "${azurerm_linux_web_app.frontend.name}-diagSettings"
   target_resource_id         = azurerm_linux_web_app.frontend.id

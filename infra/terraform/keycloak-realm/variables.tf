@@ -1,4 +1,4 @@
-# Keycloak-realm layer variables. Backend and Keycloak connection; realm/client/IdP settings.
+# keycloak-realm 層の変数。バックエンドと Keycloak 接続、レルム／クライアント／IdP の設定。
 
 variable "backend_resource_group_name" {
   description = "Resource group name of the storage account holding Terraform state (app and keycloak-realm)."
@@ -28,7 +28,7 @@ variable "acme_server_url" {
   default     = "https://acme-v02.api.letsencrypt.org/directory"
 }
 
-# --- Realm ---
+# --- レルム ---
 variable "keycloak_realm_name" {
   description = "Realm name to create (oasismap)."
   type        = string
@@ -83,7 +83,7 @@ variable "keycloak_realm_event_group_name" {
   default     = "users"
 }
 
-# --- Google IdP ---
+# --- Google IdP（Google 連携）---
 variable "keycloak_google_client_id" {
   description = "Google OAuth client ID for identity provider. Empty to skip."
   type        = string
