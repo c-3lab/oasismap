@@ -24,9 +24,9 @@ variable "location" {
 
 # --- App Service プラン ---
 variable "app_service_plan_sku" {
-  description = "App Service Plan SKU (e.g. P1v2, B2)."
+  description = "App Service Plan SKU (e.g. P1v3, B2)."
   type        = string
-  default     = "P1v2"
+  default     = "P1v3"
 }
 
 # --- App Services（Frontend, Backend, Keycloak）---
