@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 import { useRouter } from 'next/navigation'
+import { pushActionLog, reportError } from '@/libs/client-error-reporting'
 import Box from '@mui/material/Box'
 import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
@@ -30,11 +31,14 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
 
   const downloadCsv = async () => {
     try {
+      pushActionLog('click', 'sidebarExport')
+      pushActionLog('apiCall', 'happiness/export')
       const url = backendUrl + '/api/happiness/export'
       // アクセストークンを再取得
       const updatedSession = await update()
       await download(url, updatedSession?.user?.accessToken!)
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
       if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
         noticeMessageContext.showMessage(
@@ -64,7 +68,12 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
         <Divider />
         <List>
           <ListItem key="happiness-all" disablePadding>
-            <ListItemButton onClick={() => router.push('/happiness/all')}>
+            <ListItemButton
+              onClick={() => {
+                pushActionLog('click', 'sidebarNav')
+                router.push('/happiness/all')
+              }}
+            >
               <ListItemText primary="全体の幸福度" />
             </ListItemButton>
           </ListItem>
@@ -74,19 +83,32 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
             </ListItemButton>
           </ListItem>
           <ListItem key="happiness-import" disablePadding>
-            <ListItemButton onClick={() => router.push('/admin/import')}>
+            <ListItemButton
+              onClick={() => {
+                pushActionLog('click', 'sidebarNav')
+                router.push('/admin/import')
+              }}
+            >
               <ListItemText primary="データのインポート" />
             </ListItemButton>
           </ListItem>
           <ListItem key="license" disablePadding>
             <ListItemButton
-              onClick={() => router.push('/terms/third-party-license')}
+              onClick={() => {
+                pushActionLog('click', 'sidebarNav')
+                router.push('/terms/third-party-license')
+              }}
             >
               <ListItemText primary="サードパーティライセンス" />
             </ListItemButton>
           </ListItem>
           <ListItem key="logout" disablePadding>
-            <ListItemButton onClick={() => signOut({ callbackUrl: '/login' })}>
+            <ListItemButton
+              onClick={() => {
+                pushActionLog('click', 'sidebarSignOut')
+                signOut({ callbackUrl: '/login' })
+              }}
+            >
               <ListItemText primary="ログアウト" />
             </ListItemButton>
           </ListItem>

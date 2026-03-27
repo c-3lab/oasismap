@@ -32,6 +32,12 @@ import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { getIconByType } from '../utils/icon'
 import { messageContext } from '@/contexts/message-context'
+import {
+  setGeolocationStatus,
+  reportPositionError,
+  positionErrorCodeToStatus,
+  pushActionLog,
+} from '@/libs/client-error-reporting'
 
 import { IconButton } from '@mui/material'
 import NavigationIcon from '@mui/icons-material/Navigation'
@@ -257,6 +263,7 @@ const HybridClusterGroup = ({
   const createMarkerClickHandler = useCallback(
     (pin: Pin) => {
       return () => {
+        pushActionLog('click', 'mapPinClick')
         // Set popup
         setPopupPin(pin)
         setPopupPosition([pin.latitude, pin.longitude])
@@ -363,12 +370,19 @@ const HybridClusterGroup = ({
     // Update initial cluster display
     updateClusters()
 
-    // Listen to zoom events to update clusters
-    map.on('zoomend', updateClusters)
+    // Listen to zoom events to update clusters and log mapInteraction
+    const onZoomEnd = () => {
+      updateClusters()
+      pushActionLog('mapInteraction', 'mapZoom')
+    }
+    const onMoveEnd = () => pushActionLog('mapInteraction', 'mapPan')
+    map.on('zoomend', onZoomEnd)
+    map.on('moveend', onMoveEnd)
 
     return () => {
       // Remove event listener
-      map.off('zoomend', updateClusters)
+      map.off('zoomend', onZoomEnd)
+      map.off('moveend', onMoveEnd)
 
       // Remove all cluster groups
       Object.values(happinessClustersRef.current).forEach((clusterGroup) => {
@@ -397,6 +411,7 @@ const HybridClusterGroup = ({
     if (!map) return
 
     const handleMapClick = () => {
+      pushActionLog('click', 'mapPopupClose')
       setPopupPin(null)
       setPopupPosition(null)
     }
@@ -417,6 +432,7 @@ const HybridClusterGroup = ({
           offset={[0, -20]}
           eventHandlers={{
             remove: () => {
+              pushActionLog('click', 'mapPopupClose')
               setPopupPin(null)
               setPopupPosition(null)
             },
@@ -455,6 +471,7 @@ const Map: React.FC<Props> = ({
     }
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
+        setGeolocationStatus('available')
         const newPosition: LatLngTuple = [
           position.coords.latitude,
           position.coords.longitude,
@@ -468,7 +485,9 @@ const Map: React.FC<Props> = ({
         setCurrentPosition(newPosition)
         setError(null)
       },
-      (e) => {
+      (e: GeolocationPositionError) => {
+        setGeolocationStatus(positionErrorCodeToStatus(e.code))
+        reportPositionError(e.code)
         console.error(e)
         setError(e instanceof Error ? e : new Error(e.message))
         if (e.code === e.PERMISSION_DENIED) {

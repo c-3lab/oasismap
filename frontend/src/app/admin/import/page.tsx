@@ -15,6 +15,7 @@ import { signOut, useSession } from 'next-auth/react'
 import { messageContext } from '@/contexts/message-context'
 import { useFetchData } from '@/libs/fetch'
 import { useRouter } from 'next/navigation'
+import { pushActionLog, reportError } from '@/libs/client-error-reporting'
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -31,6 +32,7 @@ const Import: React.FC = () => {
   const { upload } = useFetchData()
 
   const fileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    pushActionLog('click', 'importFileSelect')
     const file = event.target.files?.[0]
 
     if (file?.type !== 'text/csv') {
@@ -57,6 +59,8 @@ const Import: React.FC = () => {
       setErrorMessage('ファイルが選択されていません')
       return
     }
+    pushActionLog('click', 'importUpload')
+    pushActionLog('apiCall', 'happiness/import')
     setIsUploading(true)
     setImportError('') // Clear previous import errors
 
@@ -78,6 +82,7 @@ const Import: React.FC = () => {
       )
       router.push('/happiness/all')
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
       if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
         noticeMessageContext.showMessage(
