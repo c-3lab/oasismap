@@ -6,6 +6,9 @@ declare module 'next-auth' {
       accessToken?: string
       nickname?: string
       type?: string
+      realm_access?: {
+        roles?: string[]
+      }
     } & DefaultSession['user']
     error?: string
   }

@@ -57,6 +57,8 @@
       - `KC_HOSTNAME_URL`
       - `KC_HOSTNAME_ADMIN_URL`
       - `KEYCLOAK_CLIENT_ISSUER`
+      - `BASIC_AUTH_CLIENT_SECRET`
+      - `SERVICE_ACCOUNT_CLIENT_SECRET`
       - `GENERAL_USER_KEYCLOAK_CLIENT_SECRET`
       - `ADMIN_KEYCLOAK_CLIENT_SECRET`
 
@@ -154,11 +156,21 @@ OASIS Mapでは現在の位置情報を利用します。
     ※ 4で取得したkeycloakディレクトリのパスに書き換えて実行すること
 
     ```sh
-    ~/keycloak$ docker run --network oasismap_backend-network --volume $(pwd):/etc/newman/keycloak \
+    ~/keycloak$ docker run --rm --network oasismap_backend-network --volume $(pwd):/etc/newman/keycloak \
     postman/newman:latest run --bail --environment /etc/newman/keycloak/variables.json \
     --env-var "KeycloakAdminUser=$KEYCLOAK_ADMIN" \
     --env-var "KeycloakAdminPassword=$KEYCLOAK_ADMIN_PASSWORD" \
     /etc/newman/keycloak/postman-collection.json
+    ```
+
+6. postman-add-role-collection.jsonを実行する（postman-collection.jsonの実行方法と同じ）
+
+    ```sh
+    ~/keycloak$ docker run --rm --network oasismap_backend-network --volume $(pwd):/etc/newman/keycloak \
+    postman/newman:latest run --bail --environment /etc/newman/keycloak/variables.json \
+    --env-var "KeycloakAdminUser=$KEYCLOAK_ADMIN" \
+    --env-var "KeycloakAdminPassword=$KEYCLOAK_ADMIN_PASSWORD" \
+    /etc/newman/keycloak/postman-add-role-collection.json
     ```
 
 ### 環境変数の準備と追加
@@ -176,6 +188,22 @@ OASIS Mapでは現在の位置情報を利用します。
 5. [Google Cloud](https://console.cloud.google.com/apis/credentials)に接続
 6. 事前準備にて作成した認証情報を選択
 7. `承認済みのリダイレクトURI` に控えておいた `Redirect URI` を転記して保存
+
+#### パスワード認証用クライアントシークレットの設定
+
+1. `realm` から `oasismap` を選択
+2. 左のメニューバーから `client` をクリック
+3. `basic-auth-client` をクリック
+4. `Credentials` をクリック
+5. `Client Secret` の値を環境変数 `BASIC_AUTH_CLIENT_SECRET` に転記
+
+#### 新規ユーザーにロールを割り当てるサービス用クライアントシークレットの設定
+
+1. `realm` から `oasismap` を選択
+2. 左のメニューバーから `client` をクリック
+3. `role-assignment-service` をクリック
+4. `Credentials` をクリック
+5. `Client Secret` の値を環境変数 `SERVICE_ACCOUNT_CLIENT_SECRET` に転記
 
 #### 利用者向けクライアントシークレットの設定
 
@@ -254,6 +282,8 @@ OASIS Mapでは現在の位置情報を利用します。
 8. `Credentials` を選択して `Set password` からパスワードを入力してください
 9. パスワード入力後, `Temporary` のチェックを外して `Save`
 10. `Save password` から保存
+11. `Role mapping`を選択して`Assign role`>`Realm roles`を選択
+12. チェックリストから`admin-role`にチェックを入れて`Assign`で確定
 
 ##### 自治体管理者機能の使い方
 

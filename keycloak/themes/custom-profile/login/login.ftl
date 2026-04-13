@@ -4,7 +4,11 @@
 </div>
 <@layout.registrationLayout displayMessage=!messagesPerField.existsError('username','password') displayInfo=realm.password && realm.registrationAllowed && !registrationDisabled??; section>
     <#if section = "header">
-        ${msg("loginAccountTitle")}
+        <#if client.clientId == "admin-client">
+            ${msg("loginTitleAdmin")}
+        <#else>
+            ${msg("loginTitle")}
+        </#if>
     <#elseif section = "form">
         <div id="kc-form">
           <div id="kc-form-wrapper">
@@ -23,7 +27,6 @@
                                         ${kcSanitize(messagesPerField.getFirstError('username','password'))?no_esc}
                                 </span>
                             </#if>
-
                         </div>
                     </#if>
 
@@ -76,13 +79,24 @@
                           <input type="hidden" id="id-hidden-input" name="credentialId" <#if auth.selectedCredential?has_content>value="${auth.selectedCredential}"</#if>/>
                           <input tabindex="4" class="${properties.kcButtonClass!} ${properties.kcButtonPrimaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" name="login" id="kc-login" type="submit" value="${msg("doLogIn")}"/>
                       </div>
+                      
+                      <#if realm.registrationAllowed && !registrationDisabled?? && client.clientId != "admin-client">
+                      <div id="kc-registration-buttons" class="${properties.kcFormGroupClass!}">
+                          <div style="text-align: center; margin: 20px 0;">
+                              <span style="color: #666;">${msg("noAccount")}</span>
+                          </div>
+                          <a tabindex="5" href="${url.registrationUrl}" class="${properties.kcButtonClass!} ${properties.kcButtonSecondaryClass!} ${properties.kcButtonBlockClass!} ${properties.kcButtonLargeClass!}" style="text-decoration: none; display: block; text-align: center;">
+                              ${msg("doRegister")}
+                          </a>
+                      </div>
+                      </#if>
                 </form>
             </#if>
             </div>
         </div>
         <script type="module" src="${url.resourcesPath}/js/passwordVisibility.js"></script>
     <#elseif section = "info" >
-        <#if realm.password && realm.registrationAllowed && !registrationDisabled??>
+        <#if realm.registrationAllowed && !registrationDisabled?? && client.clientId != "admin-client">
             <div id="kc-registration-container">
                 <div id="kc-registration">
                     <span>${msg("noAccount")} <a tabindex="6"

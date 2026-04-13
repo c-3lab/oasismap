@@ -1,4 +1,5 @@
 import { withAuth } from 'next-auth/middleware'
+import { UserType } from './types/keycloak-roles'
 
 type Permission = 'pubilc' | 'general' | 'admin'
 
@@ -22,7 +23,6 @@ export default withAuth({
   },
   callbacks: {
     authorized: ({ token, req }) => {
-      // Allow access to static assets
       if (
         req.nextUrl.pathname.startsWith('/_next/') ||
         req.nextUrl.pathname.includes('.') ||
@@ -35,9 +35,34 @@ export default withAuth({
       if (!Object.keys(paths).includes(req.nextUrl.pathname)) {
         return false
       }
+
       const permissions = paths[req.nextUrl.pathname]
-      const userType = token?.userType as 'general' | 'admin'
-      return permissions.includes('pubilc') || permissions.includes(userType)
+      const userType = token?.userType as UserType
+      if (permissions.includes('pubilc')) {
+        return true
+      }
+
+      if (!token || token?.error) {
+        return false
+      }
+
+      if (userType === UserType.GENERAL) {
+        if (req.nextUrl.pathname.startsWith('/admin')) {
+          return false
+        }
+      }
+
+      if (userType === UserType.ADMIN) {
+        if (
+          req.nextUrl.pathname === '/happiness/me' ||
+          req.nextUrl.pathname === '/happiness/input' ||
+          req.nextUrl.pathname === '/happiness/list'
+        ) {
+          return false
+        }
+      }
+
+      return permissions.includes(userType)
     },
   },
 })
