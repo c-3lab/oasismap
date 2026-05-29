@@ -23,9 +23,6 @@ const Login: React.FC = () => {
         {isValidBrowser ? (
           <>
             <Grid item xs={12} sx={{ p: 3, border: '1px solid' }}>
-              <Typography variant="subtitle1" align="center">
-                Googleアカウントでログイン
-              </Typography>
               <Button
                 variant="outlined"
                 fullWidth
@@ -40,7 +37,7 @@ const Login: React.FC = () => {
                   )
                 }
               >
-                Google
+                ログイン
               </Button>
             </Grid>
           </>

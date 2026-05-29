@@ -187,7 +187,9 @@ Terraform は次の **3 レイヤー**を **platform → app → keycloak-realm*
 | keycloak_google_client_id | Google クライアント ID | |
 | keycloak_google_client_secret | Google クライアントシークレット | |
 
-### 6.2. Google Cloud 事前準備
+* Google認証を利用せず、keycloak単体でユーザー登録&認証認可を完結させる場合、 `keycloak_google_client_id` と `keycloak_google_client_secret` を設定しない
+
+### 6.2. Google Cloud 事前準備（Google認証を利用する場合のみ）
 
 1. [Google Cloud - 認証情報 - API とサービス](https://console.cloud.google.com/apis/credentials)に接続
 2. `プロジェクトを選択` から新しいプロジェクトを作成
@@ -276,7 +278,7 @@ terraform apply
 - **app** で Let's Encrypt を **ステージング**にしている場合、プロバイダ側で証明書検証を緩和する設定が有効になる（本番証明書への切り替え後に再 apply することを推奨する）。
 - Google IdP を使う場合は `keycloak-realm/terraform.tfvars` に `keycloak_google_client_id` / `keycloak_google_client_secret` 等を設定する（空なら IdP 作成をスキップする動きになる）。
 
-### 9.2. Google Cloud（OAuth）とリダイレクト URI
+### 9.2. Google Cloud（OAuth）とリダイレクト URI（Google認証を利用する場合のみ）
 
 1. Google Cloud コンソールで OAuth クライアントを用意する（従来の「ウェブアプリケーション」手順と同様）。
 2. Keycloak の **Google IdP 用リダイレクト URI** は、`terraform apply` 後に **keycloak-realm** の出力 `oidc_google_identity_provider_redirect_uri` を参照するか、Keycloak 管理コンソールの IdP 画面に表示される URI を Google Cloud の「承認済みのリダイレクト URI」に登録する。
@@ -284,23 +286,24 @@ terraform apply
 ## 10. 自治体管理者アカウントの準備
 
 1. ブラウザから `https://keycloak.<設定したルートドメイン>` にアクセスし、keycloak の管理コンソールに接続する
-2. 「Administration Console」をクリックする
-3. `app_keycloak_admin` と `app_keycloak_admin_password` でログインする
-4. `realm` から `oasismap` を選択する
-5. 左のメニューバーから `Users` を選択
-6. `Add User` を選択する
-7. `Username`,`profile.attribute.nickname` を入力して `Create` を選択する
-    ※ `Username` と `profile.attribute.nickname` は同じ値を入れる
-8. `Credentials` を選択して `Set password` を選択してパスワードを入力する
-9. パスワード入力後, `Temporary` のチェックを外して `Save` を選択する
-10. `Save password` を選択して保存する
+2. `app_keycloak_admin` と `app_keycloak_admin_password` でログインする
+3. `Manage realms` から `oasismap` を選択
+4. 左のメニューバーから `Users` を選択
+5. `Create new User` を押下
+6. `Username`,`profile.attribute.nickname` に管理者アカウント名を入力して `Create` を選択
+    ※ `Username` と `profile.attribute.nickname` は同じ値を入れてください
+7. `Credentials` を選択して `Set password` を押下
+8. `Password` と `Password confirmation` に同じパスワードを入力し、 `Temporary` をOFFにして `Save` を押下
+9. `Save password` を押下して管理者アカウントのパスワードを保存
+10. `Role mapping` を選択して `Asiign role` を押下
+11. `Realm rols` を選択
+12. `admin-role` にチェックを入れ、 `Assign` を押下
 
 ## 11. 動作確認
 
 1. スマートフォンから `https://<設定したルートドメイン>` にアクセスし、oasismapが動作していることを確認する
     - 参加同意書が正しく修正されていることも併せて確認する
 2. スマートフォンから `https://<設定したルートドメイン>/admin/login` にアクセスし、oasismapの管理者画面が動作していることを確認する
-    - 一般利用者と同様に住所や年代等の入力画面が表示された場合は、ダミーのデータを入力する
 
 ## 12. 環境の削除
 

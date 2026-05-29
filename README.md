@@ -11,6 +11,7 @@
     - [概要](#概要)
     - [インストール方法](#インストール方法)
     - [事前準備](#事前準備)
+    - [環境変数の定義](#環境変数の定義)
     - [システム起動](#システム起動)
     - [起動後設定](#起動後設定)
 
@@ -52,7 +53,24 @@
 
 ### 事前準備
 
-#### Google Cloud
+#### Google認証を利用しない場合
+##### ホストOSのIPアドレスの確認
+
+1. docker上のコンテナから到達可能なホストOSのIPアドレスを確認（ `localhost` や `127.0.0.1` では動作しないことに注意）
+
+    * linux (ネットワークアダプタがeth0の場合)
+
+    ```sh
+    ~/oasismap$ ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1
+    ```
+    * macOS（ネットワークアダプタがen0の場合）
+
+    ```sh
+    ~/oasismap$ ipconfig getifaddr en0
+    ```
+
+#### google認証を利用する場合
+##### Google Cloud
 
 1. [Google Cloud](https://console.cloud.google.com/apis/credentials)に接続
 2. `プロジェクトを選択` から新しいプロジェクトを作成
@@ -60,12 +78,12 @@
 4. アプリケーションの種類に `ウェブアプリケーション` を選択して作成
 5. クライアントID、シークレットが記されたjsonをダウンロード（一度しかダウンロードできないので注意）
 
-#### ngrok 事前準備
+##### ngrok 事前準備
 
-1. ngrokのアカウントを登録する  
+1. ngrokのアカウントを登録する
     https://ngrok.com/
 
-2. 手順に従いngrokをインストールする  
+2. 手順に従いngrokをインストールする
     https://ngrok.com/docs/getting-started/
 
 3. ngrok起動
@@ -75,20 +93,20 @@
     ```
 
     ```sh
-    Try the new Traffic Inspector dev preview: https://ngrok.com/r/ti                                   
-                                                                                                        
-    Session Status                online                                                                
-    Account                       アカウント名 (Plan: Free)                                            
-    Version                       3.6.0                                                                 
-    Region                        Japan (jp)                                                            
-    Latency                       5ms                                                                   
-    Web Interface                 http://127.0.0.1:4040                                                 
-    Forwarding                    https://xxxx-xxx-xxx-x-xx.ngrok-free.app -> http://localhost:8080     
-                                                                                                        
-    Connections                   ttl     opn     rt1     rt5     p50     p90                           
-                                  1224    0       0.00    0.01    0.06    6.29                          
-                                                                                                        
-    HTTP Requests                                                                                       
+    Try the new Traffic Inspector dev preview: https://ngrok.com/r/ti
+
+    Session Status                online
+    Account                       アカウント名 (Plan: Free)
+    Version                       3.6.0
+    Region                        Japan (jp)
+    Latency                       5ms
+    Web Interface                 http://127.0.0.1:4040
+    Forwarding                    https://xxxx-xxx-xxx-x-xx.ngrok-free.app -> http://localhost:8080
+
+    Connections                   ttl     opn     rt1     rt5     p50     p90
+                                  1224    0       0.00    0.01    0.06    6.29
+
+    HTTP Requests
     ```
 
 7. `Forwarding` から https:// で始まるURLを取得する
@@ -96,14 +114,14 @@
 
 #### 位置情報の利用について
 
-OASIS Mapでは現在の位置情報を利用します。  
-但し `http` で動作させた場合は実際の位置情報ではなく、仮の位置情報が使われます。  
-実際の位置情報を利用する場合は、Keycloakの他にOASIS Map本体も `https` で動作させる必要があります。  
+OASIS Mapでは現在の位置情報を利用します。
+但し `http` で動作させた場合は実際の位置情報ではなく、仮の位置情報が使われます。
+実際の位置情報を利用する場合は、Keycloakの他にOASIS Map本体も `https` で動作させる必要があります。
 手順は [現在位置情報を利用した動作確認手順](doc/location-usage-verification.md) を確認してください。
 
 仮の位置情報で問題ない場合は本手順はスキップしてください。
 
-### システム起動
+### 環境変数の定義
 
 1. `_env` をコピーして `.env` を準備します。
 
@@ -123,10 +141,9 @@ OASIS Mapでは現在の位置情報を利用します。
 
 3. 必要に応じて地図の初期パラメータ値(緯度、経度、ズーム値)を設定します。
 
-
 4. Keycloakのパラメータを設定します。
     * keycloakの管理者ユーザー名（`KEYCLOAK_ADMIN`）とパスワード（`KEYCLOAK_ADMIN_PASSWORD`）
-    * 次のコマンドを実行して `general-user-client` のsecretを生成し、 `KEYCLOAK_ADMIN_PASSWORD` に設定します。
+    * 次のコマンドを実行して `general-user-client` のsecretを生成し、 `GENERAL_USER_KEYCLOAK_CLIENT_SECRET` に設定します。
 
         ```sh
         ~/oasismap$ cat /dev/urandom | tr -dc 'A-Za-z0-9' | fold -w 32 | head -n 1
@@ -136,16 +153,16 @@ OASIS Mapでは現在の位置情報を利用します。
         ```sh
         ~/oasismap$ cat /dev/urandom | tr -dc 'A-Za-z0-9' | fold -w 32 | head -n 1
         ```
-    * `KC_HOSTNAME_URL` `KC_HOSTNAME_ADMIN_URL` `KEYCLOAK_CLIENT_ISSUER` にngrokから割り当てられたURLを設定します。
+5. keycloakの名前解決を設定します。
+    #### Google認証を利用しない場合
+    * `HOST_URL=http://YOUR_IP_ADDRESS:8080` の `YOUR_IP_ADDRESS` を、事前準備で確認したdocker上のコンテナから到達可能なホストOSのIPアドレスに置換します。
 
-      ```sh
-      KC_HOSTNAME_URL=https://xxxx-xxx-xxx-x-xx.ngrok-free.app
-      KC_HOSTNAME_ADMIN_URL=https://xxxx-xxx-xxx-x-xx.ngrok-free.app
-      KEYCLOAK_CLIENT_ISSUER=https://xxxx-xxx-xxx-x-xx.ngrok-free.app/realms/oasismap
-      ```
+    #### Google認証を利用する場合
+    * `HOST_URL` にngrokから割り当てられたURLを設定します。
     * Google Cloudから得たクライアントIDとクライアントシークレットをそれぞれ `GOOGLE_CLIENT_ID` と `GOOGLE_CLIENT_SECRET` に設定します。
 
-5. Dockerコンテナを展開します。
+### システム起動
+1. Dockerコンテナを展開します。
 
     ```sh
     ~/oasismap$ docker compose up -d
@@ -153,25 +170,12 @@ OASIS Mapでは現在の位置情報を利用します。
 
 ### 起動後設定
 
-#### Google CloudにリダイレクトURIを設定
-
-1. ブラウザから `http://Dockerホスト名:8080` でkeycloakの管理画面にアクセスします。
-2. 「Administration Console」をクリック
-3. 環境変数 KEYCLOAK_ADMIN KEYCLOAK_ADMIN_PASSWORD に指定した認証情報でログイン
-4. `realm` から `oasismap` を選択
-5. 左のメニューバーから `Identity providers` を選択
-6. `google` をクリック
-7. `Redirect URI` の値をコピーして控えておく
-8. [Google Cloud](https://console.cloud.google.com/apis/credentials)に接続
-9. 事前準備にて作成した認証情報を選択
-10. `承認済みのリダイレクトURI` に控えておいた `Redirect URI` を転記して保存
-
 #### orionにサブスクリプション設定を行う
 
-1. orionのコンテナにはいる
+1. backendのコンテナにはいる
 
     ```sh
-    docker compose exec orion bash
+    docker compose exec backend bash
     ```
 
 2. 以下コマンドを実行してorionにサブスクリプションの設定を行う
@@ -204,6 +208,22 @@ OASIS Mapでは現在の位置情報を利用します。
       'http://orion:1026/v2/subscriptions'
     ```
 
+#### Google認証を利用しない場合
+* 特になし
+
+#### Google認証を利用する場合
+##### Google CloudにリダイレクトURIを設定
+
+1. ブラウザから `http://Dockerホスト名:8080` でkeycloakの管理画面にアクセスします。
+2. 環境変数 `KEYCLOAK_ADMIN` `KEYCLOAK_ADMIN_PASSWORD` に指定した認証情報でログイン
+3. `Manage realms` から `oasismap` を選択
+4. 左のメニューバーから `Identity providers` を選択
+5. `google` をクリック
+6. `Redirect URI` の値をコピーして控えておく
+7. [Google Cloud](https://console.cloud.google.com/apis/credentials)に接続
+8. 事前準備にて作成した認証情報を選択
+9. `承認済みのリダイレクトURI` に控えておいた `Redirect URI` を転記して保存
+
 ## 基本的な使い方
 
 ### 自治体管理者向け
@@ -211,71 +231,73 @@ OASIS Mapでは現在の位置情報を利用します。
 #### 自治体管理者アカウントの準備
 
 1. ブラウザから `http://Dockerホスト名:8080` でkeycloakの管理画面にアクセスします
-2. 「Administration Console」をクリック
-3. 環境変数 `KEYCLOAK_ADMIN` `KEYCLOAK_ADMIN_PASSWORD` に指定した認証情報でログイン
-4. `realm` から `oasismap` を選択
-5. 左のメニューバーから `Users` を選択
-6. `Add User` を選択
-7. `Username`,`profile.attribute.nickname` を入力して `Create` を選択  
+2. 環境変数 `KEYCLOAK_ADMIN` `KEYCLOAK_ADMIN_PASSWORD` に指定した認証情報でログイン
+3. `Manage realms` から `oasismap` を選択
+4. 左のメニューバーから `Users` を選択
+5. `Create new User` を押下
+6. `Username`,`profile.attribute.nickname` に管理者アカウント名を入力して `Create` を選択
     ※ `Username` と `profile.attribute.nickname` は同じ値を入れてください
-8. `Credentials` を選択して `Set password` からパスワードを入力してください
-9. パスワード入力後, `Temporary` のチェックを外して `Save`
-10. `Save password` から保存
+7. `Credentials` を選択して `Set password` を押下
+8. `Password` と `Password confirmation` に同じパスワードを入力し、 `Temporary` をOFFにして `Save` を押下
+9. `Save password` を押下して管理者アカウントのパスワードを保存
+10. `Role mapping` を選択して `Asiign role` を押下
+11. `Realm rols` を選択
+12. `admin-role` にチェックを入れ、 `Assign` を押下
 
 #### 自治体管理者機能の使い方
 
-1. ブラウザから `http://Dockerホスト名:3000/admin/login` でアクセスします  
-  ![admin-user-1](doc/img/admin-user-1.png)  
+1. ブラウザから `http://Dockerホスト名:3000/admin/login` でアクセスします
+  ![admin-user-1](doc/img/admin-user-1.png)
 
-2. 自治体管理者用アカウントでログインします  
-  ![admin-user-2](doc/img/admin-user-2.png)  
+2. 自治体管理者用アカウントでログインします
+  ![admin-user-2](doc/img/admin-user-2.png)
 
-3. 右端のハンバーガーメニューの `データエクスポート` から幸福度情報をダウンロードできます  
-  ![admin-user-3](doc/img/admin-user-3.png)  
+3. 右端のハンバーガーメニューの `データエクスポート` から幸福度情報をダウンロードできます
+  ![admin-user-3](doc/img/admin-user-3.png)
 
 ### 利用者向け
 
 #### ログイン
 
-1. ブラウザから `http://Dockerホスト名:3000` でアクセスします  
-  ![general-user-1](doc/img/general-user-1.png)  
+1. ブラウザから `http://Dockerホスト名:3000` でアクセスします
+  ![general-user-1](doc/img/general-user-1.png)
 
-2. Googleアカウントを用いてログイン  
-  ![general-user-2](doc/img/general-user-2.png)  
+2. Googleアカウントを用いてログイン
+  ![general-user-2](doc/img/general-user-2.png)
 
-3. ユーザー情報の入力  
-  ※重複するニックネームは登録できません  
-  ![general-user-3](doc/img/general-user-3.png)  
+3. ユーザー情報の入力
+  ※重複するニックネームは登録できません
+  ![general-user-3](doc/img/general-user-3.png)
 
 #### 幸福度の入力
 
-1. 画面下の `幸福度の入力` をクリックします  
-  ![general-user-4-1](doc/img/general-user-4-1.png)  
+1. 画面下の `幸福度の入力` をクリックします
+  ![general-user-4-1](doc/img/general-user-4-1.png)
 
-2. 任意の項目にチェックを入れて `幸福度を送信` をクリックします  
-  ![general-user-4-2](doc/img/general-user-4-2.png)  
+2. 任意の項目にチェックを入れて `幸福度を送信` をクリックします
+  ![general-user-4-2](doc/img/general-user-4-2.png)
 
 #### 利用者幸福度の表示
-  
-1. 右端のハンバーガーメニューをクリックします  
-  ![general-user-5-1](doc/img/general-user-5-1.png)  
 
-2. 一覧から `利用者の幸福度` をクリックします  
-  ![general-user-5-2](doc/img/general-user-5-2.png)  
+1. 右端のハンバーガーメニューをクリックします
+  ![general-user-5-1](doc/img/general-user-5-1.png)
 
-3. `利用者の幸福度` が地図上とグラフに表示されます  
-  ![general-user-5-3](doc/img/general-user-5-3.png)  
+2. 一覧から `利用者の幸福度` をクリックします
+  ![general-user-5-2](doc/img/general-user-5-2.png)
+
+3. `利用者の幸福度` が地図上とグラフに表示されます
+  ![general-user-5-3](doc/img/general-user-5-3.png)
 
 #### 全体幸福度の表示
-  
-1. 右端のハンバーガーメニューをクリックします  
-  ![general-user-5-1](doc/img/general-user-5-1.png)  
 
-2. 一覧から `全体の幸福度` をクリックします  
-  ![general-user-5-2](doc/img/general-user-5-2.png)  
+1. 右端のハンバーガーメニューをクリックします
+  ![general-user-5-1](doc/img/general-user-5-1.png)
 
-3. `全体の幸福度` が地図上とグラフに表示されます  
-  ![general-user-6-3](doc/img/general-user-6-3.png)  
+2. 一覧から `全体の幸福度` をクリックします
+  ![general-user-5-2](doc/img/general-user-5-2.png)
+
+3. `全体の幸福度` が地図上とグラフに表示されます
+  ![general-user-6-3](doc/img/general-user-6-3.png)
 
 ### アプリケーション停止方法
 

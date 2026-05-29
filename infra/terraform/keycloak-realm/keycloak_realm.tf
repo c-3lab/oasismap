@@ -5,6 +5,7 @@
 locals {
   prefecture_options       = jsondecode(file("./prefectures.json")).prefectures
   city_options             = jsondecode(file("./cities.json")).cities
+  general_user_theme       = (var.keycloak_google_client_id != "" && var.keycloak_google_client_secret != "") ? var.keycloak_realm_login_theme : var.keycloak_general_user_keycloak_login_theme
 }
 
 # -----------------------------------------------------------------------------
@@ -320,8 +321,13 @@ resource "keycloak_openid_client" "general_user_client" {
   ]
   web_origins = [local.keycloak_client_base_url]
 
-  authentication_flow_binding_overrides {
-    browser_id = keycloak_authentication_flow.general_user_browser.id
+  login_theme  = local.general_user_theme
+
+  dynamic "authentication_flow_binding_overrides" {
+    for_each = (var.keycloak_google_client_id != "" && var.keycloak_google_client_secret != "") ? [1] : []
+    content {
+      browser_id = keycloak_authentication_flow.general_user_browser.id
+    }
   }
 
   extra_config = {
@@ -358,6 +364,10 @@ resource "keycloak_openid_client" "admin_client" {
   ]
   web_origins = [local.keycloak_client_base_url]
 
+  authentication_flow_binding_overrides {
+    browser_id = keycloak_authentication_flow.admin_browser.id
+  }
+
   depends_on = [keycloak_realm_optional_client_scopes.optional]
 }
 
@@ -370,6 +380,15 @@ resource "keycloak_openid_hardcoded_claim_protocol_mapper" "admin_client_usertyp
   add_to_id_token     = true
   add_to_access_token = true
   add_to_userinfo     = true
+}
+
+# -----------------------------------------------------------------------------
+# Role: admin role
+# -----------------------------------------------------------------------------
+resource "keycloak_role" "admin_role" {
+  realm_id    = keycloak_realm.oasismap.id
+  name        = "admin-role"
+  description = "Role for users with admin privileges"
 }
 
 # -----------------------------------------------------------------------------
@@ -523,6 +542,187 @@ resource "keycloak_authentication_execution" "general_user_browser_2fa_recovery_
   priority          = 50
 }
 
+# -----------------------------------------------------------------------------
+# 認証フロー: admin browser
+# -----------------------------------------------------------------------------
+resource "keycloak_authentication_flow" "admin_browser" {
+  realm_id    = keycloak_realm.oasismap.id
+  alias       = "admin browser"
+  description = "Browser based authentication for users with admin privileges"
+}
+
+resource "keycloak_authentication_execution" "admin_browser_cookie" {
+  realm_id          = keycloak_realm.oasismap.id
+  parent_flow_alias = keycloak_authentication_flow.admin_browser.alias
+  authenticator     = "auth-cookie"
+  requirement       = "ALTERNATIVE"
+  priority          = 10
+}
+
+resource "keycloak_authentication_execution" "admin_browser_kerberos" {
+  realm_id          = keycloak_realm.oasismap.id
+  parent_flow_alias = keycloak_authentication_flow.admin_browser.alias
+  authenticator     = "auth-spnego"
+  requirement       = "DISABLED"
+  priority          = 20
+}
+
+resource "keycloak_authentication_execution" "admin_browser_identity_provider_redirector" {
+  realm_id          = keycloak_realm.oasismap.id
+  parent_flow_alias = keycloak_authentication_flow.admin_browser.alias
+  authenticator     = "identity-provider-redirector"
+  requirement       = "ALTERNATIVE"
+  priority          = 25
+}
+
+resource "keycloak_authentication_subflow" "admin_browser_organization" {
+  realm_id          = keycloak_realm.oasismap.id
+  alias             = "admin browser - organization"
+  parent_flow_alias = keycloak_authentication_flow.admin_browser.alias
+  provider_id       = "basic-flow"
+  requirement       = "ALTERNATIVE"
+  priority          = 26
+}
+
+resource "keycloak_authentication_subflow" "admin_browser_forms" {
+  realm_id          = keycloak_realm.oasismap.id
+  alias             = "admin browser - forms"
+  parent_flow_alias = keycloak_authentication_flow.admin_browser.alias
+  provider_id       = "basic-flow"
+  requirement       = "ALTERNATIVE"
+  priority          = 30
+}
+
+resource "keycloak_authentication_subflow" "admin_browser_browser_conditional_organization" {
+  realm_id          = keycloak_realm.oasismap.id
+  alias             = "admin browser - browser conditional organization"
+  parent_flow_alias = keycloak_authentication_subflow.admin_browser_organization.alias
+  provider_id       = "basic-flow"
+  requirement       = "CONDITIONAL"
+  priority          = 10
+}
+
+resource "keycloak_authentication_execution" "admin_browser_bco_condition_user_configured" {
+  realm_id          = keycloak_realm.oasismap.id
+  parent_flow_alias = keycloak_authentication_subflow.admin_browser_browser_conditional_organization.alias
+  authenticator     = "conditional-user-configured"
+  requirement       = "REQUIRED"
+  priority          = 10
+}
+
+resource "keycloak_authentication_execution" "admin_browser_bco_organization_identity_first_login" {
+  realm_id          = keycloak_realm.oasismap.id
+  parent_flow_alias = keycloak_authentication_subflow.admin_browser_browser_conditional_organization.alias
+  authenticator     = "organization"
+  requirement       = "ALTERNATIVE"
+  priority          = 20
+}
+
+resource "keycloak_authentication_execution" "admin_browser_forms_username_password_form" {
+  realm_id          = keycloak_realm.oasismap.id
+  parent_flow_alias = keycloak_authentication_subflow.admin_browser_forms.alias
+  authenticator     = "auth-username-password-form"
+  requirement       = "REQUIRED"
+  priority          = 10
+}
+
+resource "keycloak_authentication_subflow" "admin_browser_conditional_role_based_restriction" {
+  realm_id          = keycloak_realm.oasismap.id
+  alias             = "admin browser - role based restriction"
+  parent_flow_alias = keycloak_authentication_subflow.admin_browser_forms.alias
+  provider_id       = "basic-flow"
+  requirement       = "CONDITIONAL"
+  priority          = 15
+}
+
+resource "keycloak_authentication_execution" "admin_browser_role_condition" {
+  realm_id          = keycloak_realm.oasismap.id
+  parent_flow_alias = keycloak_authentication_subflow.admin_browser_conditional_role_based_restriction.alias
+  authenticator     = "conditional-user-role"
+  requirement       = "REQUIRED"
+  priority          = 10
+}
+
+resource "keycloak_authentication_execution_config" "admin_browser_role_condition_config" {
+  realm_id          = keycloak_realm.oasismap.id
+  execution_id = keycloak_authentication_execution.admin_browser_role_condition.id
+  alias        = "auth-role-condition-config"
+  config = {
+    "condUserRole" = keycloak_role.admin_role.name
+    "role" = keycloak_role.admin_role.name
+    "negate" = "true"
+  }
+}
+
+resource "keycloak_authentication_execution" "admin_browser_deny_access" {
+  realm_id          = keycloak_realm.oasismap.id
+  parent_flow_alias = keycloak_authentication_subflow.admin_browser_conditional_role_based_restriction.alias
+  authenticator     = "deny-access-authenticator"
+  requirement       = "REQUIRED"
+  priority          = 20
+}
+
+resource "keycloak_authentication_subflow" "admin_browser_browser_conditional_2fa" {
+  realm_id          = keycloak_realm.oasismap.id
+  alias             = "admin browser - browser conditional 2fa"
+  parent_flow_alias = keycloak_authentication_subflow.admin_browser_forms.alias
+  provider_id       = "basic-flow"
+  requirement       = "CONDITIONAL"
+  priority          = 20
+}
+
+resource "keycloak_authentication_execution" "admin_browser_2fa_condition_user_configured" {
+  realm_id          = keycloak_realm.oasismap.id
+  parent_flow_alias = keycloak_authentication_subflow.admin_browser_browser_conditional_2fa.alias
+  authenticator     = "conditional-user-configured"
+  requirement       = "REQUIRED"
+  priority          = 10
+}
+
+resource "keycloak_authentication_execution" "admin_browser_2fa_condition_credential" {
+  realm_id          = keycloak_realm.oasismap.id
+  parent_flow_alias = keycloak_authentication_subflow.admin_browser_browser_conditional_2fa.alias
+  authenticator     = "conditional-credential"
+  requirement       = "REQUIRED"
+  priority          = 20
+}
+
+resource "keycloak_authentication_execution_config" "admin_browser_2fa_condition_credential_config" {
+  realm_id     = keycloak_realm.oasismap.id
+  execution_id = keycloak_authentication_execution.admin_browser_2fa_condition_credential.id
+  alias        = "admin-browser-conditional-credential"
+  config = {
+    "credentials" : "webauthn-passwordless"
+  }
+}
+
+resource "keycloak_authentication_execution" "admin_browser_2fa_otp_form" {
+  realm_id          = keycloak_realm.oasismap.id
+  parent_flow_alias = keycloak_authentication_subflow.admin_browser_browser_conditional_2fa.alias
+  authenticator     = "auth-otp-form"
+  requirement       = "ALTERNATIVE"
+  priority          = 30
+}
+
+resource "keycloak_authentication_execution" "admin_browser_2fa_webauthn" {
+  realm_id          = keycloak_realm.oasismap.id
+  parent_flow_alias = keycloak_authentication_subflow.admin_browser_browser_conditional_2fa.alias
+  authenticator     = "webauthn-authenticator"
+  requirement       = "DISABLED"
+  priority          = 40
+}
+
+resource "keycloak_authentication_execution" "admin_browser_2fa_recovery_code_form" {
+  realm_id          = keycloak_realm.oasismap.id
+  parent_flow_alias = keycloak_authentication_subflow.admin_browser_browser_conditional_2fa.alias
+  authenticator     = "auth-recovery-authn-code-form"
+  requirement       = "DISABLED"
+  priority          = 50
+}
+
+# -----------------------------------------------------------------------------
+# ログイン時に必要なアクション
+# -----------------------------------------------------------------------------
 resource "keycloak_required_action" "verify_profile" {
   realm_id = keycloak_realm.oasismap.id
   alias    = "VERIFY_PROFILE"

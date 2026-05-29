@@ -35,6 +35,12 @@ variable "keycloak_realm_login_theme" {
   default     = "custom-profile"
 }
 
+variable "keycloak_general_user_keycloak_login_theme" {
+  description = "General user login theme without using google authentication."
+  type        = string
+  default     = "general-user-keycloak-login-profile"
+}
+
 variable "keycloak_realm_ssl_required" {
   description = "Realm SSL required (none, external, all)."
   type        = string
