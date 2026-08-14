@@ -41,8 +41,6 @@ const TermsOfService: React.FC = () => {
           </Typography>
           <Typography variant="body1" style={{ wordWrap: 'break-word' }}>
             ・インターネット接続可能なスマートフォンをお持ちの方
-            <br />
-            ・Googleアカウントをお持ちでログイン操作ができる方
           </Typography>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 2 }}>
             ３．提供サービス
@@ -56,7 +54,7 @@ const TermsOfService: React.FC = () => {
             ４．個人情報の取扱い
           </Typography>
           <Typography variant="body1">
-            本実証実験において収集される情報は、サービス提供事業者であるTIS株式会社および{TERMS_MUNICIPALITY_NAME}が厳重に管理し、プライバシーマークおよび情報セキュリティマネジメントシステムの要求事項に準拠して取り扱います。
+            本実証実験において収集される情報は、サービス提供事業者であるTISI株式会社および{TERMS_MUNICIPALITY_NAME}が厳重に管理し、プライバシーマークおよび情報セキュリティマネジメントシステムの要求事項に準拠して取り扱います。
             また、提供された個人情報は、実証実験の目的以外には使用されません。
           </Typography>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 2 }}>
@@ -65,7 +63,7 @@ const TermsOfService: React.FC = () => {
           <Typography variant="body1">
             ・本サービスを利用した営業活動
             <br />
-            ・TIS株式会社および{TERMS_MUNICIPALITY_NAME}による本サービスの運営を妨害する行為
+            ・TISI株式会社および{TERMS_MUNICIPALITY_NAME}による本サービスの運営を妨害する行為
             <br />
             ・他のユーザ、第三者の権利を侵害する行為
           </Typography>
