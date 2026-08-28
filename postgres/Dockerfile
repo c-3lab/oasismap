@@ -2,7 +2,7 @@
 # Based on FROM postgres:17.5 but builds gosu with Go 1.25.5 and updates vulnerable packages
 # Go 1.25.5 fixes CVE-2025-58183 and CVE-2025-61729
 
-FROM postgres:17.5
+FROM postgres:17.11
 
 RUN set -eux; \
     # Save the list of packages that were originally installed (sorted for later diff)
