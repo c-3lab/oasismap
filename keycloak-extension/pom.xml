@@ -24,7 +24,7 @@
 
     <groupId>com.github.c-3lab.keycloak</groupId>
     <artifactId>authenticator-oasismap</artifactId>
-    <version>26.1.0</version>
+    <version>26.7.2</version>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -32,19 +32,19 @@
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-core</artifactId>
             <scope>provided</scope>
-            <version>26.1.0</version>
+            <version>26.7.2</version>
         </dependency>
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-server-spi</artifactId>
             <scope>provided</scope>
-            <version>26.1.0</version>
+            <version>26.7.2</version>
         </dependency>
         <dependency>
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-server-spi-private</artifactId>
             <scope>provided</scope>
-            <version>26.1.0</version>
+            <version>26.7.2</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
@@ -56,7 +56,7 @@
             <groupId>org.keycloak</groupId>
             <artifactId>keycloak-services</artifactId>
             <scope>provided</scope>
-            <version>26.1.0</version>
+            <version>26.7.2</version>
         </dependency>
     </dependencies>
 
