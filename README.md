@@ -115,6 +115,19 @@ docker上のコンテナから到達可能なホストOSのIPアドレスを確�
 
     `HOST_URL=http://YOUR_IP_ADDRESS:8080` の `YOUR_IP_ADDRESS` を、事前準備で確認したdocker上のコンテナから到達可能なホストOSのIPアドレスに置換します。
 
+6. 外部API利用時のUser Agentに関する情報を設定します。
+    * 幸福度可視化アプリでは、外部APIへのアクセス時に問い合わせ先のメールアドレスを含むUser-Agentを送信します。
+    * 以下の環境変数を設定してください。
+
+      ```sh
+      USER_AGENT_EMAIL=<問い合わせ先メールアドレス>
+      ```
+    * 設定した値は、以下の形式でUser-Agentへ反映されます。
+
+      ```text
+      OasisMap/{package.jsonのversion} ({USER_AGENT_EMAIL})
+      ```
+
 ### システム起動
 - Dockerコンテナを展開します
 
