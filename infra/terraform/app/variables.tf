@@ -127,6 +127,12 @@ variable "reverse_geocoding_url" {
   default     = "https://nominatim.openstreetmap.org/reverse"
 }
 
+variable "user_agent_email" {
+  description = "User Agent Email for backend"
+  type        = string
+  default     = "TISI_WB@ml.tisi.jp"
+}
+
 variable "app_keycloak_name" {
   description = "App Service name for Keycloak (globally unique)."
   type        = string

@@ -90,6 +90,7 @@ resource "azurerm_linux_web_app" "backend" {
     POSTGRES_PASSWORD         = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${data.azurerm_key_vault_secret.cygnus_postgres_password.name})"
     POSTGRES_DATABASE         = "cygnus"
     REVERSE_GEOCODING_URL     = var.reverse_geocoding_url
+    USER_AGENT_EMAIL          = var.user_agent_email
   }
 
   https_only                = true
