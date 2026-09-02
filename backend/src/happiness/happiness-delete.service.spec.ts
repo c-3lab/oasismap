@@ -3,7 +3,7 @@ import {
   BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { Happiness } from './happiness.entity';
+import { Happiness } from '../change-histories/happiness.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';
 import axios from 'axios';
