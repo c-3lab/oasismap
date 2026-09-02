@@ -16,7 +16,7 @@ Terraform は次の **3 レイヤー**を **platform → app → keycloak-realm*
 | レイヤー | 主なリソース |
 | --- | --- |
 | **platform** | リソースグループ、Virtual Network（DMZ / App / DB / Application Gateway 用サブネット）、Cosmos DB（Mongo API・サーバーレス）、PostgreSQL Flexible Server、Log Analytics、Key Vault、DNS ゾーン・レコード、ユーザー割り当てマネージド ID など |
-| **app** | Azure Container Registry、Linux App Service（**frontend / backend / Keycloak**）、Azure Container Instances（**Orion、Cygnus**、Mongo/PostgreSQL 用ワンショット CLI、**Orion サブスクリプション登録用ワンショット** など）、Application Gateway（WAF）、Let's Encrypt（ACME DNS-01）による証明書 |
+| **app** | Azure Container Registry、Linux App Service（**frontend / backend / Keycloak**）、Azure Container Instances（**Orion**、Mongo/PostgreSQL 用ワンショット CLI、**Orion サブスクリプション登録用ワンショット** など）、Application Gateway（WAF）、Let's Encrypt（ACME DNS-01）による証明書 |
 | **keycloak-realm** | Keycloak のレルム・クライアント・IdP 等（**Keycloak Terraform プロバイダ**） |
 
 実行時の依存関係のイメージは次のとおりである。

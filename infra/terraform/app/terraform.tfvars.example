@@ -23,7 +23,6 @@ acme_server_url       = "https://acme-v02.api.letsencrypt.org/directory"
 # acme_server_url             = "https://acme-staging-v02.api.letsencrypt.org/directory"
 
 aci_orion_image_tag  = "orion:latest"
-aci_cygnus_image_tag = "cygnus:latest"
 aci_mongo_cli_image_tag = "mongo-cli:latest"
 aci_postgres_cli_image_tag = "postgres-cli:latest"
 

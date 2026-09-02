@@ -1,4 +1,4 @@
-# Azure Container Instances: Orion, Cygnus。platform の subnet_app を使った VNet 統合。
+# Azure Container Instances: Orion。platform の subnet_app を使った VNet 統合。
 
 resource "azurerm_container_group" "orion" {
   name                                = "${local.prefix}-aci-orion"
@@ -211,108 +211,8 @@ resource "azurerm_container_group" "postgres_cli" {
   ]
 }
 
-resource "azurerm_container_group" "cygnus" {
-  name                                = "${local.prefix}-aci-cygnus"
-  location                            = local.location
-  resource_group_name                 = local.resource_group_name
-  ip_address_type                     = "Private"
-  os_type                             = "Linux"
-  subnet_ids                          = [data.terraform_remote_state.platform.outputs.subnet_app_id]
-  key_vault_user_assigned_identity_id = data.azurerm_user_assigned_identity.cygnus.id
-
-  image_registry_credential {
-    server                    = azurerm_container_registry.main.login_server
-    user_assigned_identity_id = data.azurerm_user_assigned_identity.cygnus.id
-  }
-
-  identity {
-    type         = "UserAssigned"
-    identity_ids = [data.azurerm_user_assigned_identity.cygnus.id]
-  }
-
-  container {
-    name   = "cygnus"
-    image  = "${azurerm_container_registry.main.login_server}/${var.aci_cygnus_image_tag}"
-    cpu    = "0.5"
-    memory = "4"
-
-    ports {
-      port     = 5055
-      protocol = "TCP"
-    }
-
-    ports {
-      port     = 5080
-      protocol = "TCP"
-    }
-
-    environment_variables = {
-      CYGNUS_POSTGRESQL_ENABLE_CACHE     = "true"
-      CYGNUS_POSTGRESQL_SERVICE_PORT     = "5055"
-      CYGNUS_POSTGRESQL_DATABASE         = "cygnus"
-      CYGNUS_POSTGRESQL_DATA_MODEL       = "dm-by-service-path"
-      CYGNUS_POSTGRESQL_ATTR_PERSISTENCE = "column"
-      CYGNUS_LOG_LEVEL                   = "INFO"
-      CYGNUS_SERVICE_PORT                = "5055"
-      CYGNUS_API_PORT                    = "5080"
-    }
-
-    secure_environment_variables = {
-      CYGNUS_POSTGRESQL_HOST = data.azurerm_postgresql_flexible_server.main.fqdn
-      CYGNUS_POSTGRESQL_PORT = "5432"
-      CYGNUS_POSTGRESQL_USER = data.azurerm_postgresql_flexible_server.main.administrator_login
-      CYGNUS_POSTGRESQL_PASS = data.azurerm_key_vault_secret.cygnus_postgres_password.value
-    }
-
-    readiness_probe {
-      initial_delay_seconds = 30
-      period_seconds        = 10
-      timeout_seconds       = 5
-      success_threshold     = 1
-      failure_threshold     = 3
-      http_get {
-        path   = "/v1/version"
-        port   = 5080
-        scheme = "http"
-      }
-    }
-
-    liveness_probe {
-      initial_delay_seconds = 30
-      period_seconds        = 10
-      timeout_seconds       = 5
-      success_threshold     = 1
-      failure_threshold     = 3
-      http_get {
-        path   = "/v1/version"
-        port   = 5080
-        scheme = "http"
-      }
-    }
-  }
-
-  diagnostics {
-    log_analytics {
-      workspace_id  = data.azurerm_log_analytics_workspace.main.workspace_id
-      workspace_key = data.azurerm_log_analytics_workspace.main.primary_shared_key
-    }
-  }
-
-  lifecycle {
-    action_trigger {
-      events  = [before_create]
-      actions = [action.local_command.build_cygnus]
-    }
-  }
-
-  depends_on = [
-    azurerm_container_group.postgres_cli,
-    azurerm_role_assignment.acr_rbac_cygnus_pull
-  ]
-}
-
-# ワンショット: Orion サブスクリプション登録（happiness エンティティ変更 → Cygnus 通知）。
-# VNet 内で実行し、プライベート IP で Orion / Cygnus に到達する。パブリックイメージのみ使用。
+# ワンショット: Orion サブスクリプション登録（happiness エンティティ変更 → Backend 通知）。
+# VNet 内で実行し、プライベート IP で Orion に到達する。パブリックイメージのみ使用。
 resource "azurerm_container_group" "orion_subscription" {
   name                = "${local.prefix}-aci-orion-subscription"
   location            = local.location
@@ -335,7 +235,6 @@ resource "azurerm_container_group" "orion_subscription" {
 
     environment_variables = {
       ORION_IP            = azurerm_container_group.orion.ip_address
-      CYGNUS_IP           = azurerm_container_group.cygnus.ip_address
       FIWARE_SERVICE      = var.orion_fiware_service
       FIWARE_SERVICE_PATH = var.orion_fiware_service_path
       SUBSCRIPTION_BODY = jsonencode({
@@ -346,7 +245,7 @@ resource "azurerm_container_group" "orion_subscription" {
         }
         notification = {
           http = {
-            url = "http://${azurerm_container_group.cygnus.ip_address}:5055/notify"
+            url = "https://backend.${local.root_domain_name}/change-histories/notify"
           }
         }
       })
@@ -357,6 +256,6 @@ resource "azurerm_container_group" "orion_subscription" {
 
   depends_on = [
     azurerm_container_group.orion,
-    azurerm_container_group.cygnus
+    azurerm_linux_web_app.backend
   ]
 }
