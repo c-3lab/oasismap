@@ -31,7 +31,7 @@ services:
       - "POSTGRES_PORT=5432"
       - "POSTGRES_USER=${POSTGREUSER}"
       - "POSTGRES_PASSWORD=${POSTGREPASSWORD}"
-      - "POSTGRES_DATABASE=cygnus"
+      - "POSTGRES_DATABASE=oasismap_context_data"
       - "REVERSE_GEOCODING_URL=${REVERSE_GEOCODING_URL}"
     volumes:
       - ./backend:/app/backend
