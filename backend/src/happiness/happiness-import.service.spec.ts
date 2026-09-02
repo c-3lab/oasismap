@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException } from '@nestjs/common';
 import { HappinessImportService } from './happiness-import.service';
-import { Happiness } from './happiness.entity';
+import { Happiness } from '../change-histories/happiness.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { expectedHappinessImportResponse } from './expects/happiness/expected-happiness-import.response';
 import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';
