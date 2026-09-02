@@ -33,10 +33,10 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Trivy Setup
-        uses: aquasecurity/setup-trivy@v0.2.0
+        uses: aquasecurity/setup-trivy@e07451d2e059ed86c2870430ea286b3a9e0bf241
         with:
           cache: true
-          version: v0.64.1
+          version: v0.74.0
 
       - name: Copy environment file for docker-compose
         run: |
