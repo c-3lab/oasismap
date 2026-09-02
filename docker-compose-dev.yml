@@ -159,7 +159,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      - "KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}" 
+      - "KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}"
       - "KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}"
       - "KC_DB=postgres"
       - "KC_DB_URL=jdbc:postgresql://postgres:5432/postgres"
@@ -211,38 +211,6 @@ services:
       - backend-network
     healthcheck:
       test: "curl -f http://orion:1026/version"
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    restart: always
-
-  cygnus:
-    build:
-      context: ./fiware/cygnus
-      dockerfile: Dockerfile
-    hostname: cygnus
-    container_name: cygnus
-    depends_on:
-      postgres:
-        condition: service_healthy
-    environment:
-      - "CYGNUS_POSTGRESQL_HOST=postgres"
-      - "CYGNUS_POSTGRESQL_PORT=5432"
-      - "CYGNUS_POSTGRESQL_USER=${POSTGREUSER}"
-      - "CYGNUS_POSTGRESQL_PASS=${POSTGREPASSWORD}"
-      - "CYGNUS_POSTGRESQL_ENABLE_CACHE=true"
-      - "CYGNUS_POSTGRESQL_SERVICE_PORT=5055"
-      - "CYGNUS_POSTGRESQL_DATABASE=cygnus"
-      - "CYGNUS_POSTGRESQL_DATA_MODEL=dm-by-service-path"
-      - "CYGNUS_POSTGRESQL_ATTR_PERSISTENCE=column"
-      - "CYGNUS_LOG_LEVEL=DEBUG"
-      - "CYGNUS_SERVICE_PORT=5055"
-      - "CYGNUS_API_PORT=5080"
-    networks:
-      - backend-network
-    healthcheck:
-      test: "curl -f http://cygnus:5080/v1/version"
       interval: 10s
       timeout: 5s
       retries: 10
