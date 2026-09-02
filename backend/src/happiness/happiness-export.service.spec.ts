@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HappinessExportService } from './happiness-export.service';
-import { Happiness } from './happiness.entity';
+import { Happiness } from '../change-histories/happiness.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { mockHappinessRecord } from './mocks/postgres/mock-happiness-record';
 import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';
