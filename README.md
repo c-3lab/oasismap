@@ -196,7 +196,7 @@ OASIS Mapでは現在の位置情報を利用します。
       },
       "notification": {
         "http": {
-          "url": "http://cygnus:5055/notify"
+          "url": "http://backend:4000/change-histories/notify"
         }
       }
     }' \
@@ -317,7 +317,6 @@ OASIS Mapでは現在の位置情報を利用します。
 - [prettier 3系](https://prettier.io/)
 - [jest 29.5.0](https://jestjs.io/ja/)
 - [Postgresql 17.2](https://www.postgresql.org/)
-- [FIWARE Cygnus 3.15.0](https://fiware-cygnus.readthedocs.io/en/master/index.html)
 - [FIWARE Orion 4.1.0](https://fiware-orion.readthedocs.io/en/master/index.html)
 - [keycloak 26.1.4](https://www.keycloak.org/)
 - [mongoDB 8.0.4](https://www.mongodb.com/)
