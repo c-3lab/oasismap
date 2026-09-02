@@ -6,6 +6,7 @@ import { CreateHappinessDto } from './dto/create-happiness.dto';
 import { UserAttribute } from 'src/auth/interface/user-attribute';
 import { HappinessResponse } from './interface/happiness.response';
 import { Address } from './interface/address';
+import packageJson from '../../package.json';
 
 @Injectable()
 export class HappinessInputService {
@@ -122,7 +123,11 @@ export class HappinessInputService {
           zoom: 10,
         },
         headers: {
-          'User-Agent': 'OasisMap (TIS_WB@ml.tis.co.jp)',
+          'User-Agent': `OasisMap/${packageJson.version}${
+            process.env.USER_AGENT_EMAIL
+              ? ` (${process.env.USER_AGENT_EMAIL})`
+              : ''
+          }`,
         },
       })
       .then((response) => {
