@@ -1,5 +1,5 @@
 # 共通ベース（脆弱性対応済み）
-FROM node:22.13-slim AS base
+FROM node:22.23.2-slim AS base
 
 RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y tzdata tini wget && \
