@@ -33,10 +33,10 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Trivy Setup
-        uses: aquasecurity/setup-trivy@v0.2.0
+        uses: aquasecurity/setup-trivy@e07451d2e059ed86c2870430ea286b3a9e0bf241
         with:
           cache: true
-          version: v0.64.1
+          version: v0.74.0
 
       - name: Copy environment file for docker-compose
         run: |
@@ -54,7 +54,7 @@ jobs:
           docker compose -f ${{ matrix.compose_file }} build
 
           # Get only project-specific images (exclude system/dependency images)
-          PROJECT_IMAGES="oasismap|frontend|backend|orion|cygnus|mongo|postgres|keycloak|node"
+          PROJECT_IMAGES="oasismap|frontend|backend|orion|mongo|postgres|keycloak|node"
           docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" | grep -E "($PROJECT_IMAGES)" > images.txt
 
           # Remove duplicates
@@ -80,7 +80,7 @@ jobs:
                 severity_level="CRITICAL,HIGH"
                 severity_description="CRITICAL or HIGH"
               else
-                # Other containers (orion, cygnus, mongo, postgres, keycloak, node, etc.)
+                # Other containers (orion, mongo, postgres, keycloak, node, etc.)
                 severity_level="CRITICAL"
                 severity_description="CRITICAL"
               fi
@@ -93,8 +93,6 @@ jobs:
                 ignorefile="--ignorefile ./backend/.trivyignore"
               elif [[ "$image" == *"orion"* ]]; then
                 ignorefile="--ignorefile ./fiware/orion/.trivyignore"
-              elif [[ "$image" == *"cygnus"* ]]; then
-                ignorefile="--ignorefile ./fiware/cygnus/.trivyignore"
               fi
 
               # Get total vulnerabilities based on severity level
