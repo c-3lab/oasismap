@@ -6,20 +6,17 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { HappinessResponse } from './interface/happiness.response';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Happiness } from './happiness.entity';
-import { Repository } from 'typeorm';
+import { ChangeHistoriesService } from 'src/change-histories/change-histories.service';
 
 @Injectable()
 export class HappinessDeleteService {
   constructor(
-    @InjectRepository(Happiness)
-    private happinessRepository: Repository<Happiness>,
+    private readonly changeHistoriesService: ChangeHistoriesService,
   ) {}
 
   async deleteHappiness(id: string): Promise<HappinessResponse> {
     await this.deleteHappinessEntity(id);
-    await this.happinessRepository.delete(id);
+    await this.changeHistoriesService.delete(id);
 
     const happinessResponse: HappinessResponse = {
       message: 'Happiness has been deleted.',
