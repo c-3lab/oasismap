@@ -182,8 +182,10 @@ services:
       - "KC_DB_URL=jdbc:postgresql://postgres:5432/postgres"
       - "KC_DB_USERNAME=${POSTGREUSER}"
       - "KC_DB_PASSWORD=${POSTGREPASSWORD}"
+      - "KC_HTTP_ENABLED=true"
+      - "KC_HOSTNAME_STRICT=false"
       - "TZ=Asia/Tokyo"
-    command: start-dev --hostname ${KC_HOSTNAME_URL} --hostname-admin ${KC_HOSTNAME_ADMIN_URL}
+    command: start --optimized --hostname ${KC_HOSTNAME_URL} --hostname-admin ${KC_HOSTNAME_ADMIN_URL}
     volumes:
       - ./keycloak/themes:/opt/keycloak/themes
       - ./keycloak/providers:/opt/keycloak/providers
