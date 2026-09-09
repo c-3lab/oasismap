@@ -19,13 +19,30 @@ const refresh = () => {
   }
 }
 
-window.addEventListener('load', () => {
-  refresh()
-  document.querySelector('#prefecture').addEventListener('change', refresh)
-})
-
 // チェック済みの場合のみ登録するボタンを活性化
 const onChangeCheckboxes = () => {
   const termsChecked = document.getElementById('terms-checkbox').checked;
   document.getElementById('submit-button').disabled = !(termsChecked);
 };
+
+// 参加同意リンクをクリックしたらチェックボックスを有効化
+const initTermsLink = (termsLink, termsCheckbox) => {
+  termsLink.addEventListener('click', () => {
+    termsCheckbox.disabled = false;
+  });
+};
+
+window.addEventListener('load', () => {
+  refresh();
+  const prefectureElement = document.querySelector('#prefecture');
+  if (prefectureElement){
+    prefectureElement.addEventListener('change', refresh);
+  }
+
+  const termsLink = document.getElementById('terms-link');
+  const termsCheckbox = document.getElementById('terms-checkbox');
+  if (!termsLink || !termsCheckbox) return;
+
+  onChangeCheckboxes();
+  initTermsLink(termsLink, termsCheckbox);
+});

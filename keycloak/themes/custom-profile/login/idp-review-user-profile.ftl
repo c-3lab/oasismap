@@ -14,8 +14,8 @@
             <div class="${properties.kcFormGroupClass!}">
                 <div id="kc-form-options" class="${properties.kcFormOptionsClass!}">
                     <div>
-                        <input type="checkbox" id="terms-checkbox" class="terms-checkbox" name="terms" onchange="onChangeCheckboxes()">
-                        <label for="terms-checkbox" class="terms-checkbox-label"><a href="${client.attributes.tosUri}" target="_blank">${msg("termsOfUse")}</a></label>
+                        <input type="checkbox" id="terms-checkbox" class="terms-checkbox" name="terms" onchange="onChangeCheckboxes()" disabled>
+                        <label for="terms-checkbox" class="terms-checkbox-label"><a id="terms-link" href="${client.attributes.tosUri}" target="_blank">${msg("termsOfUse")}</a></label>
                     </div>
                 </div>
 
