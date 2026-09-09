@@ -93,6 +93,12 @@ jobs:
                 ignorefile="--ignorefile ./backend/.trivyignore"
               elif [[ "$image" == *"orion"* ]]; then
                 ignorefile="--ignorefile ./fiware/orion/.trivyignore"
+              elif [[ "$image" == *"mongo"* ]]; then
+                ignorefile="--ignorefile ./mongo/.trivyignore"
+              elif [[ "$image" == *"postgres"* ]]; then
+                ignorefile="--ignorefile ./postgres/.trivyignore"
+              elif [[ "$image" == *"keycloak"* ]]; then
+                ignorefile="--ignorefile ./keycloak/.trivyignore"
               fi
 
               # Get total vulnerabilities based on severity level

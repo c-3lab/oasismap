@@ -1,0 +1,4 @@
+# gosu
+## 実証時は Azure Cosmos DB を利用するため対象外とする
+## stdlib(CRITICAL)
+CVE-2025-68121

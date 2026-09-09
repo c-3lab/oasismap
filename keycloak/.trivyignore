@@ -1,0 +1,4 @@
+# java
+## 直近で検出された脆弱性のため、イメージの更新待ち
+## io.netty:netty-handler(CRITICAL)
+CVE-2026-75595
