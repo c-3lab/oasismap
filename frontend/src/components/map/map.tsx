@@ -25,7 +25,7 @@ interface MarkerClusterGroupType extends L.LayerGroup {
   clearLayers(): this
   getChildCount(): number
 }
-import { createRoot } from 'react-dom/client'
+import { createRoot, type Root } from 'react-dom/client'
 import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
@@ -440,10 +440,12 @@ const MoveToCurrentPositionControl = ({
       position: 'bottomright',
     })
 
+    let root: Root | null = null
+
     control.onAdd = () => {
       const div = L.DomUtil.create('div', 'leaflet-control-custom')
 
-      const root = createRoot(div)
+      root = createRoot(div)
 
       root.render(
         <IconButton
@@ -471,6 +473,13 @@ const MoveToCurrentPositionControl = ({
       )
 
       return div
+    }
+
+    control.onRemove = () => {
+      queueMicrotask(() => {
+        root?.unmount()
+        root = null
+      })
     }
 
     control.addTo(map)
@@ -509,13 +518,15 @@ const AddHappinessControl = ({
       position: 'bottomright',
     })
 
+    let root: Root | null = null
+
     control.onAdd = () => {
       const div = L.DomUtil.create(
         'div',
         'leaflet-control-custom leaflet-control-add-happiness'
       )
 
-      const root = createRoot(div)
+      root = createRoot(div)
 
       root.render(
         <IconButton
@@ -542,6 +553,13 @@ const AddHappinessControl = ({
     }
 
     control.addTo(map)
+
+    control.onRemove = () => {
+      queueMicrotask(() => {
+        root?.unmount()
+        root = null
+      })
+    }
 
     return () => {
       control.remove()
