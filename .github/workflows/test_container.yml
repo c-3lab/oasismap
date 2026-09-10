@@ -55,7 +55,7 @@ jobs:
 
           # Get only project-specific images (exclude system/dependency images)
           PROJECT_IMAGES="oasismap|frontend|backend|orion|mongo|postgres|keycloak|node"
-          docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" | grep -E "($PROJECT_IMAGES)" | grep -v "cygnus" > images.txt
+          docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" | grep -E "($PROJECT_IMAGES)" | grep -v "cygnus" | grep -v "terraform" > images.txt
 
           # Remove duplicates
           sort -u images.txt > images_unique.txt
