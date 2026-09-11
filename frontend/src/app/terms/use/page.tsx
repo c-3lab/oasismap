@@ -19,7 +19,8 @@ const TermsOfService: React.FC = () => {
       <Grid item xs={12} md={6}>
         <Grid item textAlign="center" sx={{ my: 2 }}>
           <Typography variant="h5">
-            {TERMS_TITLE_PREFIX}地域幸福度可視化アプリ オープンベータ版 実証実験参加同意事項
+            {TERMS_TITLE_PREFIX}地域幸福度可視化アプリ オープンベータ版
+            実証実験参加同意事項
           </Typography>
         </Grid>
         <Grid item textAlign="right">
@@ -56,7 +57,9 @@ const TermsOfService: React.FC = () => {
             ４．個人情報の取扱い
           </Typography>
           <Typography variant="body1">
-            本実証実験において収集される情報は、サービス提供事業者であるTIS株式会社および{TERMS_MUNICIPALITY_NAME}が厳重に管理し、プライバシーマークおよび情報セキュリティマネジメントシステムの要求事項に準拠して取り扱います。
+            本実証実験において収集される情報は、サービス提供事業者であるTIS株式会社および
+            {TERMS_MUNICIPALITY_NAME}
+            が厳重に管理し、プライバシーマークおよび情報セキュリティマネジメントシステムの要求事項に準拠して取り扱います。
             また、提供された個人情報は、実証実験の目的以外には使用されません。
           </Typography>
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 2 }}>
@@ -65,7 +68,8 @@ const TermsOfService: React.FC = () => {
           <Typography variant="body1">
             ・本サービスを利用した営業活動
             <br />
-            ・TIS株式会社および{TERMS_MUNICIPALITY_NAME}による本サービスの運営を妨害する行為
+            ・TIS株式会社および{TERMS_MUNICIPALITY_NAME}
+            による本サービスの運営を妨害する行為
             <br />
             ・他のユーザ、第三者の権利を侵害する行為
           </Typography>

@@ -2,7 +2,7 @@
 # Based on mongo:8.0.17 (fixes CVE-2025-14847 "MongoBleed") but rebuilds gosu with Go 1.25.5
 # Go 1.25.5 fixes CVE-2025-58183 and CVE-2025-61729
 
-FROM mongo:8.0.17
+FROM mongo:8.0.29
 
 RUN set -eux; \
     # Save the list of packages that were originally installed (sorted for later diff)

@@ -1,9 +1,9 @@
-name: Container Security Scan
+name: All Container Security Scan
 
 on:
-  pull_request:
-    branches:
-      - develop
+  schedule:
+    # Run daily at JST 00:00 (UTC 15:00)
+    - cron: '0 15 * * *'
   workflow_dispatch: # Allow manual trigger
 
 jobs:
@@ -51,8 +51,8 @@ jobs:
           docker compose -f ${{ matrix.compose_file }} build
 
           # Get only project-specific images (exclude system/dependency images)
-          PROJECT_IMAGES="oasismap|frontend|backend|orion|mongo|postgres|keycloak|node"
-          docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" | grep -E "($PROJECT_IMAGES)" | grep -v "cygnus" | grep -v "terraform" > images.txt
+          PROJECT_IMAGES="oasismap|frontend|backend|orion|mongo|postgres|keycloak|terraform-cli"
+          docker images --format "{{.Repository}}:{{.Tag}}" | grep -v "<none>" | grep -E "($PROJECT_IMAGES)" > images.txt
 
           # Remove duplicates
           sort -u images.txt > images_unique.txt
@@ -109,7 +109,7 @@ jobs:
               if [ $total_vulnerabilities -eq 0 ]; then
                 # No vulnerabilities found
                 echo "✅ $image - No $severity_description vulnerabilities found"
-                echo "## ✅ $image" >> ${{ matrix.summary_file }} 
+                echo "## ✅ $image" >> ${{ matrix.summary_file }}
                 echo "**No $severity_description vulnerabilities found**" >> ${{ matrix.summary_file }}
                 echo "" >> ${{ matrix.summary_file }}
               else
@@ -148,7 +148,7 @@ jobs:
         if: always()
         run: |
           echo "=== Scan Report for ${{ matrix.compose_file }} ==="
-          
+
           if [ -f "${{ matrix.summary_file }}" ]; then
             echo "📊 Scan Summary:"
             echo "=================="

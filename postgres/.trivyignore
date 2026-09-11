@@ -1,0 +1,18 @@
+# debian(13.6)
+## perl-base(CRITICAL)
+## 以下理由のため対象外とした
+## - Perlアプリケーションを利用していない
+## - 脆弱性に関連すると考えられる機能を利用していない
+##  - 正規表現コンパイル、tar展開、Storableデシリアライズ等
+CVE-2026-13221
+CVE-2026-42496
+CVE-2026-8376
+
+## libxml2(CRITICAL)
+## 実証時は Azure Database for PostgreSQL を利用するため対象外とした。
+CVE-2026-6653
+
+# gosu
+## 検出対象はすべて gosu に内包された Go 標準ライブラリ（stdlib）の脆弱性であり、アプリケーションや postgres 本体の脆弱性ではない。
+## stdlib(CRITICAL)
+CVE-2025-68121

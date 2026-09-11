@@ -2,7 +2,7 @@
 # Base: fiware/orion:4.3.0 (Debian 12.13)
 # Target: Debian 12.13 with security updates and vulnerable package fixes
 
-FROM fiware/orion:4.3.0
+FROM fiware/orion:4.5.0
 
 USER root
 
