@@ -36,8 +36,9 @@ import {
   setGeolocationStatus,
   reportPositionError,
   positionErrorCodeToStatus,
-  pushActionLog,
 } from '@/libs/client-error-reporting'
+import { clickActions, mapActions } from '@/libs/action-log-definitions'
+import { action } from '@/libs/action-log'
 
 import { IconButton } from '@mui/material'
 import NavigationIcon from '@mui/icons-material/Navigation'
@@ -232,6 +233,10 @@ const HybridClusterGroup = ({
             })
           },
         })
+        happinessClustersRef.current[happinessType].on(
+          'clusterclick',
+          action(clickActions.mapClusterClick)
+        )
       }
     })
   }, [getMarkerClusterGroupProps, getHappinessColorPalette])
@@ -252,17 +257,19 @@ const HybridClusterGroup = ({
           })
         },
       })
+      superClusterRef.current?.on(
+        'clusterclick',
+        action(clickActions.mapClusterClick)
+      )
     }
   }, [getMarkerClusterGroupProps])
 
   const createMarkerClickHandler = useCallback(
     (pin: Pin) => {
-      return () => {
-        pushActionLog('click', 'mapPinClick')
-        // Set popup
+      return action(clickActions.mapPinClick, () => {
         setPopupPin(pin)
         setPopupPosition([pin.latitude, pin.longitude])
-      }
+      })
     },
     [setPopupPin, setPopupPosition]
   )
@@ -366,11 +373,10 @@ const HybridClusterGroup = ({
     updateClusters()
 
     // Listen to zoom events to update clusters and log mapInteraction
-    const onZoomEnd = () => {
+    const onZoomEnd = action(mapActions.mapZoom, () => {
       updateClusters()
-      pushActionLog('mapInteraction', 'mapZoom')
-    }
-    const onMoveEnd = () => pushActionLog('mapInteraction', 'mapPan')
+    })
+    const onMoveEnd = action(mapActions.mapPan)
     map.on('zoomend', onZoomEnd)
     map.on('moveend', onMoveEnd)
 
@@ -405,11 +411,10 @@ const HybridClusterGroup = ({
   useEffect(() => {
     if (!map) return
 
-    const handleMapClick = () => {
-      pushActionLog('click', 'mapPopupClose')
+    const handleMapClick = action(clickActions.mapPopupClose, () => {
       setPopupPin(null)
       setPopupPosition(null)
-    }
+    })
 
     map.on('click', handleMapClick)
 
@@ -426,11 +431,10 @@ const HybridClusterGroup = ({
           position={popupPosition}
           offset={[0, -20]}
           eventHandlers={{
-            remove: () => {
-              pushActionLog('click', 'mapPopupClose')
+            remove: action(clickActions.mapPopupClose, () => {
               setPopupPin(null)
               setPopupPosition(null)
-            },
+            }),
           }}
         >
           <MePopup pin={popupPin} setSelectedPin={setSelectedPin} />
@@ -552,11 +556,11 @@ const Map: React.FC<Props> = ({
               boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
               marginBottom: '10px',
             }}
-            onClick={() => {
+            onClick={action(clickActions.mapCurrentPosition, () => {
               if (currentPosition) {
                 map.flyTo(currentPosition, defaultZoom)
               }
-            }}
+            })}
           >
             <NavigationIcon
               style={{

@@ -26,7 +26,9 @@ import { ERROR_TYPE } from '@/libs/constants'
 import { useFetchData } from '@/libs/fetch'
 import { HappinessRequestBody } from '@/libs/fetch'
 import { getCurrentPosition } from '@/libs/geolocation'
-import { pushActionLog, reportError } from '@/libs/client-error-reporting'
+import { clickActions, apiActions } from '@/libs/action-log-definitions'
+import { action } from '@/libs/action-log'
+import { reportError } from '@/libs/client-error-reporting'
 import { timestampToDateTime } from '@/libs/date-converter'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 import { HappinessKey } from '@/types/happiness-key'
@@ -209,8 +211,6 @@ const HappinessInput: React.FC = () => {
 
   const submitForm = async () => {
     try {
-      pushActionLog('click', 'inputSubmit')
-      pushActionLog('apiCall', 'happiness/post')
       const answers = createAnswersFromSelected(selectedHappiness)
       let payload: HappinessRequestBody = {
         latitude: 0,
@@ -236,7 +236,12 @@ const HappinessInput: React.FC = () => {
       // アクセストークンを再取得
       const updatedSession = await update()
 
-      await postData(url, payload, updatedSession?.user?.accessToken!)
+      await postData(
+        url,
+        payload,
+        updatedSession?.user?.accessToken!,
+        apiActions.happinessPost
+      )
       noticeMessageContext.showMessage(
         '幸福度の送信が完了しました',
         MessageType.Success
@@ -283,7 +288,10 @@ const HappinessInput: React.FC = () => {
         <Typography variant="body1" sx={{ mt: 2, mb: 1 }}>
           そのスポットで感じた魅力を選択してください
         </Typography>
-        <RadioGroup value={selectedHappiness} onChange={handleHappinessChange}>
+        <RadioGroup
+          value={selectedHappiness}
+          onChange={action(clickActions.inputRadio, handleHappinessChange)}
+        >
           {Object.entries(checkboxLabels).map(([key, label]) => (
             <FormControlLabel
               key={key}
@@ -314,6 +322,7 @@ const HappinessInput: React.FC = () => {
             },
           }}
           InputLabelProps={{ shrink: true }}
+          onFocus={action(clickActions.inputMemo)}
           onChange={handleMemo}
           error={errors.some((error) => error.field === 'memo')}
           helperText={errors.find((error) => error.field === 'memo')?.message}
@@ -321,7 +330,7 @@ const HappinessInput: React.FC = () => {
         <FormControl id="image" fullWidth>
           <OutlinedInput
             type="file"
-            onChange={handleImage}
+            onChange={action(clickActions.inputImageSelect, handleImage)}
             error={errors.some((error) => error.field === 'image')}
             inputProps={{
               accept: 'image/*',
@@ -377,7 +386,7 @@ const HappinessInput: React.FC = () => {
           color="primary"
           size="large"
           fullWidth
-          onClick={() => submitForm()}
+          onClick={action(clickActions.inputSubmit, submitForm)}
           disabled={isAllUnchecked || errors.length > 0}
           sx={{
             '&.Mui-disabled': {

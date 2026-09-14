@@ -2,6 +2,8 @@ import { useContext } from 'react'
 import { ERROR_TYPE } from './constants'
 import { LoadingContext } from '@/contexts/loading-context'
 import { reportError } from '@/libs/client-error-reporting'
+import type { ActionDefinition } from '@/libs/action-log-definitions'
+import { logAction } from '@/libs/action-log'
 
 interface HappinessParams {
   limit: number
@@ -38,9 +40,11 @@ export const useFetchData = () => {
   const fetchData = async (
     url: string,
     params: HappinessParams,
-    token: string
+    token: string,
+    action?: ActionDefinition
   ): Promise<any> => {
     try {
+      if (action) logAction(action)
       setIsFetching(true)
       const query = new URLSearchParams({
         start: params.start,
@@ -79,9 +83,11 @@ export const useFetchData = () => {
   const fetchListData = async (
     url: string,
     params: HappinessListParams,
-    token: string
+    token: string,
+    action?: ActionDefinition
   ): Promise<any> => {
     try {
+      if (action) logAction(action)
       setIsFetching(true)
       const query = new URLSearchParams({
         limit: params.limit.toString(),
@@ -116,9 +122,11 @@ export const useFetchData = () => {
   const postData = async (
     url: string,
     requestBody: HappinessRequestBody,
-    token: string
+    token: string,
+    action?: ActionDefinition
   ): Promise<any> => {
     try {
+      if (action) logAction(action)
       setIsFetching(true)
       const response = await fetch(url, {
         method: 'POST',
@@ -148,9 +156,11 @@ export const useFetchData = () => {
   const upload = async (
     url: string,
     requestBody: FormData,
-    token: string
+    token: string,
+    action?: ActionDefinition
   ): Promise<any> => {
     try {
+      if (action) logAction(action)
       setIsFetching(true)
       const response = await fetch(url, {
         method: 'POST',
@@ -177,8 +187,13 @@ export const useFetchData = () => {
       setIsFetching(false)
     }
   }
-  const download = async (url: string, token: string) => {
+  const download = async (
+    url: string,
+    token: string,
+    action?: ActionDefinition
+  ) => {
     try {
+      if (action) logAction(action)
       setIsFetching(true)
       const response = await fetch(`${url}`, {
         method: 'GET',
@@ -216,8 +231,13 @@ export const useFetchData = () => {
       setIsFetching(false)
     }
   }
-  const deleteData = async (url: string, token: string): Promise<any> => {
+  const deleteData = async (
+    url: string,
+    token: string,
+    action?: ActionDefinition
+  ): Promise<any> => {
     try {
+      if (action) logAction(action)
       setIsFetching(true)
       const response = await fetch(url, {
         method: 'DELETE',

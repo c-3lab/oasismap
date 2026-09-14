@@ -31,7 +31,8 @@ import { Data } from '@/types/happiness-list-response'
 import { timestampToDateTime } from '@/libs/date-converter'
 import DeleteConfirmationDialog from '@/components/happiness/delete-confirmation-dialog'
 import { HappinessKey } from '@/types/happiness-key'
-import { pushActionLog } from '@/libs/client-error-reporting'
+import { clickActions } from '@/libs/action-log-definitions'
+import { action } from '@/libs/action-log'
 
 type Order = 'asc' | 'desc'
 
@@ -86,10 +87,12 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
 
   const open = Boolean(anchorElement)
 
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    pushActionLog('click', 'listRowMenu')
-    setAnchorElement(event.currentTarget)
-  }
+  const handleClick = action(
+    clickActions.listRowMenu,
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      setAnchorElement(event.currentTarget)
+    }
+  )
   const handleClose = () => {
     setAnchorElement(null)
   }
@@ -109,10 +112,9 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
           <IconButton
             aria-label={isCollapseOpen ? 'collapse row' : 'expand row'}
             size="small"
-            onClick={() => {
-              pushActionLog('click', 'listRowExpand')
+            onClick={action(clickActions.listRowExpand, () =>
               setIsCollapseOpen(!isCollapseOpen)
-            }}
+            )}
             sx={{ px: '0px' }}
           >
             {isCollapseOpen ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
@@ -167,13 +169,12 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
       </TableRow>
       <Menu anchorEl={anchorElement} open={open} onClose={handleClose}>
         <MenuItem
-          onClick={() => {
-            pushActionLog('click', 'listShowOnMap')
+          onClick={action(clickActions.listShowOnMap, () => {
             const params = new URLSearchParams()
             params.set('entityId', row.id)
             params.set('timestamp', row.timestamp)
             router.push(`/happiness/me?${params.toString()}`)
-          }}
+          })}
         >
           <ListItemIcon>
             <LayersIcon sx={{ color: 'black' }} />
@@ -184,10 +185,7 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
           />
         </MenuItem>
         <MenuItem
-          onClick={() => {
-            pushActionLog('click', 'listDelete')
-            openDialog(row)
-          }}
+          onClick={action(clickActions.listDelete, () => openDialog(row))}
         >
           <ListItemIcon>
             <DeleteForever sx={{ color: 'black' }} />
@@ -209,7 +207,6 @@ const ListTable: React.FC<ListTableProps> = ({
   const [orderBy, setOrderBy] = useState<HappinessKey | null>(null)
 
   const handleSort = (property: HappinessKey) => {
-    pushActionLog('click', 'listSort')
     if (orderBy === property) {
       if (order === undefined) {
         setOrder('desc')
@@ -237,7 +234,6 @@ const ListTable: React.FC<ListTableProps> = ({
 
   const deleteRowData = () => {
     if (selectedData) {
-      pushActionLog('click', 'deleteConfirmDelete')
       deleteListData(selectedData.id)
       setSelectedData(null)
     }
@@ -278,7 +274,7 @@ const ListTable: React.FC<ListTableProps> = ({
                 }}
               >
                 <TableSortLabel
-                  onClick={() => handleSort(key)}
+                  onClick={action(clickActions.listSort, () => handleSort(key))}
                   active={orderBy === key || orderBy === null}
                   direction={orderBy === key ? order : 'desc'}
                   IconComponent={orderBy !== null ? undefined : SwapVertIcon}
@@ -320,11 +316,10 @@ const ListTable: React.FC<ListTableProps> = ({
       </Table>
       <DeleteConfirmationDialog
         data={selectedData}
-        onClose={() => {
-          pushActionLog('click', 'deleteConfirmCancel')
+        onClose={action(clickActions.deleteConfirmCancel, () =>
           setSelectedData(null)
-        }}
-        deleteRowData={deleteRowData}
+        )}
+        deleteRowData={action(clickActions.deleteConfirmDelete, deleteRowData)}
       />
     </TableContainer>
   )

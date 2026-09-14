@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from 'react'
 import { Button, Typography, Grid } from '@mui/material'
 import { signIn } from 'next-auth/react'
+import { clickActions } from '@/libs/action-log-definitions'
+import { action } from '@/libs/action-log'
 
 const Login: React.FC = () => {
   const [isValidBrowser, setIsValidBrowser] = useState(false)
@@ -27,7 +29,7 @@ const Login: React.FC = () => {
                 variant="outlined"
                 fullWidth
                 sx={{ my: 2, textTransform: 'none' }}
-                onClick={() =>
+                onClick={action(clickActions.loginGoogle, () =>
                   signIn(
                     'general-user-keycloak-client',
                     {
@@ -35,7 +37,7 @@ const Login: React.FC = () => {
                     },
                     { prompt: 'login' }
                   )
-                }
+                )}
               >
                 ログイン
               </Button>

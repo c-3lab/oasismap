@@ -2,13 +2,25 @@
 
 import { useEffect } from 'react'
 import { usePathname } from 'next/navigation'
+import { routeActions } from '@/libs/action-log-definitions'
+import type { ActionDefinition } from '@/libs/action-log-definitions'
+import { logAction } from '@/libs/action-log'
+import type { ActionLogType } from '@/libs/client-error-reporting'
 import {
   buildReportPayload,
   sendClientError,
   isDuplicate,
   markSent,
-  pushActionLog,
 } from '@/libs/client-error-reporting'
+
+declare global {
+  interface Window {
+    __clientErrorReporting?: {
+      logAction: (action: ActionDefinition) => void
+      pushAction: (type: ActionLogType, label: string, target?: string) => void
+    }
+  }
+}
 
 export default function ClientErrorReporter() {
   const pathname = usePathname()
@@ -16,7 +28,7 @@ export default function ClientErrorReporter() {
   // ルート遷移を操作ログに記録
   useEffect(() => {
     if (pathname) {
-      pushActionLog('routeChange', pathname)
+      logAction(routeActions.routeChange(pathname))
     }
   }, [pathname])
 
@@ -52,6 +64,22 @@ export default function ClientErrorReporter() {
     return () => {
       window.removeEventListener('error', handleError)
       window.removeEventListener('unhandledrejection', handleUnhandledRejection)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (process.env.NODE_ENV !== 'development') return
+
+    window.__clientErrorReporting = {
+      logAction,
+      pushAction: (type, label, target) =>
+        logAction(
+          target !== undefined ? { type, label, target } : { type, label }
+        ),
+    }
+
+    return () => {
+      delete window.__clientErrorReporting
     }
   }, [])
 

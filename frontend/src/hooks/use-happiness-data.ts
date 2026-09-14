@@ -18,9 +18,8 @@ import { DateTime as OasismapDateTime } from '@/types/datetime'
 import { useSearchContext } from '@/contexts/search-context'
 import { SearchParams, DateTimeProps } from '@/types/search-context'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
-import { pushActionLog, reportError } from '@/libs/client-error-reporting'
-
-const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+import { apiActions } from '@/libs/action-log-definitions'
+import { reportError } from '@/libs/client-error-reporting'
 
 type UseHappinessDataProps = {
   type: 'me' | 'all'
@@ -57,10 +56,6 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
     async (opts?: SearchParams) => {
       if (isLoading) return
       try {
-        pushActionLog(
-          'apiCall',
-          type === 'me' ? 'happiness/me' : 'happiness/all'
-        )
         setIsLoading(true)
         setContextIsLoading(true)
         willStop.current = false
@@ -85,6 +80,7 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
 
         const limit = 1000
         let offset = 0
+        let loggedApiCall = false
         while (!willStop.current) {
           // アクセストークンを再取得
           const updatedSession = await update()
@@ -100,8 +96,14 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
           const data = await fetchData(
             url,
             requestParams,
-            updatedSession?.user?.accessToken!
+            updatedSession?.user?.accessToken!,
+            !loggedApiCall
+              ? type === 'me'
+                ? apiActions.happinessMe
+                : apiActions.happinessAll
+              : undefined
           )
+          loggedApiCall = true
 
           if (data['count'] === 0 || data['data'].length === 0) {
             break

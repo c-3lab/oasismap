@@ -1,6 +1,9 @@
 import { useContext } from 'react'
 import { useRouter } from 'next/navigation'
-import { pushActionLog, reportError } from '@/libs/client-error-reporting'
+import { clickActions, apiActions } from '@/libs/action-log-definitions'
+import type { ActionDefinition } from '@/libs/action-log-definitions'
+import { action } from '@/libs/action-log'
+import { reportError } from '@/libs/client-error-reporting'
 import Box from '@mui/material/Box'
 import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
@@ -22,6 +25,28 @@ interface AdminSidebarProps {
   handleDrawerClose: () => void
 }
 
+type NavItem = {
+  key: string
+  text: string
+  path: string
+  action: ActionDefinition
+}
+
+const NAV_ITEMS: NavItem[] = [
+  {
+    key: 'happiness-import',
+    text: 'データのインポート',
+    path: '/admin/import',
+    action: clickActions.sidebarNav('/admin/import'),
+  },
+  {
+    key: 'license',
+    text: 'サードパーティライセンス',
+    path: '/terms/third-party-license',
+    action: clickActions.sidebarNav('/terms/third-party-license'),
+  },
+]
+
 const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
   const config = useRuntimeConfig()
   const backendUrl = config.NEXT_PUBLIC_BACKEND_URL ?? ''
@@ -32,12 +57,13 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
 
   const downloadCsv = async () => {
     try {
-      pushActionLog('click', 'sidebarExport')
-      pushActionLog('apiCall', 'happiness/export')
       const url = backendUrl + '/api/happiness/export'
-      // アクセストークンを再取得
       const updatedSession = await update()
-      await download(url, updatedSession?.user?.accessToken!)
+      await download(
+        url,
+        updatedSession?.user?.accessToken!,
+        apiActions.happinessExport
+      )
     } catch (error) {
       reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
@@ -70,45 +96,34 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
         <List>
           <ListItem key="happiness-all" disablePadding>
             <ListItemButton
-              onClick={() => {
-                pushActionLog('click', 'sidebarNav')
+              onClick={action(clickActions.sidebarNav('/happiness/all'), () =>
                 router.push('/happiness/all')
-              }}
+              )}
             >
               <ListItemText primary="全体の幸福度" />
             </ListItemButton>
           </ListItem>
           <ListItem key="happiness-export" disablePadding>
-            <ListItemButton onClick={downloadCsv}>
+            <ListItemButton
+              onClick={action(clickActions.sidebarExport, downloadCsv)}
+            >
               <ListItemText primary="データのエクスポート" />
             </ListItemButton>
           </ListItem>
-          <ListItem key="happiness-import" disablePadding>
-            <ListItemButton
-              onClick={() => {
-                pushActionLog('click', 'sidebarNav')
-                router.push('/admin/import')
-              }}
-            >
-              <ListItemText primary="データのインポート" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="license" disablePadding>
-            <ListItemButton
-              onClick={() => {
-                pushActionLog('click', 'sidebarNav')
-                router.push('/terms/third-party-license')
-              }}
-            >
-              <ListItemText primary="サードパーティライセンス" />
-            </ListItemButton>
-          </ListItem>
+          {NAV_ITEMS.map((item) => (
+            <ListItem key={item.key} disablePadding>
+              <ListItemButton
+                onClick={action(item.action, () => router.push(item.path))}
+              >
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            </ListItem>
+          ))}
           <ListItem key="logout" disablePadding>
             <ListItemButton
-              onClick={() => {
-                pushActionLog('click', 'sidebarSignOut')
+              onClick={action(clickActions.sidebarSignOut, () =>
                 signOut({ callbackUrl: '/login' })
-              }}
+              )}
             >
               <ListItemText primary="ログアウト" />
             </ListItemButton>

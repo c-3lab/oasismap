@@ -15,6 +15,7 @@ export type ActionLogType =
 export type ActionLogEntry = {
   type: ActionLogType
   label: string
+  target?: string
   timestamp: string
 }
 
@@ -50,18 +51,31 @@ function truncate(s: string | undefined, max: number): string {
 }
 
 /**
- * 操作ログに 1 件追加（リングバッファ、最大 ACTION_LOG_MAX 件）
+ * 操作ログに 1 件追加（リングバッファ、最大 ACTION_LOG_MAX 件）。
+ * 新規コードでは action-log.ts の logAction を使うこと。
  */
-export function pushActionLog(type: ActionLogType, label: string): void {
-  const entry: ActionLogEntry = {
-    type,
-    label,
+export function pushActionLogEntry(entry: {
+  type: ActionLogType
+  label: string
+  target?: string
+}): void {
+  const logEntry: ActionLogEntry = {
+    type: entry.type,
+    label: entry.label,
     timestamp: new Date().toISOString(),
   }
-  actionLogEntries.push(entry)
+  if (entry.target !== undefined) {
+    logEntry.target = entry.target
+  }
+  actionLogEntries.push(logEntry)
   if (actionLogEntries.length > ACTION_LOG_MAX) {
     actionLogEntries.shift()
   }
+}
+
+/** @deprecated logAction / pushActionLogEntry を使うこと */
+export function pushActionLog(type: ActionLogType, label: string): void {
+  pushActionLogEntry({ type, label })
 }
 
 /**

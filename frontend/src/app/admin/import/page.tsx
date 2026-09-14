@@ -15,7 +15,9 @@ import { signOut, useSession } from 'next-auth/react'
 import { messageContext } from '@/contexts/message-context'
 import { useFetchData } from '@/libs/fetch'
 import { useRouter } from 'next/navigation'
-import { pushActionLog, reportError } from '@/libs/client-error-reporting'
+import { clickActions, apiActions } from '@/libs/action-log-definitions'
+import { action } from '@/libs/action-log'
+import { reportError } from '@/libs/client-error-reporting'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 
 const Import: React.FC = () => {
@@ -33,7 +35,6 @@ const Import: React.FC = () => {
   const { upload } = useFetchData()
 
   const fileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    pushActionLog('click', 'importFileSelect')
     const file = event.target.files?.[0]
 
     if (file?.type !== 'text/csv') {
@@ -60,8 +61,6 @@ const Import: React.FC = () => {
       setErrorMessage('ファイルが選択されていません')
       return
     }
-    pushActionLog('click', 'importUpload')
-    pushActionLog('apiCall', 'happiness/import')
     setIsUploading(true)
     setImportError('') // Clear previous import errors
 
@@ -75,7 +74,12 @@ const Import: React.FC = () => {
       formData.append('isRefresh', String(isRefresh))
       formData.append('csvFile', file)
 
-      await upload(url, formData, updatedSession?.user?.accessToken!)
+      await upload(
+        url,
+        formData,
+        updatedSession?.user?.accessToken!,
+        apiActions.happinessImport
+      )
 
       noticeMessageContext.showMessage(
         'データのインポートに成功しました',
@@ -128,7 +132,7 @@ const Import: React.FC = () => {
           <VisuallyHiddenInput
             accept=".csv"
             type="file"
-            onChange={fileChange}
+            onChange={action(clickActions.importFileSelect, fileChange)}
           />
         </Button>
         {errorMessage && (
@@ -154,7 +158,7 @@ const Import: React.FC = () => {
           <Button
             variant="contained"
             color="primary"
-            onClick={() => uploadCsv()}
+            onClick={action(clickActions.importUpload, uploadCsv)}
             disabled={isUploading}
           >
             インポート

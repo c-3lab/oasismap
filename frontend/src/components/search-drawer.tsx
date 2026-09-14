@@ -10,7 +10,8 @@ import {
 } from '@mui/material'
 import ChevronDownIcon from '@mui/icons-material/KeyboardArrowDown'
 import { DateTimeProps } from '@/types/search-context'
-import { pushActionLog } from '@/libs/client-error-reporting'
+import { clickActions } from '@/libs/action-log-definitions'
+import { action } from '@/libs/action-log'
 import {
   DateTimeTextbox,
   useDateTimeProps,
@@ -32,22 +33,22 @@ const SearchDrawer: React.FC<SearchDrawerProps> = ({
   const { startProps, endProps } = useDateTimeProps()
 
   const handleSearch = async () => {
-    pushActionLog('click', 'search')
     onSearch(startProps, endProps)
-
-    onClose()
-  }
-
-  const handleClose = () => {
-    pushActionLog('click', 'searchDrawerClose')
     onClose()
   }
 
   return (
-    <Drawer anchor={'bottom'} open={isOpen} onClose={handleClose}>
+    <Drawer
+      anchor={'bottom'}
+      open={isOpen}
+      onClose={action(clickActions.searchDrawerClose, onClose)}
+    >
       <Box sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <IconButton onClick={handleClose} sx={{ mr: 1 }}>
+          <IconButton
+            onClick={action(clickActions.searchDrawerClose, onClose)}
+            sx={{ mr: 1 }}
+          >
             <ChevronDownIcon />
           </IconButton>
           <Typography variant="h6" component="div">
@@ -87,7 +88,7 @@ const SearchDrawer: React.FC<SearchDrawerProps> = ({
               variant="contained"
               fullWidth
               size="large"
-              onClick={handleSearch}
+              onClick={action(clickActions.search, handleSearch)}
               disabled={isLoading}
             >
               検索

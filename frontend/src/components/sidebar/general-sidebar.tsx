@@ -1,5 +1,7 @@
 import { useRouter } from 'next/navigation'
-import { pushActionLog } from '@/libs/client-error-reporting'
+import { clickActions } from '@/libs/action-log-definitions'
+import type { ActionDefinition } from '@/libs/action-log-definitions'
+import { action } from '@/libs/action-log'
 import Box from '@mui/material/Box'
 import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
@@ -16,6 +18,40 @@ interface GeneralSidebarProps {
   handleDrawerClose: () => void
 }
 
+type NavItem = {
+  key: string
+  text: string
+  path: string
+  action: ActionDefinition
+}
+
+const NAV_ITEMS: NavItem[] = [
+  {
+    key: 'happiness',
+    text: '利用者の幸福度',
+    path: '/happiness/me',
+    action: clickActions.sidebarNav('/happiness/me'),
+  },
+  {
+    key: 'happiness-all',
+    text: '全体の幸福度',
+    path: '/happiness/all',
+    action: clickActions.sidebarNav('/happiness/all'),
+  },
+  {
+    key: 'happiness-list',
+    text: '一覧表示',
+    path: '/happiness/list',
+    action: clickActions.sidebarNav('/happiness/list'),
+  },
+  {
+    key: 'license',
+    text: 'サードパーティライセンス',
+    path: '/terms/third-party-license',
+    action: clickActions.sidebarNav('/terms/third-party-license'),
+  },
+]
+
 const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
   const router = useRouter()
 
@@ -30,52 +66,20 @@ const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
         </IconButton>
         <Divider />
         <List>
-          <ListItem key="happiness" disablePadding>
-            <ListItemButton
-              onClick={() => {
-                pushActionLog('click', 'sidebarNav')
-                router.push('/happiness/me')
-              }}
-            >
-              <ListItemText primary="利用者の幸福度" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="happiness-all" disablePadding>
-            <ListItemButton
-              onClick={() => {
-                pushActionLog('click', 'sidebarNav')
-                router.push('/happiness/all')
-              }}
-            >
-              <ListItemText primary="全体の幸福度" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="happiness-list" disablePadding>
-            <ListItemButton
-              onClick={() => {
-                pushActionLog('click', 'sidebarNav')
-                router.push('/happiness/list')
-              }}
-            >
-              <ListItemText primary="一覧表示" />
-            </ListItemButton>
-          </ListItem>
-          <ListItem key="license" disablePadding>
-            <ListItemButton
-              onClick={() => {
-                pushActionLog('click', 'sidebarNav')
-                router.push('/terms/third-party-license')
-              }}
-            >
-              <ListItemText primary="サードパーティライセンス" />
-            </ListItemButton>
-          </ListItem>
+          {NAV_ITEMS.map((item) => (
+            <ListItem key={item.key} disablePadding>
+              <ListItemButton
+                onClick={action(item.action, () => router.push(item.path))}
+              >
+                <ListItemText primary={item.text} />
+              </ListItemButton>
+            </ListItem>
+          ))}
           <ListItem key="logout" disablePadding>
             <ListItemButton
-              onClick={() => {
-                pushActionLog('click', 'sidebarSignOut')
+              onClick={action(clickActions.sidebarSignOut, () =>
                 signOut({ callbackUrl: '/login' })
-              }}
+              )}
             >
               <ListItemText primary="ログアウト" />
             </ListItemButton>

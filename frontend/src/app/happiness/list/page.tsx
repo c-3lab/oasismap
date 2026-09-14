@@ -11,7 +11,8 @@ import { HappinessListResponse, Data } from '@/types/happiness-list-response'
 import { useFetchData } from '@/libs/fetch'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 import { LoadingContext } from '@/contexts/loading-context'
-import { pushActionLog, reportError } from '@/libs/client-error-reporting'
+import { apiActions } from '@/libs/action-log-definitions'
+import { reportError } from '@/libs/client-error-reporting'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 
 const HappinessList: React.FC = () => {
@@ -29,7 +30,6 @@ const HappinessList: React.FC = () => {
 
   const getData = async () => {
     try {
-      pushActionLog('apiCall', 'happiness/list')
       setIsLoading(true)
       willStop.current = false
       setListData([])
@@ -37,6 +37,7 @@ const HappinessList: React.FC = () => {
       const url = backendUrl + '/api/happiness'
       const limit = 1000
       let offset = 0
+      let loggedApiCall = false
 
       while (!willStop.current) {
         // アクセストークンを再取得
@@ -45,8 +46,10 @@ const HappinessList: React.FC = () => {
         const data: HappinessListResponse = await fetchListData(
           url,
           { limit, offset },
-          updatedSession?.user?.accessToken!
+          updatedSession?.user?.accessToken!,
+          !loggedApiCall ? apiActions.happinessList : undefined
         )
+        loggedApiCall = true
 
         if (data['count'] === 0) break
 
@@ -78,11 +81,14 @@ const HappinessList: React.FC = () => {
 
   const deleteListData = async (id: string) => {
     try {
-      pushActionLog('apiCall', 'happiness/delete')
       const url = `${backendUrl}/api/happiness/${id}`
       const updatedSession = await update()
 
-      await deleteData(url, updatedSession?.user?.accessToken!)
+      await deleteData(
+        url,
+        updatedSession?.user?.accessToken!,
+        apiActions.happinessDelete
+      )
       noticeMessageContext.showMessage(
         '幸福度の削除が完了しました',
         MessageType.Success
