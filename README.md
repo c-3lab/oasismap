@@ -1,13 +1,15 @@
-# OASIS Map - ウェルビーイングを実現するための、地域の協調的幸福度の可視化プラットフォーム
+# 地域幸福度可視化アプリ - ウェルビーイングを実現するための、地域の協調的幸福度の可視化プラットフォーム
 
-![readme-top](doc/img/readme-top.png)
+<p align="center">
+    <img src="doc/img/readme-top.png">
+</p>
 
 ## 目次
 
-- [OASIS Map - ウェルビーイングを実現するための、地域の協調的幸福度の可視化プラットフォーム](#oasis-map---ウェルビーイングを実現するための地域の協調的幸福度の可視化プラットフォーム)
+- [地域幸福度可視化アプリ - ウェルビーイングを実現するための、地域の協調的幸福度の可視化プラットフォーム](#地域幸福度可視化アプリ---ウェルビーイングを実現するための地域の協調的幸福度の可視化プラットフォーム)
   - [目次](#目次)
   - [本プロジェクトについて](#本プロジェクトについて)
-  - [OASIS Mapの始め方 クイックスタート](#oasis-mapの始め方-クイックスタート)
+  - [地域幸福度可視化アプリの始め方 クイックスタート](#地域幸福度可視化アプリの始め方-クイックスタート)
     - [概要](#概要)
     - [インストール方法](#インストール方法)
     - [事前準備](#事前準備)
@@ -26,12 +28,12 @@
 
 基盤ソフトウェア「[FIWARE (ファイウェア)](https://www.fiware.org/)」を用いて、地域の協調的幸福度を可視化するプラットフォーム
 
-## OASIS Mapの始め方 クイックスタート
+## 地域幸福度可視化アプリの始め方 クイックスタート
 
 ### 概要
 
 - `docker compose`で提供しております
-- `docker compose 2.21.0`, `docker 24.0.7` をインストール済みの `Ubuntu 22.04.3` 上で動作確認しております
+- `docker compose 5.4.0`, `docker 29.7.2` をインストール済みの `Ubuntu 24.04.4` 上で動作確認しております
 - またインストールの中で `wget` を使用しております
 - 対応ブラウザ
   - Chrome
@@ -53,68 +55,24 @@
 
 ### 事前準備
 
-#### Google認証を利用しない場合
-##### ホストOSのIPアドレスの確認
+#### ホストOSのIPアドレスの確認
 
-1. docker上のコンテナから到達可能なホストOSのIPアドレスを確認（ `localhost` や `127.0.0.1` では動作しないことに注意）
+docker上のコンテナから到達可能なホストOSのIPアドレスを確認（ `localhost` や `127.0.0.1` では動作しないことに注意）
 
-    * linux (ネットワークアダプタがeth0の場合)
+* linux (ネットワークアダプタがeth0の場合)
 
-    ```sh
-    ~/oasismap$ ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1
-    ```
-    * macOS（ネットワークアダプタがen0の場合）
+  ```sh
+  ~/oasismap$ ip addr show eth0 | grep "inet\b" | awk '{print $2}' | cut -d/ -f1
+  ```
+* macOS（ネットワークアダプタがen0の場合）
 
-    ```sh
-    ~/oasismap$ ipconfig getifaddr en0
-    ```
-
-#### google認証を利用する場合
-##### Google Cloud
-
-1. [Google Cloud](https://console.cloud.google.com/apis/credentials)に接続
-2. `プロジェクトを選択` から新しいプロジェクトを作成
-3. `認証情報を作成` を選択して `OAuth クライアント ID` を作成
-4. アプリケーションの種類に `ウェブアプリケーション` を選択して作成
-5. クライアントID、シークレットが記されたjsonをダウンロード（一度しかダウンロードできないので注意）
-
-##### ngrok 事前準備
-
-1. ngrokのアカウントを登録する
-    https://ngrok.com/
-
-2. 手順に従いngrokをインストールする
-    https://ngrok.com/docs/getting-started/
-
-3. ngrok起動
-
-    ```sh
-    ~/oasismap$ ngrok http 8080
-    ```
-
-    ```sh
-    Try the new Traffic Inspector dev preview: https://ngrok.com/r/ti
-
-    Session Status                online
-    Account                       アカウント名 (Plan: Free)
-    Version                       3.6.0
-    Region                        Japan (jp)
-    Latency                       5ms
-    Web Interface                 http://127.0.0.1:4040
-    Forwarding                    https://xxxx-xxx-xxx-x-xx.ngrok-free.app -> http://localhost:8080
-
-    Connections                   ttl     opn     rt1     rt5     p50     p90
-                                  1224    0       0.00    0.01    0.06    6.29
-
-    HTTP Requests
-    ```
-
-7. `Forwarding` から https:// で始まるURLを取得する
-
+  ```sh
+  ~/oasismap$ ipconfig getifaddr en0
+  ```
 
 #### 位置情報の利用について
 
-OASIS Mapでは現在の位置情報を利用します。
+地域幸福度可視化アプリでは現在の位置情報を利用します。
 但し `http` で動作させた場合は実際の位置情報ではなく、仮の位置情報が使われます。
 実際の位置情報を利用する場合は、Keycloakの他にOASIS Map本体も `https` で動作させる必要があります。
 手順は [現在位置情報を利用した動作確認手順](doc/location-usage-verification.md) を確認してください。
@@ -130,7 +88,7 @@ OASIS Mapでは現在の位置情報を利用します。
     ~/oasismap$ vi .env
     ```
 
-2. MongoDBとPostgreSQLのユーザー、パスワードを設定します。
+2. 必要に応じてMongoDBとPostgreSQLのユーザー・パスワードを設定します。
 
     ```sh
     MONGOUSERNAME=example
@@ -154,19 +112,15 @@ OASIS Mapでは現在の位置情報を利用します。
         ~/oasismap$ cat /dev/urandom | tr -dc 'A-Za-z0-9' | fold -w 32 | head -n 1
         ```
 5. keycloakの名前解決を設定します。
-    #### Google認証を利用しない場合
-    * `HOST_URL=http://YOUR_IP_ADDRESS:8080` の `YOUR_IP_ADDRESS` を、事前準備で確認したdocker上のコンテナから到達可能なホストOSのIPアドレスに置換します。
 
-    #### Google認証を利用する場合
-    * `HOST_URL` にngrokから割り当てられたURLを設定します。
-    * Google Cloudから得たクライアントIDとクライアントシークレットをそれぞれ `GOOGLE_CLIENT_ID` と `GOOGLE_CLIENT_SECRET` に設定します。
+    `HOST_URL=http://YOUR_IP_ADDRESS:8080` の `YOUR_IP_ADDRESS` を、事前準備で確認したdocker上のコンテナから到達可能なホストOSのIPアドレスに置換します。
 
 ### システム起動
-1. Dockerコンテナを展開します。
+- Dockerコンテナを展開します
 
-    ```sh
-    ~/oasismap$ docker compose up -d
-    ```
+  ```sh
+  ~/oasismap$ docker compose up -d
+  ```
 
 ### 起動後設定
 
@@ -208,22 +162,6 @@ OASIS Mapでは現在の位置情報を利用します。
       'http://orion:1026/v2/subscriptions'
     ```
 
-#### Google認証を利用しない場合
-* 特になし
-
-#### Google認証を利用する場合
-##### Google CloudにリダイレクトURIを設定
-
-1. ブラウザから `http://Dockerホスト名:8080` でkeycloakの管理画面にアクセスします。
-2. 環境変数 `KEYCLOAK_ADMIN` `KEYCLOAK_ADMIN_PASSWORD` に指定した認証情報でログイン
-3. `Manage realms` から `oasismap` を選択
-4. 左のメニューバーから `Identity providers` を選択
-5. `google` をクリック
-6. `Redirect URI` の値をコピーして控えておく
-7. [Google Cloud](https://console.cloud.google.com/apis/credentials)に接続
-8. 事前準備にて作成した認証情報を選択
-9. `承認済みのリダイレクトURI` に控えておいた `Redirect URI` を転記して保存
-
 ## 基本的な使い方
 
 ### 自治体管理者向け
@@ -240,64 +178,145 @@ OASIS Mapでは現在の位置情報を利用します。
 7. `Credentials` を選択して `Set password` を押下
 8. `Password` と `Password confirmation` に同じパスワードを入力し、 `Temporary` をOFFにして `Save` を押下
 9. `Save password` を押下して管理者アカウントのパスワードを保存
-10. `Role mapping` を選択して `Asiign role` を押下
-11. `Realm rols` を選択
+10. `Role mapping` を選択して `Assign role` を押下
+11. `Realm roles` を選択
 12. `admin-role` にチェックを入れ、 `Assign` を押下
 
 #### 自治体管理者機能の使い方
 
 1. ブラウザから `http://Dockerホスト名:3000/admin/login` でアクセスします
-  ![admin-user-1](doc/img/admin-user-1.png)
+  <p align="center">
+    <img src="doc/img/admin-user-1.png">
+  </p>
 
 2. 自治体管理者用アカウントでログインします
-  ![admin-user-2](doc/img/admin-user-2.png)
+  <p align="center">
+    <img src="doc/img/admin-user-2.png">
+  </p>
 
-3. 右端のハンバーガーメニューの `データエクスポート` から幸福度情報をダウンロードできます
-  ![admin-user-3](doc/img/admin-user-3.png)
+3. 左端のハンバーガーメニューの `データのエクスポート` から幸福度情報をダウンロードできます
+  <p align="center">
+    <img src="doc/img/admin-user-3.png" width="600">
+  </p>
+  <p align="center">
+    <img src="doc/img/admin-user-4.png">
+  </p>
+
+4. 左端のハンバーガーメニューの `データのインポート` から幸福度情報をインポートできます
+  <p align="center">
+    <img src="doc/img/admin-user-5.png" width="600">
+  </p>
+  <p align="center">
+    <img src="doc/img/admin-user-6.png">
+  </p>
+  ※ 指定する CSV ファイルは次の条件を満たす必要があります。
+  
+- ファイル: 拡張子 `.csv` で、種別が `text/csv` として選択できるもの
+- 形式: UTF-8・カンマ区切り。手順 3 でエクスポートしたファイルと同じ列構成（UTF-8 BOM 付きのファイルも利用可）
+- 1 行目: ヘッダー行（`ニックネーム`、`年代`、`住所`、`送信日時`、`緯度`、`経度`、`送信住所`、`happiness1`〜`happiness6`。`メモ` は任意）
+- `happiness1`〜`happiness6`: 各 `0`（未入力） または `1`（入力済み）。6項目のうち必ず1項目のみ `1`となる（利用者が画面から入力する場合と同じ）
+- `送信日時`: `yyyy-MM-dd HH:mm:ss` 形式（例: `2023-06-27 12:34:56`）
+- `緯度`・`経度`: 有効な緯度・経度の数値
+- `メモ`: 任意。指定する場合は 30 文字以内（`<` `>` `"` `'` `=` `;` `(` `)` は使用不可）
+- `既存のデータを全て削除してインポート` にチェックを入れた場合、インポート前に登録済みの幸福度データがすべて削除されます  
 
 ### 利用者向け
 
 #### ログイン
 
 1. ブラウザから `http://Dockerホスト名:3000` でアクセスします
-  ![general-user-1](doc/img/general-user-1.png)
+  <p align="center">
+    <img src="doc/img/general-user-1.png" width="400">
+  </p>
 
-2. Googleアカウントを用いてログイン
-  ![general-user-2](doc/img/general-user-2.png)
+2. 画面下部の `登録` のリンクから新規登録画面へ進みます
 
-3. ユーザー情報の入力
-  ※重複するニックネームは登録できません
-  ![general-user-3](doc/img/general-user-3.png)
+    ※2回目以降はニックネームとパスワードを入力し、ログインすることができます
+  <p align="center">
+    <img src="doc/img/general-user-2.png" width="400">
+  </p>
+
+3. ユーザー情報を入力し、「参加同意」の内容を確認します。確認後、チェックボックスにチェックを入れ、登録ボタンをクリックします  
+
+    ※重複するニックネームは登録できません  
+    ※「参加同意」の内容を確認するまで、チェックボックスにはチェックを入れられません
+  <p align="center">
+    <img src="doc/img/general-user-3.png" width="400">
+  </p>
 
 #### 幸福度の入力
 
-1. 画面下の `幸福度の入力` をクリックします
-  ![general-user-4-1](doc/img/general-user-4-1.png)
+1. 画面右下の `幸福度の入力ボタン（鉛筆のアイコン）` をクリックします
+  <p align="center">
+    <img src="doc/img/general-user-4-1.png" width="400">
+  </p>
 
-2. 任意の項目にチェックを入れて `幸福度を送信` をクリックします
-  ![general-user-4-2](doc/img/general-user-4-2.png)
+2. 「魅力」の項目にチェックを入れ、必要に応じてメモの入力やファイルの選択を行い、`幸福度を送信` をクリックします
+  <p align="center">
+    <img src="doc/img/general-user-4-2.png" width="400">
+  </p>
 
 #### 利用者幸福度の表示
 
-1. 右端のハンバーガーメニューをクリックします
-  ![general-user-5-1](doc/img/general-user-5-1.png)
+1. 左端のハンバーガーメニューをクリックし、一覧から`利用者の幸福度` をクリックします
+  <p align="center">
+    <img src="doc/img/general-user-4-3.png" width="400">
+  </p>
 
-2. 一覧から `利用者の幸福度` をクリックします
-  ![general-user-5-2](doc/img/general-user-5-2.png)
-
-3. `利用者の幸福度` が地図上とグラフに表示されます
-  ![general-user-5-3](doc/img/general-user-5-3.png)
+2. `利用者の幸福度` が地図上に表示されます
+  <p align="center">
+    <img src="doc/img/general-user-4-4.png" width="400">
+  </p>
 
 #### 全体幸福度の表示
 
-1. 右端のハンバーガーメニューをクリックします
-  ![general-user-5-1](doc/img/general-user-5-1.png)
+1. 左端のハンバーガーメニューをクリックし、一覧から`全体の幸福度`をクリックします
+  <p align="center">
+    <img src="doc/img/general-user-4-3.png" width="400">
+  </p>
 
-2. 一覧から `全体の幸福度` をクリックします
-  ![general-user-5-2](doc/img/general-user-5-2.png)
+2. `全体の幸福度` が地図上に表示されます
+  <p align="center">
+    <img src="doc/img/general-user-5.png" width="400">
+  </p>
 
-3. `全体の幸福度` が地図上とグラフに表示されます
-  ![general-user-6-3](doc/img/general-user-6-3.png)
+#### フィルターによる幸福度検索
+
+1. 右上のフィルターアイコンをクリックします
+  <p align="center">
+    <img src="doc/img/general-user-4-5.png" width="400">
+  </p>
+
+2. 日時を指定して、該当する情報を検索できます
+  <p align="center">
+    <img src="doc/img/general-user-4-6.png" width="400">
+  </p>
+
+#### 一覧の表示
+1. 左端のハンバーガーメニューをクリックし、一覧から`一覧表示`をクリックします
+   <p align="center">
+    <img src="doc/img/general-user-6-1.png" width="400">
+  </p>
+
+2. 入力された幸福度の一覧が表示されます
+   <p align="center">
+    <img src="doc/img/general-user-6-2.png" width="400">
+  </p>
+
+#### サードパーティライセンスの確認
+地域幸福度可視化アプリで利用している地図データ・外部サービス、フォント、同梱ソフトウェア、および Frontend / Backend の利用ライブラリについて、名称・著作権・ライセンス等を本画面で確認できます。
+
+1. 左端のハンバーガーメニューをクリックし、一覧から `サードパーティライセンス` をクリックします
+  <p align="center">
+    <img src="doc/img/general-user-7-1.png" width="400">
+  </p>
+
+2. サードパーティライセンス画面が表示され、名称・著作権・ライセンス等の掲載内容を確認できます
+  <p align="center">
+    <img src="doc/img/general-user-7-2.png" width="400">
+  </p>
+
+ログインせずに確認する場合は、ブラウザから `http://Dockerホスト名:3000/terms/third-party-license` にアクセスしてください。
 
 ### アプリケーション停止方法
 
