@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import js from '@eslint/js';
 import { FlatCompat } from '@eslint/eslintrc';
+import unicorn from 'eslint-plugin-unicorn';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,6 +26,7 @@ export default [
   {
     plugins: {
       '@typescript-eslint': typescriptEslintEslintPlugin,
+      unicorn,
     },
 
     languageOptions: {
@@ -53,6 +55,12 @@ export default [
         'warn',
         {
           argsIgnorePattern: '^_',
+        },
+      ],
+      'unicorn/filename-case': [
+        'error',
+        {
+          case: 'kebabCase',
         },
       ],
     },
