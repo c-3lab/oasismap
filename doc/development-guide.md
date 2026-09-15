@@ -5,20 +5,20 @@
 
 以下がインストールされていること。
 - docker
-- node 20.10.0
+- node 22.17.0
 
 ## frontend 初期設定
 以下コマンドを順に実行して環境に各種パッケージをインストールする。
 ```
 cd ./frontend
-npm install
+npm ci
 ```
 
 ## backend 初期設定
 以下コマンドを順に実行して環境に各種パッケージをインストールする。
 ```
 cd ../backend
-npm install
+npm ci
 ```
 
 ## 開発用コンテナを起動

@@ -8,7 +8,7 @@
     - Realm settings->Tokens->Access Token Lifespanを1日に変更
 2. oasismapに一般ユーザーでログインし、認証情報を取得する。
     - oasismapに一般ユーザーでログイン後、開発者ツールを利用しバックエンドへの認証情報を取得
-    - ![get-auth-data](doc/img/get-auth-data.png)
+    ![get-auth-data](img/get-auth-data.png)
 
 ## APIによる幸福度入力
 
