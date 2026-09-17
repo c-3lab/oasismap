@@ -1,4 +1,3 @@
-import { IconButton } from '@mui/material'
 import { ActionLogIconButton } from '@/components/mui'
 import NavigationIcon from '@mui/icons-material/Navigation'
 import EditIcon from '@mui/icons-material/Edit'
@@ -32,7 +31,8 @@ export const MoveToCurrentPositionControl = ({
       root = createRoot(div)
 
       root.render(
-        <IconButton
+        <ActionLogIconButton
+          actionLog="mapCurrentPosition"
           style={{
             backgroundColor: '#f7f7f7',
             border: '1px solid #ccc',
@@ -53,7 +53,7 @@ export const MoveToCurrentPositionControl = ({
               fontSize: 45,
             }}
           />
-        </IconButton>
+        </ActionLogIconButton>
       )
 
       return div
