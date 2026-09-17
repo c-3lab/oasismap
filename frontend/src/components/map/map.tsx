@@ -407,7 +407,6 @@ const HybridClusterGroup = ({
     if (!map) return
 
     const handleMapClick = () => {
-      pushActionLog('click', 'mapPopupClose')
       setPopupPin(null)
       setPopupPosition(null)
     }
