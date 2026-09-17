@@ -3,9 +3,9 @@ import dynamic from 'next/dynamic'
 import React, { useContext, useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
+import { ActionLogButton } from '@/components/mui'
 import {
   Box,
-  Button,
   Grid,
   TextField,
   FormControl,
@@ -209,7 +209,6 @@ const HappinessInput: React.FC = () => {
 
   const submitForm = async () => {
     try {
-      pushActionLog('click', 'inputSubmit')
       pushActionLog('apiCall', 'happiness/post')
       const answers = createAnswersFromSelected(selectedHappiness)
       let payload: HappinessRequestBody = {
@@ -372,7 +371,8 @@ const HappinessInput: React.FC = () => {
           zIndex: 1000,
         }}
       >
-        <Button
+        <ActionLogButton
+          actionLog="inputSubmit"
           variant="contained"
           color="primary"
           size="large"
@@ -387,7 +387,7 @@ const HappinessInput: React.FC = () => {
           }}
         >
           幸福度を送信
-        </Button>
+        </ActionLogButton>
       </Grid>
     </Grid>
   )

@@ -1,4 +1,5 @@
 import { IconButton } from '@mui/material'
+import { ActionLogIconButton } from '@/components/mui'
 import NavigationIcon from '@mui/icons-material/Navigation'
 import EditIcon from '@mui/icons-material/Edit'
 import { LatLngTuple } from 'leaflet'
@@ -112,7 +113,8 @@ export const AddHappinessControl = ({
       root = createRoot(div)
 
       root.render(
-        <IconButton
+        <ActionLogIconButton
+          actionLog="mapAddHappiness"
           style={{
             backgroundColor: '#20B2AA',
             borderRadius: 100,
@@ -129,7 +131,7 @@ export const AddHappinessControl = ({
               fontSize: 45,
             }}
           />
-        </IconButton>
+        </ActionLogIconButton>
       )
 
       return div

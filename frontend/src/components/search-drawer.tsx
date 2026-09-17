@@ -1,16 +1,9 @@
 import React from 'react'
-import {
-  Drawer,
-  Box,
-  IconButton,
-  Typography,
-  Grid,
-  Button,
-  Divider,
-} from '@mui/material'
+import { Drawer, Box, Typography, Grid, Divider } from '@mui/material'
 import ChevronDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import { DateTimeProps } from '@/types/search-context'
+import { ActionLogButton, ActionLogIconButton } from '@/components/mui'
 import { pushActionLog } from '@/libs/client-error-reporting'
+import { DateTimeProps } from '@/types/search-context'
 import {
   DateTimeTextbox,
   useDateTimeProps,
@@ -32,24 +25,26 @@ const SearchDrawer: React.FC<SearchDrawerProps> = ({
   const { startProps, endProps } = useDateTimeProps()
 
   const handleSearch = async () => {
-    pushActionLog('click', 'search')
     onSearch(startProps, endProps)
-
     onClose()
   }
 
-  const handleClose = () => {
+  const handleDrawerClose = () => {
     pushActionLog('click', 'searchDrawerClose')
     onClose()
   }
 
   return (
-    <Drawer anchor={'bottom'} open={isOpen} onClose={handleClose}>
+    <Drawer anchor={'bottom'} open={isOpen} onClose={handleDrawerClose}>
       <Box sx={{ p: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <IconButton onClick={handleClose} sx={{ mr: 1 }}>
+          <ActionLogIconButton
+            actionLog="searchDrawerClose"
+            onClick={onClose}
+            sx={{ mr: 1 }}
+          >
             <ChevronDownIcon />
-          </IconButton>
+          </ActionLogIconButton>
           <Typography variant="h6" component="div">
             検索条件
           </Typography>
@@ -83,7 +78,8 @@ const SearchDrawer: React.FC<SearchDrawerProps> = ({
           </Grid>
 
           <Grid item xs={12} sx={{ mt: 2 }}>
-            <Button
+            <ActionLogButton
+              actionLog="search"
               variant="contained"
               fullWidth
               size="large"
@@ -91,7 +87,7 @@ const SearchDrawer: React.FC<SearchDrawerProps> = ({
               disabled={isLoading}
             >
               検索
-            </Button>
+            </ActionLogButton>
           </Grid>
         </Grid>
       </Box>

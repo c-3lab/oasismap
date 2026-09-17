@@ -1,9 +1,13 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
+  ActionLogIconButton,
+  ActionLogMenuItem,
+  ActionLogTableSortLabel,
+} from '@/components/mui'
+import {
   Box,
   Collapse,
-  IconButton,
   Table,
   TableBody,
   TableCell,
@@ -13,10 +17,8 @@ import {
   Typography,
   Paper,
   Menu,
-  MenuItem,
   ListItemIcon,
   ListItemText,
-  TableSortLabel,
 } from '@mui/material'
 import {
   CheckCircle,
@@ -31,7 +33,6 @@ import { Data } from '@/types/happiness-list-response'
 import { timestampToDateTime } from '@/libs/date-converter'
 import DeleteConfirmationDialog from '@/components/happiness/delete-confirmation-dialog'
 import { HappinessKey } from '@/types/happiness-key'
-import { pushActionLog } from '@/libs/client-error-reporting'
 
 type Order = 'asc' | 'desc'
 
@@ -87,7 +88,6 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
   const open = Boolean(anchorElement)
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    pushActionLog('click', 'listRowMenu')
     setAnchorElement(event.currentTarget)
   }
   const handleClose = () => {
@@ -106,17 +106,15 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
         }}
       >
         <TableCell sx={{ pl: '8px', width: '28px' }}>
-          <IconButton
+          <ActionLogIconButton
+            actionLog="listRowExpand"
             aria-label={isCollapseOpen ? 'collapse row' : 'expand row'}
             size="small"
-            onClick={() => {
-              pushActionLog('click', 'listRowExpand')
-              setIsCollapseOpen(!isCollapseOpen)
-            }}
+            onClick={() => setIsCollapseOpen(!isCollapseOpen)}
             sx={{ px: '0px' }}
           >
             {isCollapseOpen ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
-          </IconButton>
+          </ActionLogIconButton>
         </TableCell>
         <TableCell>
           {row.answers?.happiness1 ? <CheckCircle /> : null}
@@ -137,9 +135,9 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
           {row.answers?.happiness6 ? <CheckCircle /> : null}
         </TableCell>
         <TableCell>
-          <IconButton onClick={handleClick}>
+          <ActionLogIconButton actionLog="listRowMenu" onClick={handleClick}>
             <MoreHorizIcon sx={{ color: 'black' }} />
-          </IconButton>
+          </ActionLogIconButton>
         </TableCell>
       </TableRow>
       <TableRow>
@@ -166,9 +164,9 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
         </TableCell>
       </TableRow>
       <Menu anchorEl={anchorElement} open={open} onClose={handleClose}>
-        <MenuItem
+        <ActionLogMenuItem
+          actionLog="listShowOnMap"
           onClick={() => {
-            pushActionLog('click', 'listShowOnMap')
             const params = new URLSearchParams()
             params.set('entityId', row.id)
             params.set('timestamp', row.timestamp)
@@ -182,18 +180,16 @@ const Row: React.FC<RowProps> = ({ row, openDialog }) => {
             primary="地図に表示"
             secondary="選択した幸福度を地図に表示します"
           />
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            pushActionLog('click', 'listDelete')
-            openDialog(row)
-          }}
+        </ActionLogMenuItem>
+        <ActionLogMenuItem
+          actionLog="listDelete"
+          onClick={() => openDialog(row)}
         >
           <ListItemIcon>
             <DeleteForever sx={{ color: 'black' }} />
           </ListItemIcon>
           <ListItemText primary="削除" secondary="選択した幸福度を削除します" />
-        </MenuItem>
+        </ActionLogMenuItem>
       </Menu>
     </>
   )
@@ -209,7 +205,6 @@ const ListTable: React.FC<ListTableProps> = ({
   const [orderBy, setOrderBy] = useState<HappinessKey | null>(null)
 
   const handleSort = (property: HappinessKey) => {
-    pushActionLog('click', 'listSort')
     if (orderBy === property) {
       if (order === undefined) {
         setOrder('desc')
@@ -237,7 +232,6 @@ const ListTable: React.FC<ListTableProps> = ({
 
   const deleteRowData = () => {
     if (selectedData) {
-      pushActionLog('click', 'deleteConfirmDelete')
       deleteListData(selectedData.id)
       setSelectedData(null)
     }
@@ -277,7 +271,8 @@ const ListTable: React.FC<ListTableProps> = ({
                   padding: '16px 4px',
                 }}
               >
-                <TableSortLabel
+                <ActionLogTableSortLabel
+                  actionLog="listSort"
                   onClick={() => handleSort(key)}
                   active={orderBy === key || orderBy === null}
                   direction={orderBy === key ? order : 'desc'}
@@ -294,7 +289,7 @@ const ListTable: React.FC<ListTableProps> = ({
                   }}
                 >
                   {title}
-                </TableSortLabel>
+                </ActionLogTableSortLabel>
               </TableCell>
             ))}
             <TableCell sx={{ width: '28px' }} />
@@ -320,10 +315,7 @@ const ListTable: React.FC<ListTableProps> = ({
       </Table>
       <DeleteConfirmationDialog
         data={selectedData}
-        onClose={() => {
-          pushActionLog('click', 'deleteConfirmCancel')
-          setSelectedData(null)
-        }}
+        onClose={() => setSelectedData(null)}
         deleteRowData={deleteRowData}
       />
     </TableContainer>

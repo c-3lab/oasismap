@@ -1,13 +1,12 @@
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
-import IconButton from '@mui/material/IconButton'
 import MenuIcon from '@mui/icons-material/Menu'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import AppBar from '@mui/material/AppBar'
+import { ActionLogIconButton } from '@/components/mui'
 import { PROFILE_TYPE } from '@/libs/constants'
 import { useSession } from 'next-auth/react'
 import { usePathname } from 'next/navigation'
-import { pushActionLog } from '@/libs/client-error-reporting'
 
 interface HeaderProps {
   simple?: boolean
@@ -38,18 +37,16 @@ const Header: React.FC<HeaderProps> = ({
     <AppBar sx={{ color: '#FFF', backgroundColor: '#459586' }}>
       <Toolbar>
         {!simple && session && (
-          <IconButton
+          <ActionLogIconButton
+            actionLog="headerMenu"
             color="inherit"
             aria-label="open drawer"
             edge="start"
-            onClick={() => {
-              pushActionLog('click', 'headerMenu')
-              handleDrawerOpen?.()
-            }}
+            onClick={() => handleDrawerOpen?.()}
             sx={{ mr: 2 }}
           >
             <MenuIcon />
-          </IconButton>
+          </ActionLogIconButton>
         )}
         <Typography
           variant="h6"
@@ -68,17 +65,15 @@ const Header: React.FC<HeaderProps> = ({
               <Nickname />
             </Typography>
             {shouldShowFilter && (
-              <IconButton
+              <ActionLogIconButton
+                actionLog="headerFilter"
                 color="inherit"
                 aria-label="open filter"
                 edge="end"
-                onClick={() => {
-                  pushActionLog('click', 'headerFilter')
-                  handleFilterOpen?.()
-                }}
+                onClick={() => handleFilterOpen?.()}
               >
                 <FilterAltIcon />
-              </IconButton>
+              </ActionLogIconButton>
             )}
           </>
         )}

@@ -1,4 +1,5 @@
 'use client'
+import { ActionLogButton, ActionLogInput } from '@/components/mui'
 import {
   Button,
   Checkbox,
@@ -33,7 +34,6 @@ const Import: React.FC = () => {
   const { upload } = useFetchData()
 
   const fileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    pushActionLog('click', 'importFileSelect')
     const file = event.target.files?.[0]
 
     if (file?.type !== 'text/csv') {
@@ -48,7 +48,7 @@ const Import: React.FC = () => {
     setImportError('') // Clear import error when selecting new file
   }
 
-  const VisuallyHiddenInput = styled('input')({
+  const VisuallyHiddenInput = styled(ActionLogInput)({
     clip: 'rect(0 0 0 0)',
     clipPath: 'inset(50%)',
     overflow: 'hidden',
@@ -60,7 +60,6 @@ const Import: React.FC = () => {
       setErrorMessage('ファイルが選択されていません')
       return
     }
-    pushActionLog('click', 'importUpload')
     pushActionLog('apiCall', 'happiness/import')
     setIsUploading(true)
     setImportError('') // Clear previous import errors
@@ -128,6 +127,7 @@ const Import: React.FC = () => {
           <VisuallyHiddenInput
             accept=".csv"
             type="file"
+            actionLog="importFileSelect"
             onChange={fileChange}
           />
         </Button>
@@ -151,14 +151,15 @@ const Import: React.FC = () => {
           />
         </Grid>
         <Grid container justifyContent="flex-end">
-          <Button
+          <ActionLogButton
+            actionLog="importUpload"
             variant="contained"
             color="primary"
-            onClick={() => uploadCsv()}
+            onClick={uploadCsv}
             disabled={isUploading}
           >
             インポート
-          </Button>
+          </ActionLogButton>
         </Grid>
       </Grid>
       {/* Display import errors below the form */}
