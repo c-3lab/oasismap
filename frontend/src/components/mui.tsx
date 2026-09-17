@@ -4,6 +4,7 @@ import MuiButton from '@mui/material/Button'
 import MuiIconButton from '@mui/material/IconButton'
 import MuiListItemButton from '@mui/material/ListItemButton'
 import MuiMenuItem from '@mui/material/MenuItem'
+import MuiOutlinedInput from '@mui/material/OutlinedInput'
 import MuiTableSortLabel from '@mui/material/TableSortLabel'
 import { pushActionLog } from '@/libs/client-error-reporting'
 
@@ -59,6 +60,27 @@ function createActionLogOnClickComponent<P>(
   return ActionLogComponent
 }
 
+/** onChange 付き MUI コンポーネント向けの薄い ActionLog ラッパーを作る */
+function createActionLogOnChangeComponent<P>(
+  Component: React.ComponentType<P>,
+  displayName: string
+): React.FC<P & WithActionLog> {
+  function ActionLogComponent(props: P & WithActionLog) {
+    const { actionLog, onChange, ...rest } = props as P &
+      WithActionLog & {
+        onChange?: (event: React.SyntheticEvent) => void
+      }
+    return (
+      <Component
+        {...(rest as P)}
+        onChange={chainOnChange(actionLog, onChange)}
+      />
+    )
+  }
+  ActionLogComponent.displayName = displayName
+  return ActionLogComponent
+}
+
 export const ActionLogButton = createActionLogOnClickComponent(
   MuiButton,
   'ActionLogButton'
@@ -78,6 +100,10 @@ export const ActionLogMenuItem = createActionLogOnClickComponent(
 export const ActionLogTableSortLabel = createActionLogOnClickComponent(
   MuiTableSortLabel,
   'ActionLogTableSortLabel'
+)
+export const ActionLogOutlinedInput = createActionLogOnChangeComponent(
+  MuiOutlinedInput,
+  'ActionLogOutlinedInput'
 )
 
 // native input は型の都合でファクトリではなく chainOnChange を直接使う

@@ -3,13 +3,12 @@ import dynamic from 'next/dynamic'
 import React, { useContext, useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
-import { ActionLogButton } from '@/components/mui'
+import { ActionLogButton, ActionLogOutlinedInput } from '@/components/mui'
 import {
   Box,
   Grid,
   TextField,
   FormControl,
-  OutlinedInput,
   FormHelperText,
   RadioGroup,
   FormControlLabel,
@@ -318,7 +317,8 @@ const HappinessInput: React.FC = () => {
           helperText={errors.find((error) => error.field === 'memo')?.message}
         />
         <FormControl id="image" fullWidth>
-          <OutlinedInput
+          <ActionLogOutlinedInput
+            actionLog="inputImageSelect"
             type="file"
             onChange={handleImage}
             error={errors.some((error) => error.field === 'image')}
