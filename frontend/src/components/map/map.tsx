@@ -39,6 +39,7 @@ import {
   pushActionLog,
 } from '@/libs/client-error-reporting'
 
+import { ActionLogIconButton } from '@/components/mui'
 import { IconButton } from '@mui/material'
 import NavigationIcon from '@mui/icons-material/Navigation'
 import CurrentPositionIcon from '@mui/icons-material/RadioButtonChecked'
@@ -599,7 +600,8 @@ const Map: React.FC<Props> = ({
 
         const root = createRoot(div)
         root.render(
-          <IconButton
+          <ActionLogIconButton
+            actionLog="mapAddHappiness"
             style={{
               backgroundColor: '#20B2AA',
               borderRadius: 100,
@@ -618,7 +620,7 @@ const Map: React.FC<Props> = ({
                 fontSize: 45,
               }}
             />
-          </IconButton>
+          </ActionLogIconButton>
         )
 
         return div

@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { Grid } from '@mui/material'
 import { useSession } from 'next-auth/react'
 import { PROFILE_TYPE } from '@/libs/constants'
-import { pushActionLog } from '@/libs/client-error-reporting'
 const Map = dynamic(() => import('@/components/map/map'), { ssr: false })
 import { Pin } from '@/types/pin'
 import { Data } from '@/types/happiness-me-response'
@@ -65,7 +64,6 @@ const HappinessViewer = ({
           }}
           showAddHappiness={session?.user?.type === PROFILE_TYPE.GENERAL}
           onAddHappiness={() => {
-            pushActionLog('click', 'mapAddHappiness')
             router.push(`/happiness/input?referral=${type}`)
           }}
         />

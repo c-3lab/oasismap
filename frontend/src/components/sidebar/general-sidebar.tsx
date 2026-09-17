@@ -1,5 +1,5 @@
 import { useRouter } from 'next/navigation'
-import { pushActionLog } from '@/libs/client-error-reporting'
+import { ActionLogListItemButton } from '@/components/mui'
 import Box from '@mui/material/Box'
 import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
@@ -7,7 +7,6 @@ import Divider from '@mui/material/Divider'
 import IconButton from '@mui/material/IconButton'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ListItem from '@mui/material/ListItem'
-import ListItemButton from '@mui/material/ListItemButton'
 import ListItemText from '@mui/material/ListItemText'
 import { signOut } from 'next-auth/react'
 
@@ -31,54 +30,44 @@ const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
         <Divider />
         <List>
           <ListItem key="happiness" disablePadding>
-            <ListItemButton
-              onClick={() => {
-                pushActionLog('click', 'sidebarNav')
-                router.push('/happiness/me')
-              }}
+            <ActionLogListItemButton
+              actionLog="sidebarNav"
+              onClick={() => router.push('/happiness/me')}
             >
               <ListItemText primary="利用者の幸福度" />
-            </ListItemButton>
+            </ActionLogListItemButton>
           </ListItem>
           <ListItem key="happiness-all" disablePadding>
-            <ListItemButton
-              onClick={() => {
-                pushActionLog('click', 'sidebarNav')
-                router.push('/happiness/all')
-              }}
+            <ActionLogListItemButton
+              actionLog="sidebarNav"
+              onClick={() => router.push('/happiness/all')}
             >
               <ListItemText primary="全体の幸福度" />
-            </ListItemButton>
+            </ActionLogListItemButton>
           </ListItem>
           <ListItem key="happiness-list" disablePadding>
-            <ListItemButton
-              onClick={() => {
-                pushActionLog('click', 'sidebarNav')
-                router.push('/happiness/list')
-              }}
+            <ActionLogListItemButton
+              actionLog="sidebarNav"
+              onClick={() => router.push('/happiness/list')}
             >
               <ListItemText primary="一覧表示" />
-            </ListItemButton>
+            </ActionLogListItemButton>
           </ListItem>
           <ListItem key="license" disablePadding>
-            <ListItemButton
-              onClick={() => {
-                pushActionLog('click', 'sidebarNav')
-                router.push('/terms/third-party-license')
-              }}
+            <ActionLogListItemButton
+              actionLog="sidebarNav"
+              onClick={() => router.push('/terms/third-party-license')}
             >
               <ListItemText primary="サードパーティライセンス" />
-            </ListItemButton>
+            </ActionLogListItemButton>
           </ListItem>
           <ListItem key="logout" disablePadding>
-            <ListItemButton
-              onClick={() => {
-                pushActionLog('click', 'sidebarSignOut')
-                signOut({ callbackUrl: '/login' })
-              }}
+            <ActionLogListItemButton
+              actionLog="sidebarSignOut"
+              onClick={() => signOut({ callbackUrl: '/login' })}
             >
               <ListItemText primary="ログアウト" />
-            </ListItemButton>
+            </ActionLogListItemButton>
           </ListItem>
         </List>
       </Box>
