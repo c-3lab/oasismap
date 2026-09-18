@@ -16,6 +16,7 @@ export type ActionLogEntry = {
   type: ActionLogType
   label: string
   timestamp: string
+  nickname?: string
 }
 
 /**
@@ -40,6 +41,9 @@ const actionLogEntries: ActionLogEntry[] = []
 // 位置情報状態（getCurrentPosition / watchPosition の結果で更新）
 let geolocationStatus: GeolocationStatus = 'not_attempted'
 
+// 操作ログ記録時に付与するニックネーム（SessionProvider 内で同期）
+let currentNickname: string | undefined
+
 // 重複送信防止用
 let lastSentKey: string | null = null
 let lastSentAt = 0
@@ -50,6 +54,14 @@ function truncate(s: string | undefined, max: number): string {
 }
 
 /**
+ * 操作ログ記録時に付与するニックネームを設定する。
+ * ログアウト時は undefined を渡してクリアする。
+ */
+export function setActionLogNickname(nickname: string | undefined): void {
+  currentNickname = nickname
+}
+
+/**
  * 操作ログに 1 件追加（リングバッファ、最大 ACTION_LOG_MAX 件）
  */
 export function pushActionLog(type: ActionLogType, label: string): void {
@@ -57,6 +69,7 @@ export function pushActionLog(type: ActionLogType, label: string): void {
     type,
     label,
     timestamp: new Date().toISOString(),
+    ...(currentNickname && { nickname: currentNickname }),
   }
   actionLogEntries.push(entry)
   if (actionLogEntries.length > ACTION_LOG_MAX) {
