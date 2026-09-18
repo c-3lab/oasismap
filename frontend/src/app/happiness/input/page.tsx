@@ -3,13 +3,12 @@ import dynamic from 'next/dynamic'
 import React, { useContext, useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { signOut, useSession } from 'next-auth/react'
+import { ActionLogButton, ActionLogOutlinedInput } from '@/components/mui'
 import {
   Box,
-  Button,
   Grid,
   TextField,
   FormControl,
-  OutlinedInput,
   FormHelperText,
   RadioGroup,
   FormControlLabel,
@@ -26,6 +25,7 @@ import { ERROR_TYPE } from '@/libs/constants'
 import { useFetchData } from '@/libs/fetch'
 import { HappinessRequestBody } from '@/libs/fetch'
 import { getCurrentPosition } from '@/libs/geolocation'
+import { reportError } from '@/libs/client-error-reporting'
 import { timestampToDateTime } from '@/libs/date-converter'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 import { HappinessKey } from '@/types/happiness-key'
@@ -88,6 +88,7 @@ const HappinessInput: React.FC = () => {
         })
       }
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error getting current position:', error)
     }
   }, [defaultLatitude, defaultLongitude])
@@ -191,6 +192,7 @@ const HappinessInput: React.FC = () => {
       }
       setExif(exif)
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
       setErrors((prev) => {
         return [
@@ -238,6 +240,7 @@ const HappinessInput: React.FC = () => {
       )
       router.push(`/happiness/${referral}`)
     } catch (error) {
+      reportError(error instanceof Error ? error : new Error(String(error)))
       console.error('Error:', error)
       if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
         noticeMessageContext.showMessage(
@@ -313,7 +316,8 @@ const HappinessInput: React.FC = () => {
           helperText={errors.find((error) => error.field === 'memo')?.message}
         />
         <FormControl id="image" fullWidth>
-          <OutlinedInput
+          <ActionLogOutlinedInput
+            actionLog="inputImageSelect"
             type="file"
             onChange={handleImage}
             error={errors.some((error) => error.field === 'image')}
@@ -366,7 +370,8 @@ const HappinessInput: React.FC = () => {
           zIndex: 1000,
         }}
       >
-        <Button
+        <ActionLogButton
+          actionLog="inputSubmit"
           variant="contained"
           color="primary"
           size="large"
@@ -381,7 +386,7 @@ const HappinessInput: React.FC = () => {
           }}
         >
           幸福度を送信
-        </Button>
+        </ActionLogButton>
       </Grid>
     </Grid>
   )

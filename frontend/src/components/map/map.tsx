@@ -32,8 +32,14 @@ import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { getIconByType } from '../utils/icon'
 import { messageContext } from '@/contexts/message-context'
+import {
+  setGeolocationStatus,
+  reportPositionError,
+  positionErrorCodeToStatus,
+  pushActionLog,
+} from '@/libs/client-error-reporting'
 
-import { IconButton } from '@mui/material'
+import { ActionLogIconButton } from '@/components/mui'
 import NavigationIcon from '@mui/icons-material/Navigation'
 import CurrentPositionIcon from '@mui/icons-material/RadioButtonChecked'
 import EditIcon from '@mui/icons-material/Edit'
@@ -83,6 +89,68 @@ const OnPopupClose = ({ onPopupClose }: { onPopupClose: () => void }) => {
       onPopupClose()
     },
   })
+  return null
+}
+
+// --- 地図操作ログ（mapInteraction）---
+// Leaflet の zoomend / moveend を監視して pushActionLog する。
+// MUI の ActionLog* では扱えないため、地図専用の記録経路として map.tsx に置く。
+
+type MapInteractionKind = 'pan' | 'zoom'
+
+/** 直後に発火する Leaflet イベントのログを何件スキップするか（プログラム操作分） */
+const pendingMapInteractionLogSkips: Record<MapInteractionKind, number> = {
+  pan: 0,
+  zoom: 0,
+}
+
+/**
+ * panTo / flyTo / Popup autoPan など、コードから地図を動かす直前に呼ぶ。
+ * 続く moveend / zoomend ではログを出さず、スキップカウンタだけ消費する。
+ */
+function skipMapInteractionLogs(...types: MapInteractionKind[]) {
+  for (const type of types) {
+    pendingMapInteractionLogSkips[type]++
+  }
+}
+
+function consumeMapInteractionLogSkip(type: MapInteractionKind): boolean {
+  if (pendingMapInteractionLogSkips[type] > 0) {
+    pendingMapInteractionLogSkips[type]--
+    return true
+  }
+  return false
+}
+
+/**
+ * ユーザーのズーム・パンを操作ログに記録する。
+ * pinData のマーカー管理 effect とは分離し、ピン 0 件でもリスナーを張る。
+ *
+ * ホイールズーム 1 回で zoomend → moveend の順に両方来るため、
+ * mapZoom と mapPan が連続して記録される（Leaflet の仕様）。
+ */
+const MapInteractionLogger = () => {
+  const map = useMap()
+
+  useEffect(() => {
+    const onZoomEnd = () => {
+      if (consumeMapInteractionLogSkip('zoom')) return
+      pushActionLog('mapInteraction', 'mapZoom')
+    }
+    const onMoveEnd = () => {
+      if (consumeMapInteractionLogSkip('pan')) return
+      pushActionLog('mapInteraction', 'mapPan')
+    }
+
+    map.on('zoomend', onZoomEnd)
+    map.on('moveend', onMoveEnd)
+
+    return () => {
+      map.off('zoomend', onZoomEnd)
+      map.off('moveend', onMoveEnd)
+    }
+  }, [map])
+
   return null
 }
 
@@ -174,6 +242,8 @@ const HybridClusterGroup = ({
   const [popupPosition, setPopupPosition] = useState<[number, number] | null>(
     null
   )
+  /** 一覧「地図に表示」で panTo 済みの entityId（pinData / session 更新での再実行を防ぐ） */
+  const lastHandledTargetEntityIdRef = useRef<string | null>(null)
 
   // Helper functions for cluster management
   const getMarkerClusterGroupProps = useCallback(
@@ -252,31 +322,47 @@ const HybridClusterGroup = ({
   const createMarkerClickHandler = useCallback(
     (pin: Pin) => {
       return () => {
-        // Set popup
+        pushActionLog('click', 'mapPinClick')
+        // 一般ユーザーは Popup autoPan で moveend が走るため、付随する mapPan を抑止
+        if (session?.user?.type !== PROFILE_TYPE.ADMIN) {
+          skipMapInteractionLogs('pan')
+        }
         setPopupPin(pin)
         setPopupPosition([pin.latitude, pin.longitude])
       }
     },
-    [setPopupPin, setPopupPosition]
+    [session]
   )
 
-  // Logic to automatically open popup for targetEntity
+  // 一覧「地図に表示」: targetEntity.id が変わったときだけポップアップ表示と panTo
   useEffect(() => {
-    if (!targetEntity || !map || pinData.length === 0) {
+    if (!targetEntity) {
+      lastHandledTargetEntityIdRef.current = null
+      return
+    }
+    if (!map || pinData.length === 0) {
       return
     }
 
-    // Find the pin that matches the targetEntity
     const targetPin = pinData.find((pin) => pin.id === targetEntity.id)
     if (!targetPin) {
       return
     }
 
-    // Open popup and pan to the target pin
+    if (lastHandledTargetEntityIdRef.current === targetEntity.id) {
+      return
+    }
+    lastHandledTargetEntityIdRef.current = targetEntity.id
+
+    // panTo と Popup autoPan に伴う moveend を mapPan として記録しない
+    skipMapInteractionLogs('pan')
+    if (session?.user?.type !== PROFILE_TYPE.ADMIN) {
+      skipMapInteractionLogs('pan')
+    }
     setPopupPin(targetPin)
     setPopupPosition([targetPin.latitude, targetPin.longitude])
     map.panTo([targetPin.latitude, targetPin.longitude])
-  }, [targetEntity, map, pinData])
+  }, [targetEntity, map, pinData, session])
 
   const updateClusters = useCallback(() => {
     const zoomLevel = map.getZoom()
@@ -358,12 +444,12 @@ const HybridClusterGroup = ({
     // Update initial cluster display
     updateClusters()
 
-    // Listen to zoom events to update clusters
-    map.on('zoomend', updateClusters)
+    // クラスタ表示の切り替えのみ。操作ログは MapInteractionLogger が担当
+    const onZoomEnd = () => updateClusters()
+    map.on('zoomend', onZoomEnd)
 
     return () => {
-      // Remove event listener
-      map.off('zoomend', updateClusters)
+      map.off('zoomend', onZoomEnd)
 
       // Remove all cluster groups
       Object.values(happinessClustersRef.current).forEach((clusterGroup) => {
@@ -387,7 +473,7 @@ const HybridClusterGroup = ({
     updateClusters,
   ])
 
-  // Add click handler to close popup when clicking on map
+  // 地図背景クリックで React 側の Popup 状態をクリア（ログは Popup remove で記録）
   useEffect(() => {
     if (!map) return
 
@@ -411,7 +497,9 @@ const HybridClusterGroup = ({
           position={popupPosition}
           offset={[0, -20]}
           eventHandlers={{
+            // 閉じたタイミングで 1 件だけ記録（handleMapClick では記録しない）
             remove: () => {
+              pushActionLog('click', 'mapPopupClose')
               setPopupPin(null)
               setPopupPosition(null)
             },
@@ -466,6 +554,7 @@ const Map: React.FC<Props> = ({
     }
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
+        setGeolocationStatus('available')
         const newPosition: LatLngTuple = [
           position.coords.latitude,
           position.coords.longitude,
@@ -479,7 +568,9 @@ const Map: React.FC<Props> = ({
         setCurrentPosition(newPosition)
         setError(null)
       },
-      (e) => {
+      (e: GeolocationPositionError) => {
+        setGeolocationStatus(positionErrorCodeToStatus(e.code))
+        reportPositionError(e.code)
         console.error(e)
         setError(e instanceof Error ? e : new Error(e.message))
         if (e.code === e.PERMISSION_DENIED) {
@@ -525,7 +616,8 @@ const Map: React.FC<Props> = ({
 
         const root = createRoot(div)
         root.render(
-          <IconButton
+          <ActionLogIconButton
+            actionLog="mapCurrentPosition"
             style={{
               backgroundColor: '#f7f7f7',
               border: '1px solid #ccc',
@@ -535,6 +627,8 @@ const Map: React.FC<Props> = ({
             }}
             onClick={() => {
               if (currentPosition) {
+                // mapCurrentPosition（click）は ActionLogIconButton で記録済み
+                skipMapInteractionLogs('pan', 'zoom')
                 map.flyTo(currentPosition, defaultZoom)
               }
             }}
@@ -546,7 +640,7 @@ const Map: React.FC<Props> = ({
                 fontSize: 45,
               }}
             />
-          </IconButton>
+          </ActionLogIconButton>
         )
 
         return div
@@ -580,7 +674,8 @@ const Map: React.FC<Props> = ({
 
         const root = createRoot(div)
         root.render(
-          <IconButton
+          <ActionLogIconButton
+            actionLog="mapAddHappiness"
             style={{
               backgroundColor: '#20B2AA',
               borderRadius: 100,
@@ -599,7 +694,7 @@ const Map: React.FC<Props> = ({
                 fontSize: 45,
               }}
             />
-          </IconButton>
+          </ActionLogIconButton>
         )
 
         return div
@@ -633,6 +728,7 @@ const Map: React.FC<Props> = ({
         maxBounds={maxBounds}
         maxBoundsViscosity={maxBoundsViscosity}
       >
+        <MapInteractionLogger />
         <AddHappinessControl />
         <MoveToCurrentPositionControl />
         {!useFallback && (
