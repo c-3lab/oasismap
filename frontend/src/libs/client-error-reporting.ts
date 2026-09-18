@@ -64,6 +64,11 @@ export function pushActionLog(type: ActionLogType, label: string): void {
   }
 }
 
+/** apiCall 型の操作ログを記録する（label は詳細設計の API 種別文字列を直接渡す） */
+export function logApiCall(label: string): void {
+  pushActionLog('apiCall', label)
+}
+
 /**
  * 現在の操作ログのスナップショットを返す（送信用）
  */
