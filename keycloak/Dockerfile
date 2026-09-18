@@ -1,4 +1,4 @@
-FROM quay.io/keycloak/keycloak:26.5.1
+FROM quay.io/keycloak/keycloak:26.7.2
 
 COPY ./themes /opt/keycloak/themes
 COPY ./providers /opt/keycloak/providers
