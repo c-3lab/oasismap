@@ -10,6 +10,7 @@ import { HAPPINESS_KEYS, PROFILE_TYPE } from '@/libs/constants'
 import { getIconByType } from '../utils/icon'
 import { MePopup } from './mePopup'
 import { pushActionLog } from '@/libs/client-error-reporting'
+import { skipMapInteractionLogs } from './map-interaction-logger'
 import 'leaflet.markercluster'
 
 // MarkerClusterGroupの型定義（leaflet.markerclusterの型定義を参照）
@@ -108,6 +109,8 @@ export const HybridClusterGroup = ({
   const [popupPosition, setPopupPosition] = useState<[number, number] | null>(
     null
   )
+  /** 一覧「地図に表示」で panTo 済みの entityId（pinData / session 更新での再実行を防ぐ） */
+  const lastHandledTargetEntityIdRef = useRef<string | null>(null)
 
   // Helper functions for cluster management
   const getMarkerClusterGroupProps = useCallback(
@@ -187,30 +190,44 @@ export const HybridClusterGroup = ({
     (pin: Pin) => {
       return () => {
         pushActionLog('click', 'mapPinClick')
+        if (session?.user?.type !== PROFILE_TYPE.ADMIN) {
+          skipMapInteractionLogs('pan')
+        }
         setPopupPin(pin)
         setPopupPosition([pin.latitude, pin.longitude])
       }
     },
-    [setPopupPin, setPopupPosition]
+    [session]
   )
 
-  // Logic to automatically open popup for targetEntity
+  // 一覧「地図に表示」: targetEntity.id が変わったときだけポップアップ表示と panTo
   useEffect(() => {
-    if (!targetEntity || !map || pinData.length === 0) {
+    if (!targetEntity) {
+      lastHandledTargetEntityIdRef.current = null
+      return
+    }
+    if (!map || pinData.length === 0) {
       return
     }
 
-    // Find the pin that matches the targetEntity
     const targetPin = pinData.find((pin) => pin.id === targetEntity.id)
     if (!targetPin) {
       return
     }
 
-    // Open popup and pan to the target pin
+    if (lastHandledTargetEntityIdRef.current === targetEntity.id) {
+      return
+    }
+    lastHandledTargetEntityIdRef.current = targetEntity.id
+
+    skipMapInteractionLogs('pan')
+    if (session?.user?.type !== PROFILE_TYPE.ADMIN) {
+      skipMapInteractionLogs('pan')
+    }
     setPopupPin(targetPin)
     setPopupPosition([targetPin.latitude, targetPin.longitude])
     map.panTo([targetPin.latitude, targetPin.longitude])
-  }, [targetEntity, map, pinData])
+  }, [targetEntity, map, pinData, session])
 
   const updateClusters = useCallback(() => {
     const zoomLevel = map.getZoom()
@@ -292,17 +309,11 @@ export const HybridClusterGroup = ({
     // Update initial cluster display
     updateClusters()
 
-    const onZoomEnd = () => {
-      updateClusters()
-      pushActionLog('mapInteraction', 'mapZoom')
-    }
-    const onMoveEnd = () => pushActionLog('mapInteraction', 'mapPan')
+    const onZoomEnd = () => updateClusters()
     map.on('zoomend', onZoomEnd)
-    map.on('moveend', onMoveEnd)
 
     return () => {
       map.off('zoomend', onZoomEnd)
-      map.off('moveend', onMoveEnd)
 
       // Remove all cluster groups
       Object.values(happinessClustersRef.current).forEach((clusterGroup) => {
@@ -325,7 +336,7 @@ export const HybridClusterGroup = ({
     updateClusters,
   ])
 
-  // Add click handler to close popup when clicking on map
+  // 地図背景クリックで React 側の Popup 状態をクリア（ログは Popup remove で記録）
   useEffect(() => {
     if (!map) return
 

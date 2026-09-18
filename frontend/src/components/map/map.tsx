@@ -34,6 +34,7 @@ import {
   MoveToCurrentPositionControl,
 } from './map-controls'
 import { HybridClusterGroup } from './hybrid-cluster-group'
+import { MapInteractionLogger } from './map-interaction-logger'
 
 const loadEnvAsNumber = (
   variable: string | undefined,
@@ -197,6 +198,7 @@ const Map: React.FC<Props> = ({
         maxBounds={maxBounds}
         maxBoundsViscosity={maxBoundsViscosity}
       >
+        <MapInteractionLogger />
         <AddHappinessControl
           showAddHappiness={showAddHappiness}
           onAddHappiness={onAddHappiness}

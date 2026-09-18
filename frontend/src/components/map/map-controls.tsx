@@ -6,6 +6,7 @@ import { useEffect, useRef } from 'react'
 import { createRoot, type Root } from 'react-dom/client'
 import { useMap } from 'react-leaflet'
 import L from 'leaflet'
+import { skipMapInteractionLogs } from './map-interaction-logger'
 
 type MoveToCurrentPositionControlProps = {
   currentPositionRef: React.RefObject<LatLngTuple | null>
@@ -42,6 +43,7 @@ export const MoveToCurrentPositionControl = ({
           }}
           onClick={() => {
             if (currentPositionRef.current) {
+              skipMapInteractionLogs('pan', 'zoom')
               map.flyTo(currentPositionRef.current, defaultZoom)
             }
           }}
