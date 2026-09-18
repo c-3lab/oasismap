@@ -14,7 +14,7 @@ type WithActionLog = {
   actionLog?: ActionLogProp
 }
 
-/** click 型の ActionLog* ラッパー用。地図・routeChange・apiCall は各呼び出し元で直接 pushActionLog する */
+/** click 型の ActionLog* ラッパー用。apiCall は fetch.ts、地図・routeChange は各呼び出し元で記録する。 */
 function recordActionLog(actionLog?: ActionLogProp) {
   if (!actionLog) return
   pushActionLog('click', actionLog)

@@ -25,7 +25,7 @@ import { ERROR_TYPE } from '@/libs/constants'
 import { useFetchData } from '@/libs/fetch'
 import { HappinessRequestBody } from '@/libs/fetch'
 import { getCurrentPosition } from '@/libs/geolocation'
-import { pushActionLog, reportError } from '@/libs/client-error-reporting'
+import { reportError } from '@/libs/client-error-reporting'
 import { timestampToDateTime } from '@/libs/date-converter'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 import { HappinessKey } from '@/types/happiness-key'
@@ -208,7 +208,6 @@ const HappinessInput: React.FC = () => {
 
   const submitForm = async () => {
     try {
-      pushActionLog('apiCall', 'happiness/post')
       const answers = createAnswersFromSelected(selectedHappiness)
       let payload: HappinessRequestBody = {
         latitude: 0,

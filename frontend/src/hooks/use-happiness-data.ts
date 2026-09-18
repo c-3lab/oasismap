@@ -18,7 +18,7 @@ import { DateTime as OasismapDateTime } from '@/types/datetime'
 import { useSearchContext } from '@/contexts/search-context'
 import { SearchParams, DateTimeProps } from '@/types/search-context'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
-import { pushActionLog, reportError } from '@/libs/client-error-reporting'
+import { reportError } from '@/libs/client-error-reporting'
 
 type UseHappinessDataProps = {
   type: 'me' | 'all'
@@ -55,10 +55,6 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
     async (opts?: SearchParams) => {
       if (isLoading) return
       try {
-        pushActionLog(
-          'apiCall',
-          type === 'me' ? 'happiness/me' : 'happiness/all'
-        )
         setIsLoading(true)
         setContextIsLoading(true)
         willStop.current = false

@@ -11,7 +11,7 @@ import { HappinessListResponse, Data } from '@/types/happiness-list-response'
 import { useFetchData } from '@/libs/fetch'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 import { LoadingContext } from '@/contexts/loading-context'
-import { pushActionLog, reportError } from '@/libs/client-error-reporting'
+import { reportError } from '@/libs/client-error-reporting'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 
 const HappinessList: React.FC = () => {
@@ -29,7 +29,6 @@ const HappinessList: React.FC = () => {
 
   const getData = async () => {
     try {
-      pushActionLog('apiCall', 'happiness/list')
       setIsLoading(true)
       willStop.current = false
       setListData([])
@@ -78,7 +77,6 @@ const HappinessList: React.FC = () => {
 
   const deleteListData = async (id: string) => {
     try {
-      pushActionLog('apiCall', 'happiness/delete')
       const url = `${backendUrl}/api/happiness/${id}`
       const updatedSession = await update()
 

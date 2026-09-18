@@ -1,7 +1,7 @@
 import { useContext } from 'react'
 import { useRouter } from 'next/navigation'
 import { ActionLogListItemButton } from '@/components/mui'
-import { pushActionLog, reportError } from '@/libs/client-error-reporting'
+import { reportError } from '@/libs/client-error-reporting'
 import Box from '@mui/material/Box'
 import Drawer from '@mui/material/Drawer'
 import List from '@mui/material/List'
@@ -32,7 +32,6 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
 
   const downloadCsv = async () => {
     try {
-      pushActionLog('apiCall', 'happiness/export')
       const url = backendUrl + '/api/happiness/export'
       // アクセストークンを再取得
       const updatedSession = await update()
