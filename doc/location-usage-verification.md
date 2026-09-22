@@ -2,10 +2,10 @@
 
 ## 前提
 
-OASISmapでは現在位置情報を利用しているが、  
+OASIS Mapでは現在位置情報を利用しているが、  
 内部で利用している `Geolocation API` は `https` 起動時のみ利用可能なため、  
 実際の現在位置情報を利用した動作確認を行う場合は、  
-アプリケーションを `https` で起動する必要がある  
+アプリケーションを `https` で起動する必要がある。
 
 本手順では `ngrok` を利用して `https` でアプリケーションを起動することで、  
 現在位置情報を利用した処理の動作確認方法を記載する。
@@ -20,6 +20,53 @@ ngrokの無料プランには利用上限がある。
 ### README.md の手順実施
 
 - [README.md](../README.md) に記載されている手順を実施する  
+
+### ngrok 事前準備
+
+1. ngrokのアカウントを登録する（GitHubアカウントで登録可能）
+    https://ngrok.com/
+
+2. 以下コマンドでngrokをインストールする
+
+    * Linux(Debian/Ubuntu系)
+    
+    ```sh
+    ~/oasismap$ curl -sSL https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+      | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null \
+      && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
+      | sudo tee /etc/apt/sources.list.d/ngrok.list \
+      && sudo apt update \
+      && sudo apt install ngrok
+    ```
+
+    * macOS
+      
+    ```sh
+    ~/oasismap$ brew install ngrok
+    ```
+
+3. ngrok 動作確認
+
+    ```sh
+    ~/oasismap$ ngrok http 8080
+    ```
+
+    ```sh
+    Try the new Traffic Inspector dev preview: https://ngrok.com/r/ti
+
+    Session Status                online
+    Account                       アカウント名 (Plan: Free)
+    Version                       3.6.0
+    Region                        Japan (jp)
+    Latency                       5ms
+    Web Interface                 http://127.0.0.1:4040
+    Forwarding                    https://xxxx-xxx-xxx-x-xx.ngrok-free.app -> http://localhost:8080
+
+    Connections                   ttl     opn     rt1     rt5     p50     p90
+                                  1224    0       0.00    0.01    0.06    6.29
+
+    HTTP Requests
+    ```
 
 ### ngrok で複数ポートのURLを公開
 
@@ -76,13 +123,7 @@ HTTP Requests
 -------------    
 ```
 
-### ngrok 割り当てたURLを各コンテナに反映
-
-#### keycloak
-
-1. `keycloak/variables.json` の `ClientBaseURL` を公開中のフロントエンドのURLに変更
-
-2. `keycloak/README.md` の手順を実施
+### ngrokで割り当てたURLを各コンテナに反映
 
 #### frontend, backend
 
@@ -98,23 +139,16 @@ HTTP Requests
 docker compose -f docker-compose-dev.yml up -d frontend backend
 ```
 
-### GoogleCloudのリダイレクトURIを変更
+#### keycloakのリダイレクトURLを変更
+`.env`の`HOST_URL`を公開中のkeycloakのURLに変更
 
-1. Keycloak の管理コンソールを開く
+#### コンテナ再起動
 
-2. `realm` から `oasismap` を選択
+- 以下のコマンドを実行してコンテナを再起動する
 
-3. 左のメニューバーから `Identity providers` を選択
-
-4. `google` をクリック
-
-5. `Redirect URI` の値をコピーして控えておく
-
-6. [Google Cloud](https://console.cloud.google.com/apis/credentials)に接続
-
-7. 事前準備にて作成した認証情報を選択
-
-8. `承認済みのリダイレクトURI` に控えておいた `Redirect URI` を転記
+```
+docker compose -f docker-compose-dev.yml up -d keycloak
+```
 
 ### ngrok の確認ページ非表示
 
