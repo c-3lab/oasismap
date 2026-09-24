@@ -1,7 +1,14 @@
 import { useContext } from 'react'
 import { ERROR_TYPE } from './constants'
 import { LoadingContext } from '@/contexts/loading-context'
-import { logApiCall, reportError } from '@/libs/client-error-reporting'
+import { logApiCall, reportError, toError } from '@/libs/client-error-reporting'
+
+/** API 失敗のクライアントエラー報告はここに一本化し、呼び出し元は UX だけ扱う */
+function reportAndRethrow(error: unknown): never {
+  reportError(toError(error))
+  console.error('Error:', error)
+  throw error
+}
 
 /**
  * fetchData の URL から apiCall の label を決める。
@@ -83,9 +90,7 @@ export const useFetchData = () => {
 
       return jsonData
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error:', error)
-      throw error
+      reportAndRethrow(error)
     } finally {
       setIsFetching(false)
     }
@@ -121,9 +126,7 @@ export const useFetchData = () => {
 
       return jsonData
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error:', error)
-      throw error
+      reportAndRethrow(error)
     } finally {
       setIsFetching(false)
     }
@@ -154,9 +157,7 @@ export const useFetchData = () => {
       }
       return jsonData
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error:', error)
-      throw error
+      reportAndRethrow(error)
     } finally {
       setIsFetching(false)
     }
@@ -187,9 +188,7 @@ export const useFetchData = () => {
 
       return response
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error:', error)
-      throw error
+      reportAndRethrow(error)
     } finally {
       setIsFetching(false)
     }
@@ -227,9 +226,7 @@ export const useFetchData = () => {
         window.URL.revokeObjectURL(objectUrl)
       }, 250)
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error:', error)
-      throw error
+      reportAndRethrow(error)
     } finally {
       setIsFetching(false)
     }
@@ -253,9 +250,7 @@ export const useFetchData = () => {
         throw Error(jsonData?.message)
       }
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error:', error)
-      throw error
+      reportAndRethrow(error)
     } finally {
       setIsFetching(false)
     }

@@ -1,12 +1,12 @@
 import { useState, useEffect, useContext, useRef, useCallback } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { signOut, useSession } from 'next-auth/react'
+import { useSearchParams } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import { MessageType } from '@/types/message-type'
 import { GetPin } from '@/components/utils/pin'
 // import { myHappinessData, sumByTimestamp } from '@/libs/graph'
 import { messageContext } from '@/contexts/message-context'
-import { ERROR_TYPE } from '@/libs/constants'
 import { useFetchData } from '@/libs/fetch'
+import { useApiErrorHandler } from '@/hooks/use-api-error-handler'
 import { DateTime } from 'luxon'
 import { toDateTime } from '@/libs/date-converter'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
@@ -18,7 +18,7 @@ import { DateTime as OasismapDateTime } from '@/types/datetime'
 import { useSearchContext } from '@/contexts/search-context'
 import { SearchParams, DateTimeProps } from '@/types/search-context'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
-import { reportError } from '@/libs/client-error-reporting'
+import { logAndReportError } from '@/libs/client-error-reporting'
 
 type UseHappinessDataProps = {
   type: 'me' | 'all'
@@ -28,7 +28,7 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
   const config = useRuntimeConfig()
   const backendUrl = config.NEXT_PUBLIC_BACKEND_URL ?? ''
   const noticeMessageContext = useContext(messageContext)
-  const router = useRouter()
+  const { handleApiError } = useApiErrorHandler()
   const [pinData, setPinData] = useState<Pin[]>([])
   const [entityByEntityId, setEntityByEntityId] = useState<EntityByEntityId>({})
   const willStop = useRef(false)
@@ -105,10 +105,7 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
             const newPins = GetPin(data['data'])
             setPinData((prevPinData: Pin[]) => [...prevPinData, ...newPins])
           } catch (error) {
-            reportError(
-              error instanceof Error ? error : new Error(String(error))
-            )
-            console.error('Error in GetPin or setPinData:', error)
+            logAndReportError(error, 'Error in GetPin or setPinData:')
           }
 
           if (
@@ -141,24 +138,9 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
           )
         }
       } catch (error) {
-        reportError(error instanceof Error ? error : new Error(String(error)))
-        console.error('Error fetching data:', error)
-        if (
-          error instanceof Error &&
-          error.message === ERROR_TYPE.UNAUTHORIZED
-        ) {
-          noticeMessageContext.showMessage(
-            '再ログインしてください',
-            MessageType.Error
-          )
-          signOut({ redirect: false })
-          router.push('/login')
-        } else {
-          noticeMessageContext.showMessage(
-            '幸福度の検索に失敗しました',
-            MessageType.Error
-          )
-        }
+        handleApiError(error, {
+          failureMessage: '幸福度の検索に失敗しました',
+        })
       } finally {
         setIsLoading(false)
         setContextIsLoading(false)
@@ -172,7 +154,7 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
       timestamp,
       entityByEntityId,
       noticeMessageContext,
-      router,
+      handleApiError,
       update,
       fetchData,
       setContextIsLoading,

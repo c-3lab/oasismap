@@ -2,7 +2,7 @@
 import dynamic from 'next/dynamic'
 import React, { useContext, useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { signOut, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { ActionLogButton, ActionLogOutlinedInput } from '@/components/mui'
 import {
   Box,
@@ -21,11 +21,11 @@ const PreviewMap = dynamic(() => import('@/components/map/previewMap'), {
 })
 import { messageContext } from '@/contexts/message-context'
 import { MessageType } from '@/types/message-type'
-import { ERROR_TYPE } from '@/libs/constants'
 import { useFetchData } from '@/libs/fetch'
 import { HappinessRequestBody } from '@/libs/fetch'
 import { getCurrentPosition } from '@/libs/geolocation'
-import { reportError } from '@/libs/client-error-reporting'
+import { logAndReportError } from '@/libs/client-error-reporting'
+import { useApiErrorHandler } from '@/hooks/use-api-error-handler'
 import { timestampToDateTime } from '@/libs/date-converter'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 import { HappinessKey } from '@/types/happiness-key'
@@ -61,6 +61,7 @@ const HappinessInput: React.FC = () => {
   const referral = searchParams.get('referral') || 'me'
   const { update } = useSession()
   const { postData } = useFetchData()
+  const { handleApiError } = useApiErrorHandler()
 
   const [errors, setErrors] = useState<Errors>([])
 
@@ -88,8 +89,7 @@ const HappinessInput: React.FC = () => {
         })
       }
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error getting current position:', error)
+      logAndReportError(error, 'Error getting current position:')
     }
   }, [defaultLatitude, defaultLongitude])
 
@@ -192,8 +192,7 @@ const HappinessInput: React.FC = () => {
       }
       setExif(exif)
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error:', error)
+      logAndReportError(error)
       setErrors((prev) => {
         return [
           ...prev,
@@ -240,21 +239,9 @@ const HappinessInput: React.FC = () => {
       )
       router.push(`/happiness/${referral}`)
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error:', error)
-      if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
-        noticeMessageContext.showMessage(
-          '再ログインしてください',
-          MessageType.Error
-        )
-        signOut({ redirect: false })
-        router.push('/login')
-      } else {
-        noticeMessageContext.showMessage(
-          '幸福度の送信に失敗しました',
-          MessageType.Error
-        )
-      }
+      handleApiError(error, {
+        failureMessage: '幸福度の送信に失敗しました',
+      })
     }
   }
 

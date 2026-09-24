@@ -191,6 +191,20 @@ export function buildReportPayload(error: {
  * try/catch 内から呼ぶことで、キャッチしたエラーも報告できる。
  * 重複防止（同一 message+url の短時間再送抑制）がかかる。
  */
+export function toError(error: unknown): Error {
+  return error instanceof Error ? error : new Error(String(error))
+}
+
+/** console.error + reportError（fetch 以外の UI / 変換エラー用） */
+export function logAndReportError(error: unknown, context?: string): void {
+  reportError(toError(error))
+  if (context) {
+    console.error(context, error)
+  } else {
+    console.error('Error:', error)
+  }
+}
+
 export function reportError(
   error: Error | { message: string },
   options?: { geolocationErrorCode?: number }

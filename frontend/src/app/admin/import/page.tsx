@@ -11,12 +11,11 @@ import {
 } from '@mui/material'
 import { useContext, useState } from 'react'
 import { MessageType } from '@/types/message-type'
-import { ERROR_TYPE } from '@/libs/constants'
-import { signOut, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { messageContext } from '@/contexts/message-context'
 import { useFetchData } from '@/libs/fetch'
 import { useRouter } from 'next/navigation'
-import { reportError } from '@/libs/client-error-reporting'
+import { useApiErrorHandler } from '@/hooks/use-api-error-handler'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 
 const Import: React.FC = () => {
@@ -32,6 +31,7 @@ const Import: React.FC = () => {
   const [importError, setImportError] = useState('') // Add state for import errors
   const { update } = useSession()
   const { upload } = useFetchData()
+  const { handleApiError } = useApiErrorHandler()
 
   const fileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -81,25 +81,10 @@ const Import: React.FC = () => {
       )
       router.push('/happiness/all')
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error:', error)
-      if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
-        noticeMessageContext.showMessage(
-          '再ログインしてください',
-          MessageType.Error
-        )
-        signOut({ redirect: false })
-        router.push('/login')
-      } else {
-        noticeMessageContext.showMessage(
-          'データのインポートに失敗しました',
-          MessageType.Error
-        )
-
-        if (error instanceof Error) {
-          setImportError(error.message)
-        }
-      }
+      handleApiError(error, {
+        failureMessage: 'データのインポートに失敗しました',
+        onOther: (err) => setImportError(err.message),
+      })
     } finally {
       setIsUploading(false)
     }
