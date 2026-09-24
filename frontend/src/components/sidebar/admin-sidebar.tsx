@@ -52,7 +52,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
         <List>
           <ListItem key="happiness-all" disablePadding>
             <ActionLogListItemButton
-              actionLog="sidebarNav"
+              actionLog="sidebarNav:/happiness/all"
               onClick={() => router.push('/happiness/all')}
             >
               <ListItemText primary="全体の幸福度" />
@@ -68,7 +68,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
           </ListItem>
           <ListItem key="happiness-import" disablePadding>
             <ActionLogListItemButton
-              actionLog="sidebarNav"
+              actionLog="sidebarNav:/admin/import"
               onClick={() => router.push('/admin/import')}
             >
               <ListItemText primary="データのインポート" />
@@ -76,7 +76,7 @@ const AdminSidebar: React.FC<AdminSidebarProps> = (props) => {
           </ListItem>
           <ListItem key="license" disablePadding>
             <ActionLogListItemButton
-              actionLog="sidebarNav"
+              actionLog="sidebarNav:/terms/third-party-license"
               onClick={() => router.push('/terms/third-party-license')}
             >
               <ListItemText primary="サードパーティライセンス" />
