@@ -1,25 +1,23 @@
 'use client'
 import { useState, useEffect, useContext, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { signOut, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { Grid } from '@mui/material'
 import { messageContext } from '@/contexts/message-context'
 import { MessageType } from '@/types/message-type'
-import { ERROR_TYPE } from '@/libs/constants'
 import ListTable from '@/components/happiness/list-table'
 import { HappinessListResponse, Data } from '@/types/happiness-list-response'
 import { useFetchData } from '@/libs/fetch'
 import { useTokenFetchStatus } from '@/hooks/token-fetch-status'
 import { LoadingContext } from '@/contexts/loading-context'
-import { reportError } from '@/libs/client-error-reporting'
+import { useApiErrorHandler } from '@/hooks/use-api-error-handler'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 
 const HappinessList: React.FC = () => {
   const config = useRuntimeConfig()
   const backendUrl = config.NEXT_PUBLIC_BACKEND_URL ?? ''
   const noticeMessageContext = useContext(messageContext)
-  const router = useRouter()
   const { isTokenFetched } = useTokenFetchStatus()
+  const { handleApiError } = useApiErrorHandler()
   const { update } = useSession()
   const [listData, setListData] = useState<Data[]>([])
   const willStop = useRef(false)
@@ -54,21 +52,9 @@ const HappinessList: React.FC = () => {
         offset += data['count']
       }
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error fetching data:', error)
-      if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
-        noticeMessageContext.showMessage(
-          '再ログインしてください',
-          MessageType.Error
-        )
-        signOut({ redirect: false })
-        router.push('/login')
-      } else {
-        noticeMessageContext.showMessage(
-          '幸福度の取得に失敗しました',
-          MessageType.Error
-        )
-      }
+      handleApiError(error, {
+        failureMessage: '幸福度の取得に失敗しました',
+      })
     } finally {
       setIsLoaded(true)
       setIsLoading(false)
@@ -89,21 +75,9 @@ const HappinessList: React.FC = () => {
         prevListData.filter((data) => data.id !== id)
       )
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error:', error)
-      if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
-        noticeMessageContext.showMessage(
-          '再ログインしてください',
-          MessageType.Error
-        )
-        signOut({ redirect: false })
-        router.push('/login')
-      } else {
-        noticeMessageContext.showMessage(
-          '幸福度の削除に失敗しました',
-          MessageType.Error
-        )
-      }
+      handleApiError(error, {
+        failureMessage: '幸福度の削除に失敗しました',
+      })
     }
   }
 
