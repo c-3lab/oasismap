@@ -424,6 +424,133 @@ const HybridClusterGroup = ({
   )
 }
 
+type MoveToCurrentPositionControlProps = {
+  currentPositionRef: React.RefObject<LatLngTuple | null>
+  defaultZoom: number
+}
+
+const MoveToCurrentPositionControl = ({
+  currentPositionRef,
+  defaultZoom,
+}: MoveToCurrentPositionControlProps) => {
+  const map = useMap()
+
+  useEffect(() => {
+    const control: L.Control = new L.Control({
+      position: 'bottomright',
+    })
+
+    control.onAdd = () => {
+      const div = L.DomUtil.create('div', 'leaflet-control-custom')
+
+      const root = createRoot(div)
+
+      root.render(
+        <IconButton
+          style={{
+            backgroundColor: '#f7f7f7',
+            border: '1px solid #ccc',
+            borderRadius: 100,
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
+            marginBottom: '10px',
+          }}
+          onClick={() => {
+            if (currentPositionRef.current) {
+              map.flyTo(currentPositionRef.current, defaultZoom)
+            }
+          }}
+        >
+          <NavigationIcon
+            style={{
+              color: '#20B2AA',
+              transform: 'rotate(45deg)',
+              fontSize: 45,
+            }}
+          />
+        </IconButton>
+      )
+
+      return div
+    }
+
+    control.addTo(map)
+
+    return () => {
+      control.remove()
+    }
+  }, [map, defaultZoom, currentPositionRef])
+
+  return null
+}
+
+type AddHappinessControlProps = {
+  showAddHappiness?: boolean
+  onAddHappiness?: () => void
+}
+
+const AddHappinessControl = ({
+  showAddHappiness,
+  onAddHappiness,
+}: AddHappinessControlProps) => {
+  const map = useMap()
+
+  const onAddHappinessRef = useRef(onAddHappiness)
+
+  useEffect(() => {
+    onAddHappinessRef.current = onAddHappiness
+  }, [onAddHappiness])
+
+  useEffect(() => {
+    if (!showAddHappiness) {
+      return
+    }
+
+    const control: L.Control = new L.Control({
+      position: 'bottomright',
+    })
+
+    control.onAdd = () => {
+      const div = L.DomUtil.create(
+        'div',
+        'leaflet-control-custom leaflet-control-add-happiness'
+      )
+
+      const root = createRoot(div)
+
+      root.render(
+        <IconButton
+          style={{
+            backgroundColor: '#20B2AA',
+            borderRadius: 100,
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
+            marginBottom: '10px',
+          }}
+          onClick={() => {
+            onAddHappinessRef.current?.()
+          }}
+        >
+          <EditIcon
+            style={{
+              color: 'white',
+              fontSize: 45,
+            }}
+          />
+        </IconButton>
+      )
+
+      return div
+    }
+
+    control.addTo(map)
+
+    return () => {
+      control.remove()
+    }
+  }, [map, showAddHappiness])
+
+  return null
+}
+
 const Map: React.FC<Props> = ({
   pinData,
   targetEntity,
@@ -457,11 +584,21 @@ const Map: React.FC<Props> = ({
   const noticeMessageContext = useContext(messageContext)
   const [useFallback, setUseFallback] = useState(false)
 
+  const currentPositionRef = useRef<LatLngTuple | null>(null)
+
+  const updateCurrentPosition = useCallback((position: LatLngTuple | null) => {
+    setCurrentPosition(position)
+    currentPositionRef.current = position
+  }, [])
+
   useEffect(() => {
     // geolocation が http に対応していないため固定値を設定
     if (location.protocol === 'http:') {
-      setCenter([defaultLatitude, defaultLongitude])
-      setCurrentPosition([defaultLatitude, defaultLongitude])
+      const fixedPosition: LatLngTuple = [defaultLatitude, defaultLongitude]
+
+      setCenter(fixedPosition)
+      updateCurrentPosition(fixedPosition)
+
       return
     }
     const watchId = navigator.geolocation.watchPosition(
@@ -476,7 +613,8 @@ const Map: React.FC<Props> = ({
           }
           return prev
         })
-        setCurrentPosition(newPosition)
+        updateCurrentPosition(newPosition)
+
         setError(null)
       },
       (e) => {
@@ -493,7 +631,7 @@ const Map: React.FC<Props> = ({
             MessageType.Error
           )
         }
-        setCurrentPosition(null)
+        updateCurrentPosition(null)
         setCenter(null)
       },
       { enableHighAccuracy: true }
@@ -502,7 +640,12 @@ const Map: React.FC<Props> = ({
     return () => {
       navigator.geolocation.clearWatch(watchId)
     }
-  }, [defaultLatitude, defaultLongitude, noticeMessageContext])
+  }, [
+    defaultLatitude,
+    defaultLongitude,
+    noticeMessageContext,
+    updateCurrentPosition,
+  ])
 
   const currentPositionIconHTML = renderToString(
     <CurrentPositionIcon style={{ fill: '#20B2AA' }} />
@@ -513,107 +656,6 @@ const Map: React.FC<Props> = ({
     iconSize: [20, 20],
     iconAnchor: [10, 10],
   })
-
-  const MoveToCurrentPositionControl = () => {
-    const map = useMap()
-
-    useEffect(() => {
-      const control: L.Control = new L.Control({ position: 'bottomright' })
-
-      control.onAdd = () => {
-        const div = L.DomUtil.create('div', 'leaflet-control-custom')
-
-        const root = createRoot(div)
-        root.render(
-          <IconButton
-            style={{
-              backgroundColor: '#f7f7f7',
-              border: '1px solid #ccc',
-              borderRadius: 100,
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
-              marginBottom: '10px',
-            }}
-            onClick={() => {
-              if (currentPosition) {
-                map.flyTo(currentPosition, defaultZoom)
-              }
-            }}
-          >
-            <NavigationIcon
-              style={{
-                color: '#20B2AA',
-                transform: 'rotate(45deg)',
-                fontSize: 45,
-              }}
-            />
-          </IconButton>
-        )
-
-        return div
-      }
-
-      control.addTo(map)
-
-      return () => {
-        control.remove()
-      }
-    }, [map])
-
-    return null
-  }
-
-  const AddHappinessControl = () => {
-    const map = useMap()
-
-    useEffect(() => {
-      if (!showAddHappiness) {
-        return
-      }
-
-      const control: L.Control = new L.Control({ position: 'bottomright' })
-
-      control.onAdd = () => {
-        const div = L.DomUtil.create(
-          'div',
-          'leaflet-control-custom leaflet-control-add-happiness'
-        )
-
-        const root = createRoot(div)
-        root.render(
-          <IconButton
-            style={{
-              backgroundColor: '#20B2AA',
-              borderRadius: 100,
-              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
-              marginBottom: '10px',
-            }}
-            onClick={() => {
-              if (onAddHappiness) {
-                onAddHappiness()
-              }
-            }}
-          >
-            <EditIcon
-              style={{
-                color: 'white',
-                fontSize: 45,
-              }}
-            />
-          </IconButton>
-        )
-
-        return div
-      }
-
-      control.addTo(map)
-
-      return () => {
-        control.remove()
-      }
-    }, [map])
-
-    return null
-  }
 
   if (error) {
     console.error('Error: Unable to get current position.', error)
@@ -633,8 +675,14 @@ const Map: React.FC<Props> = ({
         maxBounds={maxBounds}
         maxBoundsViscosity={maxBoundsViscosity}
       >
-        <AddHappinessControl />
-        <MoveToCurrentPositionControl />
+        <AddHappinessControl
+          showAddHappiness={showAddHappiness}
+          onAddHappiness={onAddHappiness}
+        />
+        <MoveToCurrentPositionControl
+          currentPositionRef={currentPositionRef}
+          defaultZoom={defaultZoom}
+        />
         {!useFallback && (
           <TileLayer
             attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
