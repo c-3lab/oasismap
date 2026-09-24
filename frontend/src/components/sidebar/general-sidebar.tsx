@@ -31,7 +31,7 @@ const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
         <List>
           <ListItem key="happiness" disablePadding>
             <ActionLogListItemButton
-              actionLog="sidebarNav"
+              actionLog="sidebarNav:/happiness/me"
               onClick={() => router.push('/happiness/me')}
             >
               <ListItemText primary="利用者の幸福度" />
@@ -39,7 +39,7 @@ const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
           </ListItem>
           <ListItem key="happiness-all" disablePadding>
             <ActionLogListItemButton
-              actionLog="sidebarNav"
+              actionLog="sidebarNav:/happiness/all"
               onClick={() => router.push('/happiness/all')}
             >
               <ListItemText primary="全体の幸福度" />
@@ -47,7 +47,7 @@ const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
           </ListItem>
           <ListItem key="happiness-list" disablePadding>
             <ActionLogListItemButton
-              actionLog="sidebarNav"
+              actionLog="sidebarNav:/happiness/list"
               onClick={() => router.push('/happiness/list')}
             >
               <ListItemText primary="一覧表示" />
@@ -55,7 +55,7 @@ const GeneralSidebar: React.FC<GeneralSidebarProps> = (props) => {
           </ListItem>
           <ListItem key="license" disablePadding>
             <ActionLogListItemButton
-              actionLog="sidebarNav"
+              actionLog="sidebarNav:/terms/third-party-license"
               onClick={() => router.push('/terms/third-party-license')}
             >
               <ListItemText primary="サードパーティライセンス" />
