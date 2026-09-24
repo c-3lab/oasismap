@@ -543,6 +543,8 @@ const Map: React.FC<Props> = ({
   const [error, setError] = useState<Error | null>(null)
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null)
   const noticeMessageContext = useContext(messageContext)
+  const showMessageRef = useRef(noticeMessageContext.showMessage)
+  showMessageRef.current = noticeMessageContext.showMessage
   const [useFallback, setUseFallback] = useState(false)
 
   useEffect(() => {
@@ -552,9 +554,13 @@ const Map: React.FC<Props> = ({
       setCurrentPosition([defaultLatitude, defaultLongitude])
       return
     }
-    const watchId = navigator.geolocation.watchPosition(
+    let watchId: number | undefined
+    let userNotified = false
+
+    watchId = navigator.geolocation.watchPosition(
       (position) => {
         setGeolocationStatus('available')
+        userNotified = false
         const newPosition: LatLngTuple = [
           position.coords.latitude,
           position.coords.longitude,
@@ -573,27 +579,36 @@ const Map: React.FC<Props> = ({
         reportPositionError(e.code)
         console.error(e)
         setError(e instanceof Error ? e : new Error(e.message))
-        if (e.code === e.PERMISSION_DENIED) {
-          noticeMessageContext.showMessage(
-            '位置情報機能が無効になっている可能性があります。設定から位置情報機能を有効にしてください。',
-            MessageType.Error
-          )
-        } else {
-          noticeMessageContext.showMessage(
-            '位置情報の取得に失敗しました。',
-            MessageType.Error
-          )
+        if (!userNotified) {
+          userNotified = true
+          if (e.code === e.PERMISSION_DENIED) {
+            showMessageRef.current(
+              '位置情報機能が無効になっている可能性があります。設定から位置情報機能を有効にしてください。',
+              MessageType.Error
+            )
+          } else {
+            showMessageRef.current(
+              '位置情報の取得に失敗しました。',
+              MessageType.Error
+            )
+          }
         }
         setCurrentPosition(null)
         setCenter(null)
+        if (watchId !== undefined) {
+          navigator.geolocation.clearWatch(watchId)
+          watchId = undefined
+        }
       },
       { enableHighAccuracy: true }
     )
 
     return () => {
-      navigator.geolocation.clearWatch(watchId)
+      if (watchId !== undefined) {
+        navigator.geolocation.clearWatch(watchId)
+      }
     }
-  }, [defaultLatitude, defaultLongitude, noticeMessageContext])
+  }, [defaultLatitude, defaultLongitude])
 
   const currentPositionIconHTML = renderToString(
     <CurrentPositionIcon style={{ fill: '#20B2AA' }} />
