@@ -346,24 +346,58 @@ const PrivacyPolicy: React.FC = () => {
           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
             地図データ・地図サービス
           </Typography>
+
           <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
             OpenStreetMap&apos;s Standard tile layer
           </Typography>
-          <Link variant="body1" href="http://osm.org/copyright">
+          <Link
+            variant="body1"
+            href="http://osm.org/copyright"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             © OpenStreetMap
           </Link>
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-            Vector Map Level 0
+
+          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 2 }}>
+            Nominatim (OpenStreetMap Reverse Geocoding)
           </Typography>
+
+          <Link
+            variant="body1"
+            href="https://nominatim.openstreetmap.org"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            © OpenStreetMap contributors
+          </Link>
+
+          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 2 }}>
+            地理院タイル（標準地図）
+          </Typography>
+
           <Link
             variant="body1"
             href="https://maps.gsi.go.jp/development/ichiran.html"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            出典：地理院タイル「Shoreline data is derived from: United States.
-            National Imagery and Mapping Agency. \Vector Map Level 0 (VMAP0).\
-            Bethesda, MD: Denver, CO: The Agency; USGS Information Services,
-            1997.」
+            出典：国土地理院（地理院タイル）
           </Link>
+
+          <Typography variant="body2" sx={{ mt: 1 }}>
+            The bathymetric contours are derived from those contained within the
+            GEBCO Digital Atlas, published by the BODC on behalf of IOC and IHO
+            (2003) (https://www.gebco.net)
+            <br />
+            海上保安庁許可第292502号（水路業務法第25条に基づく類似刊行物）
+          </Typography>
+
+          <Typography variant="body2" sx={{ mt: 1 }}>
+            Shoreline data is derived from: United States. National Imagery and
+            Mapping Agency. &quot;Vector Map Level 0 (VMAP0).&quot; Bethesda,
+            MD: Denver, CO: The Agency; USGS Information Services, 1997.
+          </Typography>
 
           <Typography variant="h6" sx={{ fontWeight: 'bold', mt: 4 }}>
             フォント
