@@ -63,9 +63,9 @@ const HappinessViewer = ({
             isMounted.current && router.replace(`/happiness/${type}`)
           }}
           showAddHappiness={session?.user?.type === PROFILE_TYPE.GENERAL}
-          onAddHappiness={() =>
+          onAddHappiness={() => {
             router.push(`/happiness/input?referral=${type}`)
-          }
+          }}
         />
       </Grid>
     </Grid>

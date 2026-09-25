@@ -1,4 +1,5 @@
 'use client'
+import { ActionLogButton, ActionLogInput } from '@/components/mui'
 import {
   Button,
   Checkbox,
@@ -10,11 +11,11 @@ import {
 } from '@mui/material'
 import { useContext, useState } from 'react'
 import { MessageType } from '@/types/message-type'
-import { ERROR_TYPE } from '@/libs/constants'
-import { signOut, useSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 import { messageContext } from '@/contexts/message-context'
 import { useFetchData } from '@/libs/fetch'
 import { useRouter } from 'next/navigation'
+import { useApiErrorHandler } from '@/hooks/use-api-error-handler'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
 
 const Import: React.FC = () => {
@@ -30,6 +31,7 @@ const Import: React.FC = () => {
   const [importError, setImportError] = useState('') // Add state for import errors
   const { update } = useSession()
   const { upload } = useFetchData()
+  const { handleApiError } = useApiErrorHandler()
 
   const fileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -46,7 +48,7 @@ const Import: React.FC = () => {
     setImportError('') // Clear import error when selecting new file
   }
 
-  const VisuallyHiddenInput = styled('input')({
+  const VisuallyHiddenInput = styled(ActionLogInput)({
     clip: 'rect(0 0 0 0)',
     clipPath: 'inset(50%)',
     overflow: 'hidden',
@@ -79,24 +81,10 @@ const Import: React.FC = () => {
       )
       router.push('/happiness/all')
     } catch (error) {
-      console.error('Error:', error)
-      if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
-        noticeMessageContext.showMessage(
-          '再ログインしてください',
-          MessageType.Error
-        )
-        signOut({ redirect: false })
-        router.push('/login')
-      } else {
-        noticeMessageContext.showMessage(
-          'データのインポートに失敗しました',
-          MessageType.Error
-        )
-
-        if (error instanceof Error) {
-          setImportError(error.message)
-        }
-      }
+      handleApiError(error, {
+        failureMessage: 'データのインポートに失敗しました',
+        onOther: (err) => setImportError(err.message),
+      })
     } finally {
       setIsUploading(false)
     }
@@ -123,6 +111,7 @@ const Import: React.FC = () => {
           <VisuallyHiddenInput
             accept=".csv"
             type="file"
+            actionLog="importFileSelect"
             onChange={fileChange}
           />
         </Button>
@@ -146,14 +135,15 @@ const Import: React.FC = () => {
           />
         </Grid>
         <Grid container justifyContent="flex-end">
-          <Button
+          <ActionLogButton
+            actionLog="importUpload"
             variant="contained"
             color="primary"
-            onClick={() => uploadCsv()}
+            onClick={uploadCsv}
             disabled={isUploading}
           >
             インポート
-          </Button>
+          </ActionLogButton>
         </Grid>
       </Grid>
       {/* Display import errors below the form */}
