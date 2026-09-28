@@ -1,7 +1,7 @@
 // 市区町村プルダウンの制御
 const updateCitySelect = () => {
-  const prefectureElement = document.querySelector('#prefecture')
-  const cityElement = document.querySelector('#city')
+  const prefectureElement = document.querySelector('#prefecture');
+  const cityElement = document.querySelector('#city');
 
   if (prefectureElement.value === '') {
     cityElement.disabled = true;
@@ -9,7 +9,7 @@ const updateCitySelect = () => {
   } else {
     cityElement.disabled = false;
 
-    const optionLabels = ['', ...cities[prefectureElement.value]]
+    const optionLabels = ['', ...cities[prefectureElement.value]];
     const newOptions = optionLabels.map(city => {
       const option = document.createElement('option');
       option.textContent = city;
@@ -17,7 +17,7 @@ const updateCitySelect = () => {
     });
     cityElement.replaceChildren(...newOptions);
   }
-}
+};
 
 // チェック済みの場合のみ登録するボタンを活性化
 const onChangeCheckboxes = () => {
