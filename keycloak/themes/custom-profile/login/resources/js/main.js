@@ -1,5 +1,5 @@
 // 市区町村プルダウンの制御
-const refresh = () => {
+const updateCitySelect = () => {
   const prefectureElement = document.querySelector('#prefecture')
   const cityElement = document.querySelector('#city')
 
@@ -19,13 +19,37 @@ const refresh = () => {
   }
 }
 
-window.addEventListener('load', () => {
-  refresh()
-  document.querySelector('#prefecture').addEventListener('change', refresh)
-})
-
 // チェック済みの場合のみ登録するボタンを活性化
 const onChangeCheckboxes = () => {
-  const termsChecked = document.getElementById('terms-checkbox').checked;
-  document.getElementById('submit-button').disabled = !(termsChecked);
+  const termsChecked = document.querySelector('#terms-checkbox').checked;
+  document.querySelector('#submit-button').disabled = !(termsChecked);
 };
+
+// 参加同意リンクをクリックしたらチェックボックスを有効化
+const onClickTermsLink = (termsLink, termsCheckbox) => {
+  termsLink.addEventListener('click', () => {
+    termsCheckbox.disabled = false;
+  });
+};
+
+window.addEventListener('load', () => {
+  const termsLink = document.querySelector('#terms-link');
+  const termsCheckbox = document.querySelector('#terms-checkbox');
+
+  if (termsLink && termsCheckbox) {
+    try {
+      termsCheckbox.disabled = true;
+      onClickTermsLink(termsLink, termsCheckbox);
+    } catch (error) {
+      termsCheckbox.disabled = false;
+      console.error(error);
+    }
+  }
+
+  updateCitySelect();
+
+  const prefectureElement = document.querySelector('#prefecture');
+  if (prefectureElement) {
+    prefectureElement.addEventListener('change', updateCitySelect);
+  }
+});
