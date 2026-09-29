@@ -17,7 +17,7 @@ import {
   Typography,
 } from '@mui/material'
 
-const PreviewMap = dynamic(() => import('@/components/map/previewMap'), {
+const PreviewMap = dynamic(() => import('@/components/map/preview-map'), {
   ssr: false,
 })
 import { messageContext } from '@/contexts/message-context'
