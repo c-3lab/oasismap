@@ -28,6 +28,7 @@ const onChangeCheckboxes = () => {
 // 参加同意リンクをクリックしたらチェックボックスを有効化
 const onClickTermsLink = (termsLink, termsCheckbox) => {
   termsLink.addEventListener('click', () => {
+    window.open(termsLink.dataset.url, '_blank');
     termsCheckbox.disabled = false;
   });
 };
