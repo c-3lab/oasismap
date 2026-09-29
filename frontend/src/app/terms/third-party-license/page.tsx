@@ -338,7 +338,7 @@ const backendLibraries: LicenseItem[] = [
   },
 ]
 
-const PrivacyPolicy: React.FC = () => {
+const ThirdPartyLicense: React.FC = () => {
   return (
     <Grid
       container
@@ -519,4 +519,4 @@ const PrivacyPolicy: React.FC = () => {
   )
 }
 
-export default PrivacyPolicy
+export default ThirdPartyLicense
