@@ -122,7 +122,7 @@ export class HappinessInputService {
           zoom: 10,
         },
         headers: {
-          'User-Agent': 'OasisMap (TIS_WB@ml.tis.co.jp)',
+          'User-Agent': 'OasisMap (TISI_WB@ml.tisi.jp)',
         },
       })
       .then((response) => {
