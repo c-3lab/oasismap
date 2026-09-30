@@ -3,14 +3,12 @@ import axios from 'axios';
 import { HappinessEntity, OrionEntity } from './interface/happiness-entity';
 import { v4 as uuidv4 } from 'uuid';
 import { DateTime } from 'luxon';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Happiness } from './happiness.entity';
-import { Repository } from 'typeorm';
 import Papa from 'papaparse';
 import { HappinessImportResponse } from './interface/happiness-import.response';
 import { Answer, ImportHappinessDto } from './dto/create-happiness.dto';
 import { validateOrReject, ValidationError } from 'class-validator';
 import { ValidationErrorUtil } from './utils/validation-error.util';
+import { ChangeHistoriesService } from 'src/change-histories/change-histories.service';
 
 const expectedHeaders = [
   'ニックネーム',
@@ -36,8 +34,7 @@ type HappinessCsvRow = Record<HappinessCSVHeaderKey, string>;
 @Injectable()
 export class HappinessImportService {
   constructor(
-    @InjectRepository(Happiness)
-    private happinessRepository: Repository<Happiness>,
+    private readonly changeHistoriesService: ChangeHistoriesService,
   ) {}
 
   async importCsv(
@@ -46,7 +43,7 @@ export class HappinessImportService {
   ): Promise<HappinessImportResponse> {
     if (isRefresh) {
       await this.deleteAllEntities();
-      await this.happinessRepository.clear();
+      await this.changeHistoriesService.clear();
     }
 
     try {

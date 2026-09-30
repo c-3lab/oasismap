@@ -8,11 +8,12 @@ import { AuthService } from 'src/auth/auth';
 import { HappinessExportService } from './happiness-export.service';
 import { HappinessImportService } from './happiness-import.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Happiness } from './happiness.entity';
+import { Happiness } from '../change-histories/happiness.entity';
 import { HappinessDeleteService } from './happiness-delete.service';
+import { ChangeHistoriesModule } from 'src/change-histories/change-histories.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Happiness])],
+  imports: [TypeOrmModule.forFeature([Happiness]), ChangeHistoriesModule],
   controllers: [HappinessController],
   providers: [
     HappinessInputService,
