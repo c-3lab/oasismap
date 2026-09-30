@@ -2,3 +2,11 @@
 ## 直近で検出された脆弱性のため、イメージの更新待ち
 ## io.netty:netty-handler(CRITICAL)
 CVE-2026-75595
+
+## 本件ではX.509証明書を利用した認証フローは利用していないため、イメージの更新待ち
+## org.bouncycastle:bcprov-jdk18on(CRITICAL)
+CVE-2026-8763
+
+## 上記の脆弱性を追加した時に発生した脆弱性、条件が限定的なためイメージの更新待ち
+## org.freemarker:freemarkerCRITICAL)
+CVE-2026-84939
