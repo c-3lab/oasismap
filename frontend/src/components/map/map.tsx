@@ -14,6 +14,11 @@ import 'leaflet/dist/leaflet.css'
 import 'leaflet.markercluster/dist/MarkerCluster.css'
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css'
 import { messageContext } from '@/contexts/message-context'
+import {
+  setGeolocationStatus,
+  reportPositionError,
+  positionErrorCodeToStatus,
+} from '@/libs/client-error-reporting'
 
 import CurrentPositionIcon from '@mui/icons-material/RadioButtonChecked'
 import { renderToString } from 'react-dom/server'
@@ -29,6 +34,7 @@ import {
   MoveToCurrentPositionControl,
 } from './map-controls'
 import { HybridClusterGroup } from './hybrid-cluster-group'
+import { MapInteractionLogger } from './map-interaction-logger'
 
 const loadEnvAsNumber = (
   variable: string | undefined,
@@ -96,6 +102,8 @@ const Map: React.FC<Props> = ({
   const [error, setError] = useState<Error | null>(null)
   const [selectedPin, setSelectedPin] = useState<Pin | null>(null)
   const noticeMessageContext = useContext(messageContext)
+  const showMessageRef = useRef(noticeMessageContext.showMessage)
+  showMessageRef.current = noticeMessageContext.showMessage
   const [useFallback, setUseFallback] = useState(false)
 
   const currentPositionRef = useRef<LatLngTuple | null>(null)
@@ -115,8 +123,13 @@ const Map: React.FC<Props> = ({
 
       return
     }
-    const watchId = navigator.geolocation.watchPosition(
+    let watchId: number | undefined
+    let userNotified = false
+
+    watchId = navigator.geolocation.watchPosition(
       (position) => {
+        setGeolocationStatus('available')
+        userNotified = false
         const newPosition: LatLngTuple = [
           position.coords.latitude,
           position.coords.longitude,
@@ -131,35 +144,41 @@ const Map: React.FC<Props> = ({
 
         setError(null)
       },
-      (e) => {
+      (e: GeolocationPositionError) => {
+        setGeolocationStatus(positionErrorCodeToStatus(e.code))
+        reportPositionError(e.code)
         console.error(e)
         setError(e instanceof Error ? e : new Error(e.message))
-        if (e.code === e.PERMISSION_DENIED) {
-          noticeMessageContext.showMessage(
-            '位置情報機能が無効になっている可能性があります。設定から位置情報機能を有効にしてください。',
-            MessageType.Error
-          )
-        } else {
-          noticeMessageContext.showMessage(
-            '位置情報の取得に失敗しました。',
-            MessageType.Error
-          )
+        if (!userNotified) {
+          userNotified = true
+          if (e.code === e.PERMISSION_DENIED) {
+            showMessageRef.current(
+              '位置情報機能が無効になっている可能性があります。設定から位置情報機能を有効にしてください。',
+              MessageType.Error
+            )
+          } else {
+            showMessageRef.current(
+              '位置情報の取得に失敗しました。',
+              MessageType.Error
+            )
+          }
         }
         updateCurrentPosition(null)
         setCenter(null)
+        if (watchId !== undefined) {
+          navigator.geolocation.clearWatch(watchId)
+          watchId = undefined
+        }
       },
       { enableHighAccuracy: true }
     )
 
     return () => {
-      navigator.geolocation.clearWatch(watchId)
+      if (watchId !== undefined) {
+        navigator.geolocation.clearWatch(watchId)
+      }
     }
-  }, [
-    defaultLatitude,
-    defaultLongitude,
-    noticeMessageContext,
-    updateCurrentPosition,
-  ])
+  }, [defaultLatitude, defaultLongitude])
 
   const currentPositionIconHTML = renderToString(
     <CurrentPositionIcon style={{ fill: '#20B2AA' }} />
@@ -189,6 +208,7 @@ const Map: React.FC<Props> = ({
         maxBounds={maxBounds}
         maxBoundsViscosity={maxBoundsViscosity}
       >
+        <MapInteractionLogger />
         <AddHappinessControl
           showAddHappiness={showAddHappiness}
           onAddHappiness={onAddHappiness}

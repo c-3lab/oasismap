@@ -1,6 +1,24 @@
 import { useContext } from 'react'
 import { ERROR_TYPE } from './constants'
 import { LoadingContext } from '@/contexts/loading-context'
+import { logApiCall, reportError, toError } from '@/libs/client-error-reporting'
+
+/** API 失敗のクライアントエラー報告はここに一本化し、呼び出し元は UX だけ扱う */
+function reportAndRethrow(error: unknown): never {
+  reportError(toError(error))
+  console.error('Error:', error)
+  throw error
+}
+
+/**
+ * fetchData の URL から apiCall の label を決める。
+ * 同じ fetchData を happiness/me と happiness/all の両方で使うため、呼び出し元ではなく URL で判別する。
+ */
+function resolveMapDataApiLabel(url: string): string | null {
+  if (url.includes('/api/happiness/me')) return 'happiness/me'
+  if (url.includes('/api/happiness/all')) return 'happiness/all'
+  return null
+}
 
 interface HappinessParams {
   limit: number
@@ -41,6 +59,10 @@ export const useFetchData = () => {
   ): Promise<any> => {
     try {
       setIsFetching(true)
+      const mapLabel = resolveMapDataApiLabel(url)
+      if (mapLabel) {
+        logApiCall(mapLabel)
+      }
       const query = new URLSearchParams({
         start: params.start,
         end: params.end,
@@ -68,8 +90,7 @@ export const useFetchData = () => {
 
       return jsonData
     } catch (error) {
-      console.error('Error:', error)
-      throw error
+      reportAndRethrow(error)
     } finally {
       setIsFetching(false)
     }
@@ -81,6 +102,7 @@ export const useFetchData = () => {
   ): Promise<any> => {
     try {
       setIsFetching(true)
+      logApiCall('happiness/list')
       const query = new URLSearchParams({
         limit: params.limit.toString(),
         offset: params.offset.toString(),
@@ -104,8 +126,7 @@ export const useFetchData = () => {
 
       return jsonData
     } catch (error) {
-      console.error('Error:', error)
-      throw error
+      reportAndRethrow(error)
     } finally {
       setIsFetching(false)
     }
@@ -117,6 +138,7 @@ export const useFetchData = () => {
   ): Promise<any> => {
     try {
       setIsFetching(true)
+      logApiCall('happiness/post')
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -135,8 +157,7 @@ export const useFetchData = () => {
       }
       return jsonData
     } catch (error) {
-      console.error('Error:', error)
-      throw error
+      reportAndRethrow(error)
     } finally {
       setIsFetching(false)
     }
@@ -148,6 +169,7 @@ export const useFetchData = () => {
   ): Promise<any> => {
     try {
       setIsFetching(true)
+      logApiCall('happiness/import')
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -166,8 +188,7 @@ export const useFetchData = () => {
 
       return response
     } catch (error) {
-      console.error('Error:', error)
-      throw error
+      reportAndRethrow(error)
     } finally {
       setIsFetching(false)
     }
@@ -175,6 +196,7 @@ export const useFetchData = () => {
   const download = async (url: string, token: string) => {
     try {
       setIsFetching(true)
+      logApiCall('happiness/export')
       const response = await fetch(`${url}`, {
         method: 'GET',
         headers: {
@@ -204,8 +226,7 @@ export const useFetchData = () => {
         window.URL.revokeObjectURL(objectUrl)
       }, 250)
     } catch (error) {
-      console.error('Error:', error)
-      throw error
+      reportAndRethrow(error)
     } finally {
       setIsFetching(false)
     }
@@ -213,6 +234,7 @@ export const useFetchData = () => {
   const deleteData = async (url: string, token: string): Promise<any> => {
     try {
       setIsFetching(true)
+      logApiCall('happiness/delete')
       const response = await fetch(url, {
         method: 'DELETE',
         headers: {
@@ -228,8 +250,7 @@ export const useFetchData = () => {
         throw Error(jsonData?.message)
       }
     } catch (error) {
-      console.error('Error:', error)
-      throw error
+      reportAndRethrow(error)
     } finally {
       setIsFetching(false)
     }
