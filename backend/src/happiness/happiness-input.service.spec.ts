@@ -86,7 +86,6 @@ describe('HappinessInputService', () => {
           zoom: 10,
         },
         headers: {
-
           'User-Agent': `OasisMap/1.2.5 (TISI_WB@ml.tisi.jp)`,
         },
       });
@@ -159,7 +158,6 @@ describe('HappinessInputService', () => {
           zoom: 10,
         },
         headers: {
-
           'User-Agent': `OasisMap/1.2.5 (TISI_WB@ml.tisi.jp)`,
         },
       });

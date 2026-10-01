@@ -123,7 +123,6 @@ export class HappinessInputService {
           zoom: 10,
         },
         headers: {
-
           'User-Agent': `OasisMap/${packageJson.version}${
             process.env.USER_AGENT_EMAIL
               ? ` (${process.env.USER_AGENT_EMAIL})`
