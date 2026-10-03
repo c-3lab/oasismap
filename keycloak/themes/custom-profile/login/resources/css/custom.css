@@ -56,8 +56,15 @@ body {
   transform: scale(1.5);
 }
 
-/* チェックボックスラベル */
-.terms-checkbox-label, .privacy-checkbox-label {
+/* 参加同意リンク */
+.terms-link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: rgb(0, 153, 211);
+  font: inherit;
+  cursor: pointer;
   font-size: 16px;
+  font-weight: 600;
   margin-left: 10px;
 }

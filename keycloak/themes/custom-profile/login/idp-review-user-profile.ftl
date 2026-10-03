@@ -15,7 +15,7 @@
                 <div id="kc-form-options" class="${properties.kcFormOptionsClass!}">
                     <div>
                         <input type="checkbox" id="terms-checkbox" class="terms-checkbox" name="terms" onchange="onChangeCheckboxes()">
-                        <label for="terms-checkbox" class="terms-checkbox-label"><a href="${client.attributes.tosUri}" target="_blank">${msg("termsOfUse")}</a></label>
+                        <button type="button" id="terms-link" class="terms-link" data-url="${client.attributes.tosUri}">${msg("termsOfUse")}</button>
                     </div>
                 </div>
 
