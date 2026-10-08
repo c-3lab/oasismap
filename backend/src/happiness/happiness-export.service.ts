@@ -1,19 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Happiness } from './happiness.entity';
 import { DateTime } from 'luxon';
 import Papa from 'papaparse';
+import { ChangeHistoriesService } from 'src/change-histories/change-histories.service';
 
 @Injectable()
 export class HappinessExportService {
   constructor(
-    @InjectRepository(Happiness)
-    private happinessRepository: Repository<Happiness>,
+    private readonly changeHistoriesService: ChangeHistoriesService,
   ) {}
 
   async exportCsv(): Promise<Uint8Array> {
-    const records = await this.happinessRepository.find({
+    const records = await this.changeHistoriesService.find({
       order: {
         timestamp: 'ASC',
       },
