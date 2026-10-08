@@ -4,6 +4,7 @@ import nextVitals from 'eslint-config-next/core-web-vitals'
 import typescriptEslint from '@typescript-eslint/eslint-plugin'
 import typescriptParser from '@typescript-eslint/parser'
 import globals from 'globals'
+import unicorn from 'eslint-plugin-unicorn'
 
 const compat = new FlatCompat()
 
@@ -44,8 +45,15 @@ export default defineConfig([
     },
     plugins: {
       '@typescript-eslint': typescriptEslint,
+      unicorn,
     },
     rules: {
+      'unicorn/filename-case': [
+        'error',
+        {
+          case: 'kebabCase',
+        },
+      ],
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
