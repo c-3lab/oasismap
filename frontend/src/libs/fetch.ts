@@ -1,6 +1,40 @@
 import { useContext } from 'react'
 import { ERROR_TYPE } from './constants'
 import { LoadingContext } from '@/contexts/loading-context'
+import {
+  ApiCallError,
+  logApiCall,
+  reportApiCallError,
+  reportError,
+} from '@/libs/client-error-reporting'
+
+/**
+ * fetchData の URL から apiCall の label を決める。
+ * 同じ fetchData を happiness/me と happiness/all の両方で使うため、呼び出し元ではなく URL で判別する。
+ */
+function resolveMapDataApiLabel(url: string): string | null {
+  if (url.includes('/api/happiness/me')) return 'happiness/me'
+  if (url.includes('/api/happiness/all')) return 'happiness/all'
+  return null
+}
+
+function rethrowApiCallFailure(apiLabel: string, error: unknown): never {
+  if (error instanceof ApiCallError) {
+    if (error.reportable) {
+      reportApiCallError(error)
+    }
+    console.error('Error:', error)
+    throw error
+  }
+  const wrapped = new ApiCallError(
+    apiLabel,
+    error instanceof Error ? error : new Error(String(error)),
+    true
+  )
+  reportApiCallError(wrapped)
+  console.error('Error:', error)
+  throw wrapped
+}
 
 interface HappinessParams {
   limit: number
@@ -39,8 +73,12 @@ export const useFetchData = () => {
     params: HappinessParams,
     token: string
   ): Promise<any> => {
+    const apiLabel = resolveMapDataApiLabel(url)
     try {
       setIsFetching(true)
+      if (apiLabel) {
+        logApiCall(apiLabel)
+      }
       const query = new URLSearchParams({
         start: params.start,
         end: params.end,
@@ -60,14 +98,27 @@ export const useFetchData = () => {
       const jsonData = await response.json()
 
       if (response.status === 401) {
-        throw Error(ERROR_TYPE.UNAUTHORIZED)
+        if (apiLabel) {
+          throw new ApiCallError(apiLabel, new Error(ERROR_TYPE.UNAUTHORIZED))
+        }
+        throw new Error(ERROR_TYPE.UNAUTHORIZED)
       }
       if (response.status >= 400) {
-        throw Error(jsonData?.message)
+        if (apiLabel) {
+          throw new ApiCallError(
+            apiLabel,
+            new Error(jsonData?.message ?? 'Request failed')
+          )
+        }
+        throw new Error(jsonData?.message ?? 'Request failed')
       }
 
       return jsonData
     } catch (error) {
+      if (apiLabel) {
+        rethrowApiCallFailure(apiLabel, error)
+      }
+      reportError(error)
       console.error('Error:', error)
       throw error
     } finally {
@@ -81,6 +132,7 @@ export const useFetchData = () => {
   ): Promise<any> => {
     try {
       setIsFetching(true)
+      logApiCall('happiness/list')
       const query = new URLSearchParams({
         limit: params.limit.toString(),
         offset: params.offset.toString(),
@@ -96,16 +148,21 @@ export const useFetchData = () => {
       const jsonData = await response.json()
 
       if (response.status === 401) {
-        throw Error(ERROR_TYPE.UNAUTHORIZED)
+        throw new ApiCallError(
+          'happiness/list',
+          new Error(ERROR_TYPE.UNAUTHORIZED)
+        )
       }
       if (response.status >= 400) {
-        throw Error(jsonData?.message)
+        throw new ApiCallError(
+          'happiness/list',
+          new Error(jsonData?.message ?? 'Request failed')
+        )
       }
 
       return jsonData
     } catch (error) {
-      console.error('Error:', error)
-      throw error
+      rethrowApiCallFailure('happiness/list', error)
     } finally {
       setIsFetching(false)
     }
@@ -117,6 +174,7 @@ export const useFetchData = () => {
   ): Promise<any> => {
     try {
       setIsFetching(true)
+      logApiCall('happiness/post')
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -128,15 +186,20 @@ export const useFetchData = () => {
       const jsonData = await response.json()
 
       if (response.status === 401) {
-        throw Error(ERROR_TYPE.UNAUTHORIZED)
+        throw new ApiCallError(
+          'happiness/post',
+          new Error(ERROR_TYPE.UNAUTHORIZED)
+        )
       }
       if (response.status >= 400) {
-        throw Error(jsonData?.message)
+        throw new ApiCallError(
+          'happiness/post',
+          new Error(jsonData?.message ?? 'Request failed')
+        )
       }
       return jsonData
     } catch (error) {
-      console.error('Error:', error)
-      throw error
+      rethrowApiCallFailure('happiness/post', error)
     } finally {
       setIsFetching(false)
     }
@@ -148,6 +211,7 @@ export const useFetchData = () => {
   ): Promise<any> => {
     try {
       setIsFetching(true)
+      logApiCall('happiness/import')
       const response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -157,17 +221,22 @@ export const useFetchData = () => {
       })
 
       if (response.status === 401) {
-        throw Error(ERROR_TYPE.UNAUTHORIZED)
+        throw new ApiCallError(
+          'happiness/import',
+          new Error(ERROR_TYPE.UNAUTHORIZED)
+        )
       }
       if (response.status >= 400) {
         const jsonData = await response.json()
-        throw Error(jsonData?.message)
+        throw new ApiCallError(
+          'happiness/import',
+          new Error(jsonData?.message ?? 'Import failed')
+        )
       }
 
       return response
     } catch (error) {
-      console.error('Error:', error)
-      throw error
+      rethrowApiCallFailure('happiness/import', error)
     } finally {
       setIsFetching(false)
     }
@@ -175,6 +244,7 @@ export const useFetchData = () => {
   const download = async (url: string, token: string) => {
     try {
       setIsFetching(true)
+      logApiCall('happiness/export')
       const response = await fetch(`${url}`, {
         method: 'GET',
         headers: {
@@ -183,11 +253,17 @@ export const useFetchData = () => {
       })
 
       if (response.status === 401) {
-        throw Error(ERROR_TYPE.UNAUTHORIZED)
+        throw new ApiCallError(
+          'happiness/export',
+          new Error(ERROR_TYPE.UNAUTHORIZED)
+        )
       }
       if (response.status >= 400) {
         const jsonData = await response.json()
-        throw Error(jsonData?.message)
+        throw new ApiCallError(
+          'happiness/export',
+          new Error(jsonData?.message ?? 'Request failed')
+        )
       }
 
       const fileName = getFileName(response) || 'export.csv'
@@ -204,8 +280,7 @@ export const useFetchData = () => {
         window.URL.revokeObjectURL(objectUrl)
       }, 250)
     } catch (error) {
-      console.error('Error:', error)
-      throw error
+      rethrowApiCallFailure('happiness/export', error)
     } finally {
       setIsFetching(false)
     }
@@ -213,6 +288,7 @@ export const useFetchData = () => {
   const deleteData = async (url: string, token: string): Promise<any> => {
     try {
       setIsFetching(true)
+      logApiCall('happiness/delete')
       const response = await fetch(url, {
         method: 'DELETE',
         headers: {
@@ -221,15 +297,20 @@ export const useFetchData = () => {
       })
 
       if (response.status === 401) {
-        throw Error(ERROR_TYPE.UNAUTHORIZED)
+        throw new ApiCallError(
+          'happiness/delete',
+          new Error(ERROR_TYPE.UNAUTHORIZED)
+        )
       }
       if (response.status >= 400) {
         const jsonData = await response.json()
-        throw Error(jsonData?.message)
+        throw new ApiCallError(
+          'happiness/delete',
+          new Error(jsonData?.message ?? 'Request failed')
+        )
       }
     } catch (error) {
-      console.error('Error:', error)
-      throw error
+      rethrowApiCallFailure('happiness/delete', error)
     } finally {
       setIsFetching(false)
     }

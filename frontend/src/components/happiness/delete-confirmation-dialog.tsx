@@ -1,10 +1,10 @@
 import React from 'react'
+import { ActionLogButton } from '@/components/mui'
 import {
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  Button,
   Typography,
 } from '@mui/material'
 import { Data } from '@/types/happiness-list-response'
@@ -47,12 +47,22 @@ const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
         </Typography>
       </DialogContent>
       <DialogActions>
-        <Button variant="contained" onClick={onClose} color="success">
+        <ActionLogButton
+          actionLog="deleteConfirmCancel"
+          variant="contained"
+          onClick={onClose}
+          color="success"
+        >
           いいえ
-        </Button>
-        <Button variant="outlined" onClick={deleteRowData} color="primary">
+        </ActionLogButton>
+        <ActionLogButton
+          actionLog="deleteConfirmDelete"
+          variant="outlined"
+          onClick={deleteRowData}
+          color="primary"
+        >
           はい
-        </Button>
+        </ActionLogButton>
       </DialogActions>
     </Dialog>
   )
