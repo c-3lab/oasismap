@@ -141,7 +141,7 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
           )
         }
       } catch (error) {
-        reportError(error instanceof Error ? error : new Error(String(error)))
+        reportError(error)
         console.error('Error fetching data:', error)
         if (
           error instanceof Error &&

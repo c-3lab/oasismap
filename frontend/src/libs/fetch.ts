@@ -1,7 +1,12 @@
 import { useContext } from 'react'
 import { ERROR_TYPE } from './constants'
 import { LoadingContext } from '@/contexts/loading-context'
-import { logApiCall, reportError } from '@/libs/client-error-reporting'
+import {
+  ApiCallError,
+  logApiCall,
+  reportApiCallError,
+  reportError,
+} from '@/libs/client-error-reporting'
 
 /**
  * fetchData の URL から apiCall の label を決める。
@@ -11,6 +16,24 @@ function resolveMapDataApiLabel(url: string): string | null {
   if (url.includes('/api/happiness/me')) return 'happiness/me'
   if (url.includes('/api/happiness/all')) return 'happiness/all'
   return null
+}
+
+function rethrowApiCallFailure(apiLabel: string, error: unknown): never {
+  if (error instanceof ApiCallError) {
+    if (error.reportable) {
+      reportApiCallError(error)
+    }
+    console.error('Error:', error)
+    throw error
+  }
+  const wrapped = new ApiCallError(
+    apiLabel,
+    error instanceof Error ? error : new Error(String(error)),
+    true
+  )
+  reportApiCallError(wrapped)
+  console.error('Error:', error)
+  throw wrapped
 }
 
 interface HappinessParams {
@@ -50,11 +73,11 @@ export const useFetchData = () => {
     params: HappinessParams,
     token: string
   ): Promise<any> => {
+    const apiLabel = resolveMapDataApiLabel(url)
     try {
       setIsFetching(true)
-      const mapLabel = resolveMapDataApiLabel(url)
-      if (mapLabel) {
-        logApiCall(mapLabel)
+      if (apiLabel) {
+        logApiCall(apiLabel)
       }
       const query = new URLSearchParams({
         start: params.start,
@@ -75,15 +98,27 @@ export const useFetchData = () => {
       const jsonData = await response.json()
 
       if (response.status === 401) {
-        throw Error(ERROR_TYPE.UNAUTHORIZED)
+        if (apiLabel) {
+          throw new ApiCallError(apiLabel, new Error(ERROR_TYPE.UNAUTHORIZED))
+        }
+        throw new Error(ERROR_TYPE.UNAUTHORIZED)
       }
       if (response.status >= 400) {
-        throw Error(jsonData?.message)
+        if (apiLabel) {
+          throw new ApiCallError(
+            apiLabel,
+            new Error(jsonData?.message ?? 'Request failed')
+          )
+        }
+        throw new Error(jsonData?.message ?? 'Request failed')
       }
 
       return jsonData
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
+      if (apiLabel) {
+        rethrowApiCallFailure(apiLabel, error)
+      }
+      reportError(error)
       console.error('Error:', error)
       throw error
     } finally {
@@ -113,17 +148,21 @@ export const useFetchData = () => {
       const jsonData = await response.json()
 
       if (response.status === 401) {
-        throw Error(ERROR_TYPE.UNAUTHORIZED)
+        throw new ApiCallError(
+          'happiness/list',
+          new Error(ERROR_TYPE.UNAUTHORIZED)
+        )
       }
       if (response.status >= 400) {
-        throw Error(jsonData?.message)
+        throw new ApiCallError(
+          'happiness/list',
+          new Error(jsonData?.message ?? 'Request failed')
+        )
       }
 
       return jsonData
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error:', error)
-      throw error
+      rethrowApiCallFailure('happiness/list', error)
     } finally {
       setIsFetching(false)
     }
@@ -147,16 +186,20 @@ export const useFetchData = () => {
       const jsonData = await response.json()
 
       if (response.status === 401) {
-        throw Error(ERROR_TYPE.UNAUTHORIZED)
+        throw new ApiCallError(
+          'happiness/post',
+          new Error(ERROR_TYPE.UNAUTHORIZED)
+        )
       }
       if (response.status >= 400) {
-        throw Error(jsonData?.message)
+        throw new ApiCallError(
+          'happiness/post',
+          new Error(jsonData?.message ?? 'Request failed')
+        )
       }
       return jsonData
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error:', error)
-      throw error
+      rethrowApiCallFailure('happiness/post', error)
     } finally {
       setIsFetching(false)
     }
@@ -178,18 +221,22 @@ export const useFetchData = () => {
       })
 
       if (response.status === 401) {
-        throw Error(ERROR_TYPE.UNAUTHORIZED)
+        throw new ApiCallError(
+          'happiness/import',
+          new Error(ERROR_TYPE.UNAUTHORIZED)
+        )
       }
       if (response.status >= 400) {
         const jsonData = await response.json()
-        throw Error(jsonData?.message)
+        throw new ApiCallError(
+          'happiness/import',
+          new Error(jsonData?.message ?? 'Import failed')
+        )
       }
 
       return response
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error:', error)
-      throw error
+      rethrowApiCallFailure('happiness/import', error)
     } finally {
       setIsFetching(false)
     }
@@ -206,11 +253,17 @@ export const useFetchData = () => {
       })
 
       if (response.status === 401) {
-        throw Error(ERROR_TYPE.UNAUTHORIZED)
+        throw new ApiCallError(
+          'happiness/export',
+          new Error(ERROR_TYPE.UNAUTHORIZED)
+        )
       }
       if (response.status >= 400) {
         const jsonData = await response.json()
-        throw Error(jsonData?.message)
+        throw new ApiCallError(
+          'happiness/export',
+          new Error(jsonData?.message ?? 'Request failed')
+        )
       }
 
       const fileName = getFileName(response) || 'export.csv'
@@ -227,9 +280,7 @@ export const useFetchData = () => {
         window.URL.revokeObjectURL(objectUrl)
       }, 250)
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error:', error)
-      throw error
+      rethrowApiCallFailure('happiness/export', error)
     } finally {
       setIsFetching(false)
     }
@@ -246,16 +297,20 @@ export const useFetchData = () => {
       })
 
       if (response.status === 401) {
-        throw Error(ERROR_TYPE.UNAUTHORIZED)
+        throw new ApiCallError(
+          'happiness/delete',
+          new Error(ERROR_TYPE.UNAUTHORIZED)
+        )
       }
       if (response.status >= 400) {
         const jsonData = await response.json()
-        throw Error(jsonData?.message)
+        throw new ApiCallError(
+          'happiness/delete',
+          new Error(jsonData?.message ?? 'Request failed')
+        )
       }
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
-      console.error('Error:', error)
-      throw error
+      rethrowApiCallFailure('happiness/delete', error)
     } finally {
       setIsFetching(false)
     }

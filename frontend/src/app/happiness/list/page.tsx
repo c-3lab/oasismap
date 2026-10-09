@@ -54,7 +54,7 @@ const HappinessList: React.FC = () => {
         offset += data['count']
       }
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
+      reportError(error)
       console.error('Error fetching data:', error)
       if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
         noticeMessageContext.showMessage(
@@ -89,7 +89,7 @@ const HappinessList: React.FC = () => {
         prevListData.filter((data) => data.id !== id)
       )
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
+      reportError(error)
       console.error('Error:', error)
       if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
         noticeMessageContext.showMessage(

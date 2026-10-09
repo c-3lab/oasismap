@@ -240,7 +240,7 @@ const HappinessInput: React.FC = () => {
       )
       router.push(`/happiness/${referral}`)
     } catch (error) {
-      reportError(error instanceof Error ? error : new Error(String(error)))
+      reportError(error)
       console.error('Error:', error)
       if (error instanceof Error && error.message === ERROR_TYPE.UNAUTHORIZED) {
         noticeMessageContext.showMessage(

@@ -82,6 +82,24 @@ export function logApiCall(label: string): void {
   pushActionLog('apiCall', label)
 }
 
+/** fetch 層で throw する API 失敗。reportable な想定外のみ reportApiCallError で報告する */
+export class ApiCallError extends Error {
+  readonly apiLabel: string
+  readonly reportable: boolean
+
+  constructor(apiLabel: string, cause: Error, reportable = false) {
+    super(cause.message)
+    this.name = 'ApiCallError'
+    this.apiLabel = apiLabel
+    this.reportable = reportable
+  }
+}
+
+/** 想定外 API 失敗の client-errors 報告（apiLabel を message に付与） */
+export function reportApiCallError(error: ApiCallError): void {
+  reportError(new Error(`[apiCall:${error.apiLabel}] ${error.message}`))
+}
+
 /**
  * 現在の操作ログのスナップショットを返す（送信用）
  */
@@ -189,21 +207,21 @@ export function buildReportPayload(error: {
 /**
  * 任意のエラーを /api/client-errors に送信する。
  * try/catch 内から呼ぶことで、キャッチしたエラーも報告できる。
+ * ApiCallError は fetch 層で扱うため報告しない。
  * 重複防止（同一 message+url の短時間再送抑制）がかかる。
  */
-export function reportError(
-  error: Error | { message: string },
-  options?: { geolocationErrorCode?: number }
-): void {
-  const message = error instanceof Error ? error.message : String(error.message)
-  const stack = error instanceof Error ? error.stack : undefined
+export function reportError(error: unknown): void {
+  if (error instanceof ApiCallError) return
+  const normalized =
+    error instanceof Error ? error : new Error(String(error))
+  const message = normalized.message
+  const stack = normalized.stack
   const url = typeof document !== 'undefined' ? document.location.href : ''
   if (isDuplicate(message, url)) return
   const payload = buildReportPayload({
     message,
     stack,
     url,
-    geolocationErrorCode: options?.geolocationErrorCode,
   })
   sendClientError(payload)
   markSent(message, url)
