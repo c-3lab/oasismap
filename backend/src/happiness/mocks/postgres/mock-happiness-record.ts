@@ -1,8 +1,11 @@
-import { Happiness } from 'src/happiness/happiness.entity';
+import { Happiness } from 'src/change-histories/happiness.entity';
 
 export const mockHappinessRecord: Happiness[] = [
   {
     entityId: '50521f0b-2567-4c2d-b9d3-1550254587e5',
+    entityType: 'happiness',
+    fiwareServicePath: '/Happiness',
+    recvTime: new Date(),
     happiness1: 1,
     happiness2: 1,
     happiness3: 1,
