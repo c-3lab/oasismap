@@ -18,6 +18,7 @@ import { DateTime as OasismapDateTime } from '@/types/datetime'
 import { useSearchContext } from '@/contexts/search-context'
 import { SearchParams, DateTimeProps } from '@/types/search-context'
 import { useRuntimeConfig } from '@/contexts/runtime-config-context'
+import { reportError } from '@/libs/error-report'
 
 type UseHappinessDataProps = {
   type: 'me' | 'all'
@@ -104,6 +105,7 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
             const newPins = GetPin(data['data'])
             setPinData((prevPinData: Pin[]) => [...prevPinData, ...newPins])
           } catch (error) {
+            reportError(error)
             console.error('Error in GetPin or setPinData:', error)
           }
 
@@ -137,6 +139,7 @@ export const useHappinessData = ({ type }: UseHappinessDataProps) => {
           )
         }
       } catch (error) {
+        reportError(error)
         console.error('Error fetching data:', error)
         if (
           error instanceof Error &&

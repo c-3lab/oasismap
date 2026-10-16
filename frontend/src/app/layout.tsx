@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google'
 import { AppRouterCacheProvider } from '@mui/material-nextjs/v14-appRouter'
 import MessageArea from '@/components/message'
 import { LoadingProvider } from '@/components/spinner'
+import RouteChangeListener from '@/components/action-log/route-change-listener'
+import GlobalErrorListener from '@/components/action-log/global-error-listener'
 import { RuntimeConfigProvider } from '@/contexts/runtime-config-context'
 import { getRuntimeConfig } from '@/libs/runtime-config'
 
@@ -29,6 +31,8 @@ export default function RootLayout({
       <body className={inter.className}>
         <AppRouterCacheProvider>
           <RuntimeConfigProvider initialConfig={runtimeConfig}>
+            <RouteChangeListener />
+            <GlobalErrorListener />
             <MessageArea>
               <LoadingProvider>{children}</LoadingProvider>
             </MessageArea>

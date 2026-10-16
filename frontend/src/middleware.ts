@@ -4,6 +4,7 @@ type Permission = 'pubilc' | 'general' | 'admin'
 
 const paths: Record<string, Permission[]> = {
   '/': ['pubilc'],
+  '/api/client-errors': ['general', 'admin'],
   '/login': ['pubilc'],
   '/terms/use': ['pubilc'],
   '/terms/privacy-policy': ['pubilc'],
