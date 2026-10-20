@@ -57,18 +57,6 @@ resource "azurerm_role_assignment" "kv_rbac_postgres_cli" {
   scope                = azurerm_key_vault.main.id
 }
 
-resource "azurerm_user_assigned_identity" "cygnus" {
-  location            = var.location
-  name                = "${var.prefix}-uai-cygnus"
-  resource_group_name = azurerm_resource_group.main.name
-}
-
-resource "azurerm_role_assignment" "kv_rbac_cygnus" {
-  principal_id         = azurerm_user_assigned_identity.cygnus.principal_id
-  role_definition_name = "Key Vault Secrets User"
-  scope                = azurerm_key_vault.main.id
-}
-
 resource "azurerm_key_vault_secret" "orion_mongo_uri" {
   name             = "orion-mongo-uri"
   value_wo         = azurerm_cosmosdb_account.mongo.primary_mongodb_connection_string
