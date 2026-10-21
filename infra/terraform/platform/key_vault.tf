@@ -68,8 +68,8 @@ resource "azurerm_key_vault_secret" "orion_mongo_uri" {
   ]
 }
 
-resource "azurerm_key_vault_secret" "cygnus_postgres_password" {
-  name             = "cygnus-postgres-password"
+resource "azurerm_key_vault_secret" "oasismap_context_data_postgres_password" {
+  name             = "oasismap-context-data-postgres-password"
   value_wo         = azurerm_postgresql_flexible_server.main.administrator_password
   value_wo_version = 1
   key_vault_id     = azurerm_key_vault.main.id
