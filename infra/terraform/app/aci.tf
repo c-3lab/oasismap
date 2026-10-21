@@ -187,7 +187,7 @@ resource "azurerm_container_group" "postgres_cli" {
       POSTGRES_HOST     = data.azurerm_postgresql_flexible_server.main.fqdn
       POSTGRES_PORT     = "5432"
       POSTGRES_USER     = data.azurerm_postgresql_flexible_server.main.administrator_login
-      POSTGRES_PASSWORD = data.azurerm_key_vault_secret.cygnus_postgres_password.value
+      POSTGRES_PASSWORD = data.azurerm_key_vault_secret.oasismap_context_data_postgres_password.value
       POSTGRES_DB       = "postgres"
     }
   }
