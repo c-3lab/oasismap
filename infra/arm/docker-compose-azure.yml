@@ -27,6 +27,7 @@ services:
       - "POSTGRES_PASSWORD=${POSTGREPASSWORD}"
       - "POSTGRES_DATABASE=cygnus"
       - "REVERSE_GEOCODING_URL=${REVERSE_GEOCODING_URL}"
+      - "USER_AGENT_EMAIL=${USER_AGENT_EMAIL}"
     networks:
       - backend-network
     healthcheck:
@@ -200,40 +201,6 @@ services:
       options:
         syslog-facility: local0
         tag: orion
-
-  cygnus:
-    build:
-      context: ./fiware/cygnus
-      dockerfile: Dockerfile
-    hostname: cygnus
-    container_name: cygnus
-    environment:
-      - "CYGNUS_POSTGRESQL_HOST=${POSTGREHOST}"
-      - "CYGNUS_POSTGRESQL_PORT=${POSTGREPORT}"
-      - "CYGNUS_POSTGRESQL_USER=${POSTGREUSER}"
-      - "CYGNUS_POSTGRESQL_PASS=${POSTGREPASSWORD}"
-      - "CYGNUS_POSTGRESQL_ENABLE_CACHE=true"
-      - "CYGNUS_POSTGRESQL_SERVICE_PORT=5055"
-      - "CYGNUS_POSTGRESQL_DATABASE=cygnus"
-      - "CYGNUS_POSTGRESQL_DATA_MODEL=dm-by-service-path"
-      - "CYGNUS_POSTGRESQL_ATTR_PERSISTENCE=column"
-      - "CYGNUS_LOG_LEVEL=INFO"
-      - "CYGNUS_SERVICE_PORT=5055"
-      - "CYGNUS_API_PORT=5080"
-    networks:
-      - backend-network
-    healthcheck:
-      test: "curl -f http://cygnus:5080/v1/version"
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    restart: always
-    logging:
-      driver: syslog
-      options:
-        syslog-facility: local0
-        tag: cygnus
 
 networks:
   backend-network:
