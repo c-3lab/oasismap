@@ -121,11 +121,13 @@ docker上のコンテナから到達可能なホストOSのIPアドレスを確�
 
       ```sh
       USER_AGENT_EMAIL=<問い合わせ先メールアドレス>
+      APP_VERSION=<アプリのバージョン（省略時は表示されません）>
       ```
     * 設定した値は、以下の形式でUser-Agentへ反映されます。
 
       ```text
-      OasisMap/{package.jsonのversion} ({USER_AGENT_EMAIL})
+      OasisMap[/{APP_VERSION}][ (mail) または /(mail)]
+      （バージョン＋メール: `OasisMap/1.0 (mail)`。メールのみ: `OasisMap/(mail)`。両方なし: `OasisMap`）
       ```
 
 ### システム起動

@@ -5,6 +5,7 @@ const SetupEnv = () => {
   process.env['ADMIN_KEYCLOAK_CLIENT_ID'] = 'admin';
   process.env['KEYCLOAK_CLIENT_ISSUER'] = 'http://example.com';
   process.env['USER_AGENT_EMAIL'] = 'TISI_WB@ml.tisi.jp';
+  process.env['APP_VERSION'] = '1.2.5';
   return;
 };
 
