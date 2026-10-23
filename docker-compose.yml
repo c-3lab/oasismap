@@ -29,6 +29,8 @@ services:
       - "POSTGRES_PASSWORD=${POSTGREPASSWORD}"
       - "POSTGRES_DATABASE=cygnus"
       - "REVERSE_GEOCODING_URL=${REVERSE_GEOCODING_URL}"
+      - "USER_AGENT_EMAIL=${USER_AGENT_EMAIL}"
+      - "APP_VERSION=${APP_VERSION}"
     networks:
       - backend-network
     healthcheck:
