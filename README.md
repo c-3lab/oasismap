@@ -39,6 +39,8 @@
   - Chrome
   - Safari
 
+- このリポジトリで機能を開発する場合、[開発者向け手順](doc/development-guide.md) の内容をご確認ください
+
 ### インストール方法
 
 1. git clone
