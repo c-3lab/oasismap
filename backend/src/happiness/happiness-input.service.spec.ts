@@ -15,6 +15,7 @@ describe('HappinessInputService', () => {
   let happinessInputService: HappinessInputService;
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     const module: TestingModule = await Test.createTestingModule({
       providers: [HappinessInputService],
     }).compile();
@@ -213,7 +214,7 @@ describe('HappinessInputService', () => {
       const spyPost = mockedAxios.post.mockResolvedValue(
         mockPostHappinessEntity,
       );
-      const OLD_ENV = process.env;
+      const previousUserAgentEmail = process.env.USER_AGENT_EMAIL;
       process.env.USER_AGENT_EMAIL = '';
 
       const result = await happinessInputService.postHappiness(
@@ -282,7 +283,77 @@ describe('HappinessInputService', () => {
         },
       );
       expect(result).toEqual(expectedHappinessInputResponse);
-      process.env = { ...OLD_ENV };
+      process.env.USER_AGENT_EMAIL = previousUserAgentEmail;
+    });
+
+    it('should return happiness response without app version in User-Agent', async () => {
+      const spyGet = mockedAxios.get.mockResolvedValue(mockGeocodingResponse);
+      const spyPost = mockedAxios.post.mockResolvedValue(
+        mockPostHappinessEntity,
+      );
+      const previousAppVersion = process.env.APP_VERSION;
+      process.env.APP_VERSION = '';
+
+      await happinessInputService.postHappiness(
+        requestUserAttributes,
+        requestParam,
+      );
+
+      expect(spyGet).toHaveBeenCalledWith(process.env.REVERSE_GEOCODING_URL, {
+        params: {
+          lat: 35.629327,
+          lon: 139.72382,
+          format: 'geocodejson',
+          zoom: 10,
+        },
+        headers: {
+          'User-Agent': 'OasisMap (TISI_WB@ml.tisi.jp)',
+        },
+      });
+      expect(spyPost).toHaveBeenCalled();
+      process.env.APP_VERSION = previousAppVersion;
+    });
+
+    it('should return happiness response when reverse geocoding fails', async () => {
+      const geocodingError = new Error('geocoding failed');
+      mockedAxios.get.mockRejectedValue(geocodingError);
+      const spyPost = mockedAxios.post.mockResolvedValue(
+        mockPostHappinessEntity,
+      );
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+
+      const result = await happinessInputService.postHappiness(
+        requestUserAttributes,
+        requestParam,
+      );
+
+      const uuidv4Pattern =
+        /([0-9a-f]{8})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{12})/;
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error in reverse geocoding:',
+        geocodingError,
+      );
+      expect(spyPost).toHaveBeenCalledWith(
+        `${process.env.ORION_URI}/v2/entities`,
+        expect.objectContaining({
+          id: expect.stringMatching(uuidv4Pattern),
+          location: expect.objectContaining({
+            metadata: {
+              place: {
+                type: 'Text',
+                value: '',
+              },
+            },
+          }),
+        }),
+        expect.any(Object),
+      );
+      expect(result).toEqual(expectedHappinessInputResponse);
+
+      consoleErrorSpy.mockRestore();
     });
   });
 });
