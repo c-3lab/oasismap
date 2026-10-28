@@ -47,3 +47,8 @@ REVERSE_GEOCODING_URL=https://nominatim.openstreetmap.org/reverse
 # Cluster configuration
 NEXT_PUBLIC_MAX_CLUSTER_RADIUS=200
 USE_MOCK_DATA=true
+
+# User Agentで扱う、メールアドレスとバージョンの環境変数。バージョンは package.json の version と揃える。
+# User-Agent: OasisMap/{APP_VERSION} ({USER_AGENT_EMAIL})
+APP_VERSION=1.2.5
+USER_AGENT_EMAIL=TISI_WB@ml.tisi.jp
