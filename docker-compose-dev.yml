@@ -95,6 +95,7 @@ services:
       - "MONGO_INITDB_ROOT_USERNAME=${MONGOUSERNAME}"
       - "MONGO_INITDB_ROOT_PASSWORD=${MONGOPASSWORD}"
       - "MONGO_INITDB_DATABASE=oriondb"
+      - "GLIBC_TUNABLES=glibc.pthread.rseq=1"
     volumes:
       - ./site/mongo/db:/data/db
       - ./site/mongo/configdb:/data/configdb
