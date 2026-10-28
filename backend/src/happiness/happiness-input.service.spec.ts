@@ -15,6 +15,7 @@ describe('HappinessInputService', () => {
   let happinessInputService: HappinessInputService;
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     const module: TestingModule = await Test.createTestingModule({
       providers: [HappinessInputService],
     }).compile();
@@ -86,7 +87,7 @@ describe('HappinessInputService', () => {
           zoom: 10,
         },
         headers: {
-          'User-Agent': 'OasisMap (TISI_WB@ml.tisi.jp)',
+          'User-Agent': `OasisMap/1.2.5 (TISI_WB@ml.tisi.jp)`,
         },
       });
       expect(spyPost).toHaveBeenCalledWith(
@@ -158,7 +159,7 @@ describe('HappinessInputService', () => {
           zoom: 10,
         },
         headers: {
-          'User-Agent': 'OasisMap (TISI_WB@ml.tisi.jp)',
+          'User-Agent': `OasisMap/1.2.5 (TISI_WB@ml.tisi.jp)`,
         },
       });
       expect(spyPost).toHaveBeenCalledWith(
@@ -206,6 +207,153 @@ describe('HappinessInputService', () => {
         },
       );
       expect(result).toEqual(expectedHappinessInputResponse);
+    });
+
+    it('should return happiness response without user agent email', async () => {
+      const spyGet = mockedAxios.get.mockResolvedValue(mockGeocodingResponse);
+      const spyPost = mockedAxios.post.mockResolvedValue(
+        mockPostHappinessEntity,
+      );
+      const previousUserAgentEmail = process.env.USER_AGENT_EMAIL;
+      process.env.USER_AGENT_EMAIL = '';
+
+      const result = await happinessInputService.postHappiness(
+        requestUserAttributes,
+        requestParam,
+      );
+
+      const uuidv4Pattern =
+        /([0-9a-f]{8})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{12})/;
+      const iso8601Pattern =
+        /([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2}).([0-9]{3})Z/;
+
+      expect(spyGet).toHaveBeenCalledWith(process.env.REVERSE_GEOCODING_URL, {
+        params: {
+          lat: 35.629327,
+          lon: 139.72382,
+          format: 'geocodejson',
+          zoom: 10,
+        },
+        headers: {
+          'User-Agent': `OasisMap/1.2.5`,
+        },
+      });
+      expect(spyPost).toHaveBeenCalledWith(
+        `${process.env.ORION_URI}/v2/entities`,
+        {
+          id: expect.stringMatching(uuidv4Pattern),
+          type: 'happiness',
+          happiness1: { type: 'Number', value: 1 },
+          happiness2: { type: 'Number', value: 1 },
+          happiness3: { type: 'Number', value: 1 },
+          happiness4: { type: 'Number', value: 1 },
+          happiness5: { type: 'Number', value: 1 },
+          happiness6: { type: 'Number', value: 1 },
+          timestamp: {
+            type: 'DateTime',
+            value: expect.stringMatching(iso8601Pattern),
+          },
+          nickname: { type: 'Text', value: 'nickname' },
+          location: {
+            type: 'geo:json',
+            value: {
+              type: 'Point',
+              coordinates: [139.72382, 35.629327],
+            },
+            metadata: {
+              place: {
+                type: 'Text',
+                value: '東京都品川区',
+              },
+            },
+          },
+          age: { type: 'Text', value: '20代' },
+          address: {
+            type: 'Text',
+            value: '東京都文京区',
+          },
+          memo: { type: 'Text', value: 'ダミーメモ' },
+        },
+        {
+          headers: {
+            'Fiware-Service': process.env.ORION_FIWARE_SERVICE,
+            'Fiware-ServicePath': process.env.ORION_FIWARE_SERVICE_PATH,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      expect(result).toEqual(expectedHappinessInputResponse);
+      process.env.USER_AGENT_EMAIL = previousUserAgentEmail;
+    });
+
+    it('should return happiness response without app version in User-Agent', async () => {
+      const spyGet = mockedAxios.get.mockResolvedValue(mockGeocodingResponse);
+      const spyPost = mockedAxios.post.mockResolvedValue(
+        mockPostHappinessEntity,
+      );
+      const previousAppVersion = process.env.APP_VERSION;
+      process.env.APP_VERSION = '';
+
+      await happinessInputService.postHappiness(
+        requestUserAttributes,
+        requestParam,
+      );
+
+      expect(spyGet).toHaveBeenCalledWith(process.env.REVERSE_GEOCODING_URL, {
+        params: {
+          lat: 35.629327,
+          lon: 139.72382,
+          format: 'geocodejson',
+          zoom: 10,
+        },
+        headers: {
+          'User-Agent': 'OasisMap (TISI_WB@ml.tisi.jp)',
+        },
+      });
+      expect(spyPost).toHaveBeenCalled();
+      process.env.APP_VERSION = previousAppVersion;
+    });
+
+    it('should return happiness response when reverse geocoding fails', async () => {
+      const geocodingError = new Error('geocoding failed');
+      mockedAxios.get.mockRejectedValue(geocodingError);
+      const spyPost = mockedAxios.post.mockResolvedValue(
+        mockPostHappinessEntity,
+      );
+      const consoleErrorSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => undefined);
+
+      const result = await happinessInputService.postHappiness(
+        requestUserAttributes,
+        requestParam,
+      );
+
+      const uuidv4Pattern =
+        /([0-9a-f]{8})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{4})-([0-9a-f]{12})/;
+
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error in reverse geocoding:',
+        geocodingError,
+      );
+      expect(spyPost).toHaveBeenCalledWith(
+        `${process.env.ORION_URI}/v2/entities`,
+        expect.objectContaining({
+          id: expect.stringMatching(uuidv4Pattern),
+          location: expect.objectContaining({
+            metadata: {
+              place: {
+                type: 'Text',
+                value: '',
+              },
+            },
+          }),
+        }),
+        expect.any(Object),
+      );
+      expect(result).toEqual(expectedHappinessInputResponse);
+
+      consoleErrorSpy.mockRestore();
     });
   });
 });

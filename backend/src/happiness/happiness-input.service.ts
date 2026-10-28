@@ -6,7 +6,6 @@ import { CreateHappinessDto } from './dto/create-happiness.dto';
 import { UserAttribute } from 'src/auth/interface/user-attribute';
 import { HappinessResponse } from './interface/happiness.response';
 import { Address } from './interface/address';
-
 @Injectable()
 export class HappinessInputService {
   async postHappiness(
@@ -113,6 +112,9 @@ export class HappinessInputService {
     latitude: number,
     longitude: number,
   ): Promise<Address> {
+    const version = process.env.APP_VERSION?.trim();
+    const email = process.env.USER_AGENT_EMAIL?.trim();
+
     return axios
       .get(process.env.REVERSE_GEOCODING_URL, {
         params: {
@@ -122,7 +124,7 @@ export class HappinessInputService {
           zoom: 10,
         },
         headers: {
-          'User-Agent': 'OasisMap (TISI_WB@ml.tisi.jp)',
+          'User-Agent': `OasisMap${version ? `/${version}` : ''}${email ? ` (${email})` : ''}`,
         },
       })
       .then((response) => {
