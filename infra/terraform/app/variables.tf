@@ -127,6 +127,18 @@ variable "reverse_geocoding_url" {
   default     = "https://nominatim.openstreetmap.org/reverse"
 }
 
+variable "user_agent_email" {
+  description = "User Agent Email for backend"
+  type        = string
+  default     = "TISI_WB@ml.tisi.jp"
+}
+
+variable "app_version" {
+  description = "App version."
+  type        = string
+  default     = "1.2.5"
+}
+
 variable "app_keycloak_name" {
   description = "App Service name for Keycloak (globally unique)."
   type        = string
@@ -154,17 +166,11 @@ variable "app_keycloak_admin_password" {
   sensitive   = true
 }
 
-# --- ACI（Orion, Cygnus）---
+# --- ACI（Orion）---
 variable "aci_orion_image_tag" {
   description = "Container image tag for Orion ACI."
   type        = string
   default     = "orion:latest"
-}
-
-variable "aci_cygnus_image_tag" {
-  description = "Container image tag for Cygnus ACI."
-  type        = string
-  default     = "cygnus:latest"
 }
 
 # --- ACI mongo-cli（ワンショット MongoDB インデックス作成）---
