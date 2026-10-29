@@ -37,4 +37,5 @@ USE_MOCK_DATA=true
 
 # User Agentで扱う、メールアドレスの環境変数
 USER_AGENT_EMAIL=TISI_WB@ml.tisi.jp
+APP_VERSION=1.2.5
 

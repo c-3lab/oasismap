@@ -91,6 +91,7 @@ resource "azurerm_linux_web_app" "backend" {
     POSTGRES_DATABASE         = "oasismap_context_data"
     REVERSE_GEOCODING_URL     = var.reverse_geocoding_url
     USER_AGENT_EMAIL          = var.user_agent_email
+    APP_VERSION               = var.app_version
   }
 
   https_only                = true

@@ -133,6 +133,12 @@ variable "user_agent_email" {
   default     = "TISI_WB@ml.tisi.jp"
 }
 
+variable "app_version" {
+  description = "App version."
+  type        = string
+  default     = "1.2.5"
+}
+
 variable "app_keycloak_name" {
   description = "App Service name for Keycloak (globally unique)."
   type        = string
