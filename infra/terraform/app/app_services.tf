@@ -87,9 +87,11 @@ resource "azurerm_linux_web_app" "backend" {
     POSTGRES_HOST             = data.azurerm_postgresql_flexible_server.main.fqdn
     POSTGRES_PORT             = "5432"
     POSTGRES_USER             = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${azurerm_key_vault_secret.kc_db_username.name})"
-    POSTGRES_PASSWORD         = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${data.azurerm_key_vault_secret.cygnus_postgres_password.name})"
-    POSTGRES_DATABASE         = "cygnus"
+    POSTGRES_PASSWORD         = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${data.azurerm_key_vault_secret.oasismap_context_data_postgres_password.name})"
+    POSTGRES_DATABASE         = "oasismap_context_data"
     REVERSE_GEOCODING_URL     = var.reverse_geocoding_url
+    USER_AGENT_EMAIL          = var.user_agent_email
+    APP_VERSION               = var.app_version
   }
 
   https_only                = true
@@ -140,7 +142,7 @@ resource "azurerm_linux_web_app" "keycloak" {
     KC_DB                   = "postgres"
     KC_DB_URL               = "jdbc:postgresql://${data.azurerm_postgresql_flexible_server.main.fqdn}:5432/postgres"
     KC_DB_USERNAME          = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${azurerm_key_vault_secret.kc_db_username.name})"
-    KC_DB_PASSWORD          = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${data.azurerm_key_vault_secret.cygnus_postgres_password.name})"
+    KC_DB_PASSWORD          = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${data.azurerm_key_vault_secret.oasismap_context_data_postgres_password.name})"
     KC_HOSTNAME_STRICT      = "false"
     KC_HTTP_ENABLED         = "true"
     KC_PROXY_HEADERS        = "xforwarded"
@@ -163,6 +165,6 @@ resource "azurerm_linux_web_app" "keycloak" {
     azurerm_key_vault_secret.keycloak_admin,
     azurerm_key_vault_secret.keycloak_admin_password,
     azurerm_key_vault_secret.kc_db_username,
-    data.azurerm_key_vault_secret.cygnus_postgres_password
+    data.azurerm_key_vault_secret.oasismap_context_data_postgres_password
   ]
 }
