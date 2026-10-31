@@ -1,6 +1,6 @@
 -- add-column.sql
 
-\c cygnus;
+\c oasismap_context_data;
 
 -- 後方互換性を考慮
 ALTER TABLE government.happiness

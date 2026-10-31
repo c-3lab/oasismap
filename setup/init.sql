@@ -1,8 +1,8 @@
 -- init.sql
 
-CREATE DATABASE cygnus;
+CREATE DATABASE oasismap_context_data;
 
-\c cygnus;
+\c oasismap_context_data;
 
 CREATE SCHEMA IF NOT EXISTS government;
 
