@@ -1,6 +1,6 @@
 {
   "name": "oasismap-frontend",
-  "version": "0.1.0",
+  "version": "1.2.5",
   "private": true,
   "scripts": {
     "dev": "TZ=Asia/Tokyo next dev",
