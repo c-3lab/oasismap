@@ -121,6 +121,28 @@ variable "orion_fiware_service_path" {
   default     = "/Happiness"
 }
 
+variable "orion_log_level" {
+  description = "Orion log level (-logLevel). DEBUG outputs request details; use only temporarily for troubleshooting."
+  type        = string
+  default     = "INFO"
+
+  validation {
+    condition     = contains(["NONE", "FATAL", "ERROR", "WARN", "INFO", "DEBUG"], var.orion_log_level)
+    error_message = "orion_log_level must be one of NONE, FATAL, ERROR, WARN, INFO, DEBUG."
+  }
+}
+
+variable "orion_trace_levels" {
+  description = "Orion trace levels (-t, e.g. \"0-255\"). Empty disables tracing. Use only temporarily for troubleshooting."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = can(regex("^$|^[0-9]+(-[0-9]+)?(,[0-9]+(-[0-9]+)?)*$", var.orion_trace_levels))
+    error_message = "orion_trace_levels must be empty or a comma-separated list of levels/ranges (e.g. \"0-255\" or \"50,200-210\")."
+  }
+}
+
 variable "reverse_geocoding_url" {
   description = "Optional reverse geocoding API URL for backend."
   type        = string

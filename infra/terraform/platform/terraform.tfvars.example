@@ -14,6 +14,8 @@ subnet_app_prefix    = "10.0.1.0/24"
 subnet_db_prefix     = "10.0.2.0/24"
 # Application Gateway 専用サブネット（app 層の AGW が使用。variables.tf の既定と同じ）
 subnet_agw_prefix    = "10.0.3.0/26"
+# App Service の Private Endpoint 専用サブネット（variables.tf の既定と同じ）
+subnet_pe_prefix     = "10.0.4.0/27"
 
 # Cosmos DB
 mongo_api_version       = "6.0"
@@ -42,6 +44,6 @@ alert_mail_dest_address = "alert@example.com"
 dns_resource_group_name = "YOUR_DNS_RESOURCE_GROUP_NAME"
 root_domain_name        = "YOUR_DOMAIN_NAME"
 
-# 任意: 親ゾーンへの NS 委任（子ゾーンを親に委任する場合）。スタンドアロンゾーンのみなら省略（README §8.1）。
-# parent_domain_name                = "PARENT_DOMAIN_NAME"
+# 任意: 親ゾーンへの NS 委任（子ゾーンを親に委任する場合）。スタンドアロンゾーンのみなら省略（README §7.1）。
 # parent_zone_resource_group_name   = "PARENT_ZONE_RESOURCE_GROUP_NAME"
+# parent_domain_name                = "PARENT_DOMAIN_NAME"

@@ -18,6 +18,10 @@ RUN set -eux; \
     apt-get install -y --no-install-recommends \
         ca-certificates \
         curl; \
+    # Keep ca-certificates at runtime: Orion needs the CA bundle to verify TLS
+    # connections to MongoDB (e.g. Azure Cosmos DB). Marking it as manually
+    # installed prevents the auto-remove steps below from purging it.
+    apt-mark manual ca-certificates; \
     \
     # Apply security updates for vulnerable packages explicitly
     # Note: Some packages may not have fixes available yet in Debian 12.13
@@ -50,7 +54,7 @@ RUN set -eux; \
     dpkg-query -W -f='${Package}\n' | sort > "${current_pkgs_file}"; \
     # Extract packages that exist in 'after' but not in 'before' (i.e., newly added)
     to_remove="$(comm -13 "${saved_pkgs_file}" "${current_pkgs_file}" \
-        | grep -E '^(ca-certificates|curl)$' || true)"; \
+        | grep -E '^curl$' || true)"; \
     if [ -n "${to_remove}" ]; then \
         apt-get update; \
         apt-get purge -y --auto-remove ${to_remove}; \
@@ -60,6 +64,9 @@ RUN set -eux; \
     rm -f "${saved_pkgs_file}" "${current_pkgs_file}"; \
     \
     # Clean up temporary files
-    rm -rf /tmp/* /var/tmp/* /root/.cache
+    rm -rf /tmp/* /var/tmp/* /root/.cache; \
+    \
+    # Fail the build if the CA bundle is missing (TLS to MongoDB would fail at runtime)
+    test -s /etc/ssl/certs/ca-certificates.crt
 
 USER nobody

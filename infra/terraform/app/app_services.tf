@@ -44,6 +44,11 @@ resource "azurerm_linux_web_app" "frontend" {
   https_only                = true
   virtual_network_subnet_id = data.terraform_remote_state.platform.outputs.subnet_dmz_id
 
+  # 受信は Private Endpoint 経由（AGW / Orion）のみ。SCM も含めインターネットからの直接アクセスを拒否する。
+  public_network_access_enabled                  = false
+  ftp_publish_basic_authentication_enabled       = false
+  webdeploy_publish_basic_authentication_enabled = false
+
   lifecycle {
     action_trigger {
       events  = [before_create]
@@ -97,10 +102,21 @@ resource "azurerm_linux_web_app" "backend" {
   https_only                = true
   virtual_network_subnet_id = data.terraform_remote_state.platform.outputs.subnet_dmz_id
 
+  # 受信は Private Endpoint 経由（AGW / Orion）のみ。SCM も含めインターネットからの直接アクセスを拒否する。
+  public_network_access_enabled                  = false
+  ftp_publish_basic_authentication_enabled       = false
+  webdeploy_publish_basic_authentication_enabled = false
+
   lifecycle {
     action_trigger {
       events  = [before_create]
       actions = [action.local_command.build_backend]
+    }
+
+    # Orion の ACI が正常に稼働していないと ip_address が 0.0.0.0 になる。その値で ORION_URI を更新しないよう失敗させる。
+    precondition {
+      condition     = azurerm_container_group.orion.ip_address != "0.0.0.0"
+      error_message = "Orion container group has no valid private IP (0.0.0.0). Check that Orion is running (az container show / az container logs) before applying."
     }
   }
 
@@ -152,6 +168,11 @@ resource "azurerm_linux_web_app" "keycloak" {
   client_affinity_enabled   = true
   https_only                = true
   virtual_network_subnet_id = data.terraform_remote_state.platform.outputs.subnet_dmz_id
+
+  # 受信は Private Endpoint 経由（AGW / Orion）のみ。SCM も含めインターネットからの直接アクセスを拒否する。
+  public_network_access_enabled                  = false
+  ftp_publish_basic_authentication_enabled       = false
+  webdeploy_publish_basic_authentication_enabled = false
 
   lifecycle {
     action_trigger {

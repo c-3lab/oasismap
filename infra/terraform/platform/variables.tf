@@ -47,6 +47,12 @@ variable "subnet_agw_prefix" {
   default     = "10.0.3.0/26"
 }
 
+variable "subnet_pe_prefix" {
+  description = "Private Endpoint dedicated subnet address prefix (App Service private endpoints)."
+  type        = string
+  default     = "10.0.4.0/27"
+}
+
 # --- Cosmos DB ---
 variable "mongo_api_version" {
   description = "MongoDB API version for Cosmos DB."

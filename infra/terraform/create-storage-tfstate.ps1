@@ -96,21 +96,25 @@ try {
 }
 
 # コンテナ `platform`、`app` を作成する
-$platformContainerExists = Invoke-AzIgnoreNotFound { az storage container show --name "platform" --account-name $storageAccountName 2>$null }
-if (-not $platformContainerExists) {
-    try {
-        az storage container create --name "platform" --account-name $storageAccountName
-    } catch {
-        Write-Error "Failed to create platform container"
+# データプレーン（アカウントキー）ではなく管理プレーン（ARM）経由で操作するため container-rm を使用する
+foreach ($containerName in @("platform", "app")) {
+    $containerExists = az storage container-rm exists `
+        --name $containerName `
+        --storage-account $storageAccountName `
+        --resource-group $env:TF_STATE_RESOURCE_GROUP_NAME `
+        --query exists -o tsv
+    if ($LASTEXITCODE -ne 0) {
+        Write-Error "Failed to check $containerName container (exit code: $LASTEXITCODE)"
     }
-}
-
-$appContainerExists = Invoke-AzIgnoreNotFound { az storage container show --name "app" --account-name $storageAccountName 2>$null }
-if (-not $appContainerExists) {
-    try {
-        az storage container create --name "app" --account-name $storageAccountName
-    } catch {
-        Write-Error "Failed to create app container"
+    if ($containerExists -ne "true") {
+        try {
+            az storage container-rm create `
+                --name $containerName `
+                --storage-account $storageAccountName `
+                --resource-group $env:TF_STATE_RESOURCE_GROUP_NAME
+        } catch {
+            Write-Error "Failed to create $containerName container"
+        }
     }
 }
 

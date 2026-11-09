@@ -1,4 +1,4 @@
-# Application Gateway v2 / WAF。バックエンドは App Service の FQDN を指す。
+# Application Gateway v2 / WAF。バックエンドは App Service の FQDN を指す（VNet 内の Private DNS で Private Endpoint に解決される）。
 # HTTPS リスナーは Key Vault の証明書を使用（acme_agw_cert.tf）。HTTP(80) は HTTPS(443) へリダイレクト。
 
 data "azurerm_user_assigned_identity" "agw" {
@@ -138,13 +138,28 @@ resource "azurerm_application_gateway" "main" {
     priority                   = 110
   }
 
+  # backend の内部向けパス（Orion からの履歴通知）はインターネットから到達させない。
+  # Orion は Private Endpoint 経由で直接 backend に通知する（aci.tf の orion_subscription）。
+  url_path_map {
+    name                               = "backend-paths"
+    default_backend_address_pool_name  = "backend-pool"
+    default_backend_http_settings_name = "default-settings"
+
+    path_rule {
+      name                       = "deny-change-histories"
+      paths                      = ["/change-histories", "/change-histories/*"]
+      backend_address_pool_name  = "backend-pool"
+      backend_http_settings_name = "default-settings"
+      firewall_policy_id         = azurerm_web_application_firewall_policy.deny.id
+    }
+  }
+
   request_routing_rule {
-    name                       = "rule-backend"
-    rule_type                  = "Basic"
-    http_listener_name         = "https-backend"
-    backend_address_pool_name  = "backend-pool"
-    backend_http_settings_name = "default-settings"
-    priority                   = 120
+    name               = "rule-backend"
+    rule_type          = "PathBasedRouting"
+    http_listener_name = "https-backend"
+    url_path_map_name  = "backend-paths"
+    priority           = 120
   }
 
   request_routing_rule {
@@ -159,5 +174,7 @@ resource "azurerm_application_gateway" "main" {
   depends_on = [
     azurerm_web_application_firewall_policy.default,
     azurerm_web_application_firewall_policy.keycloak,
+    azurerm_web_application_firewall_policy.deny,
+    azurerm_private_endpoint.app,
   ]
 }
