@@ -6,6 +6,7 @@ import {
   Post,
   Logger,
   UseFilters,
+  UseGuards,
 } from '@nestjs/common';
 import { ChangeHistoriesService } from './change-histories.service';
 import { OrionNotificationDto } from './dto/orion-notification.dto';
@@ -15,8 +16,11 @@ import {
 } from './change-histories.constants';
 import { ValidationExceptionFilter } from './filters/validation-exception.filter';
 import { EntitySaveFailedException } from './exceptions/entity-save-failed.exception';
+import { OrionNotifyTokenGuard } from './guards/orion-notify-token.guard';
 
 @Controller('/change-histories/notify')
+// 共有シークレットの検証は ValidationPipe より前に行われ、未認証の通知は本文の検証もしない
+@UseGuards(OrionNotifyTokenGuard)
 @UseFilters(ValidationExceptionFilter)
 export class ChangeHistoriesController {
   constructor(

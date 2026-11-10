@@ -6,6 +6,7 @@ const SetupEnv = () => {
   process.env['KEYCLOAK_CLIENT_ISSUER'] = 'http://example.com/realms/oasismap';
   process.env['USER_AGENT_EMAIL'] = 'TISI_WB@ml.tisi.jp';
   process.env['APP_VERSION'] = '1.2.5';
+  process.env['ORION_NOTIFY_SECRET'] = 'test-notify-secret-0123456789abcdef';
   return;
 };
 

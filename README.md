@@ -113,11 +113,19 @@ docker上のコンテナから到達可能なホストOSのIPアドレスを確�
         ```sh
         ~/oasismap$ cat /dev/urandom | tr -dc 'A-Za-z0-9' | fold -w 32 | head -n 1
         ```
-5. keycloakの名前解決を設定します。
+5. Orionからbackendへの通知を認証する共有シークレットを設定します。
+    * 次のコマンドを実行して共有シークレットを生成し、 `ORION_NOTIFY_SECRET` に設定します。
+
+        ```sh
+        ~/oasismap$ openssl rand -hex 32
+        ```
+    * 英数字と「-」「_」で32文字以上の値が必要です。未設定や条件を満たさない値ではbackendが起動しません。
+
+6. keycloakの名前解決を設定します。
 
     `HOST_URL=http://YOUR_IP_ADDRESS:8080` の `YOUR_IP_ADDRESS` を、事前準備で確認したdocker上のコンテナから到達可能なホストOSのIPアドレスに置換します。
 
-6. 外部API利用時のUser Agentに関する情報を設定します。
+7. 外部API利用時のUser Agentに関する情報を設定します。
     * 幸福度可視化アプリでは、外部APIへのアクセス時に問い合わせ先のメールアドレスを含むUser-Agentを送信します。
     * 以下の環境変数を設定してください。
 
@@ -150,6 +158,7 @@ docker上のコンテナから到達可能なホストOSのIPアドレスを確�
     ```
 
 2. 以下コマンドを実行してorionにサブスクリプションの設定を行う
+    * backendは `X-Oasismap-Notify-Token` ヘッダの値が `ORION_NOTIFY_SECRET` と一致しない通知を401で拒否します。backendのコンテナ内の環境変数 `ORION_NOTIFY_SECRET` をヘッダに設定します
 
     ```sh
     root@backend:/app/backend$ wget --post-data='{
@@ -166,8 +175,11 @@ docker上のコンテナから到達可能なホストOSのIPアドレスを確�
         }
       },
       "notification": {
-        "http": {
-          "url": "http://backend:4000/change-histories/notify"
+        "httpCustom": {
+          "url": "http://backend:4000/change-histories/notify",
+          "headers": {
+            "X-Oasismap-Notify-Token": "'"${ORION_NOTIFY_SECRET}"'"
+          }
         }
       }
     }' \
