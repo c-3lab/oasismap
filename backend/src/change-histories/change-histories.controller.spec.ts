@@ -4,6 +4,7 @@ import { ChangeHistoriesController } from './change-histories.controller';
 import { ChangeHistoriesService } from './change-histories.service';
 import { OrionNotificationDto } from './dto/orion-notification.dto';
 import { EntitySaveFailedException } from './exceptions/entity-save-failed.exception';
+import { ORION_NOTIFY_SECRET } from './guards/orion-notify-secret';
 
 describe('ChangeHistoriesController', () => {
   let controller: ChangeHistoriesController;
@@ -30,6 +31,11 @@ describe('ChangeHistoriesController', () => {
         {
           provide: ChangeHistoriesService,
           useValue: changeHistoriesService,
+        },
+        // コントローラに付与した OrionNotifyTokenGuard の依存
+        {
+          provide: ORION_NOTIFY_SECRET,
+          useValue: process.env.ORION_NOTIFY_SECRET,
         },
       ],
     }).compile();
