@@ -97,6 +97,9 @@ resource "azurerm_linux_web_app" "backend" {
     REVERSE_GEOCODING_URL     = var.reverse_geocoding_url
     USER_AGENT_EMAIL          = var.user_agent_email
     APP_VERSION               = var.app_version
+    # バージョン付きの ID を参照し、ローテーション時に app_settings の変更として backend を再起動させる。
+    # （バージョンなしの参照では、App Service が新しい値を取得するまで最大 24 時間かかり、その間の通知が 401 になる）
+    ORION_NOTIFY_SECRET = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.orion_notify_secret.id})"
   }
 
   https_only                = true

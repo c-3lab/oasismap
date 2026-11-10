@@ -143,6 +143,17 @@ variable "orion_trace_levels" {
   }
 }
 
+variable "orion_notify_secret_version" {
+  description = "Version of the shared secret for Orion notifications (ORION_NOTIFY_SECRET). Increment to rotate the secret."
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.orion_notify_secret_version >= 1 && floor(var.orion_notify_secret_version) == var.orion_notify_secret_version
+    error_message = "orion_notify_secret_version must be an integer greater than or equal to 1."
+  }
+}
+
 variable "reverse_geocoding_url" {
   description = "Optional reverse geocoding API URL for backend."
   type        = string

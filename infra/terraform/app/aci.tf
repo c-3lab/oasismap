@@ -219,6 +219,9 @@ resource "azurerm_container_group" "postgres_cli" {
 # VNet 内で実行し、プライベート IP で Orion に到達する。パブリックイメージのみ使用。
 # 通知先は backend の Private Endpoint（*.azurewebsites.net を VNet 内の Private DNS で解決）。
 # Orion の再作成などで再実行されても重複しないよう、登録後に同じ description の既存サブスクリプションを削除する。
+# 通知には共有シークレットのヘッダ（X-Oasismap-Notify-Token）を付ける。シークレットは secure_environment_variables で渡し、
+# 登録スクリプト内でボディに組み込む（environment_variables は az container show で参照できるため、ボディには含めない）。
+# シークレットのローテーション時は secure_environment_variables の変更で ACI が再作成され、新しいサブスクリプションに置き換わる。
 resource "azurerm_container_group" "orion_subscription" {
   name                = "${local.prefix}-aci-orion-subscription"
   location            = local.location
@@ -251,11 +254,15 @@ resource "azurerm_container_group" "orion_subscription" {
           condition = { attrs = [] }
         }
         notification = {
-          http = {
+          httpCustom = {
             url = "https://${azurerm_linux_web_app.backend.default_hostname}/change-histories/notify"
           }
         }
       })
+    }
+
+    secure_environment_variables = {
+      ORION_NOTIFY_SECRET = random_password.orion_notify_secret.result
     }
 
     commands = ["/bin/sh", "-c", local.orion_subscription_script]
@@ -285,7 +292,9 @@ locals {
     URL="http://$ORION_IP:1026/v2/subscriptions"
     old_ids=$(curl -f -sS -H "Fiware-Service: $FIWARE_SERVICE" -H "Fiware-ServicePath: $FIWARE_SERVICE_PATH" "$URL?limit=1000" \
       | jq -r --arg d "$SUBSCRIPTION_DESCRIPTION" '.[] | select(.description == $d) | .id')
-    printf '%s' "$SUBSCRIPTION_BODY" | curl -f -sS -X POST -H 'Content-Type: application/json' \
+    printf '%s' "$SUBSCRIPTION_BODY" \
+      | jq -c --arg token "$ORION_NOTIFY_SECRET" '.notification.httpCustom.headers["X-Oasismap-Notify-Token"] = $token' \
+      | curl -f -sS -X POST -H 'Content-Type: application/json' \
       -H "Fiware-Service: $FIWARE_SERVICE" -H "Fiware-ServicePath: $FIWARE_SERVICE_PATH" --data-binary @- "$URL"
     echo "created subscription"
     for id in $old_ids; do

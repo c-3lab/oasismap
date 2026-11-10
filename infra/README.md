@@ -178,6 +178,7 @@ Terraform は次の **3 レイヤー**を **platform → app → keycloak-realm*
 | app_keycloak_admin_password | Keycloak の管理者パスワード | |
 | acme_server_url | ACME サーバー URL | `https://acme-v02.api.letsencrypt.org/directory` |
 | acme_registration_email | ACME 登録メールアドレス | |
+| orion_notify_secret_version | Orion → Backend 通知の共有シークレットのバージョン<br/>値を上げて apply するとシークレットを再生成する（§8.1） | 1 |
  terms_municipality_name | 参加同意書の自治体名 | 【自治体名】 |
 | terms_date | 参加同意書の日付 | yyyy年mm月dd日 |
 | terms_title_suffix | 参加同意書のタイトルの接尾辞 | （雛形） |
@@ -255,6 +256,10 @@ terraform apply
 - **Application Gateway（WAF）**  
   アプリがブロックされる場合は、まず **Detection** モードでログを確認するなど、従来どおり WAF とアプリの整合を取る（`agw_waf_mode` 等）。  
   なお、backend の `/change-histories/*` は専用の WAF ポリシー（`WAFPolicy-deny`）で `agw_waf_enabled` / `agw_waf_mode` の設定に関わらず常に拒否される。
+- **Orion → Backend 通知の共有シークレット**  
+  Orion から backend の `/change-histories/notify` への通知は、共有シークレット（`ORION_NOTIFY_SECRET`）を `X-Oasismap-Notify-Token` ヘッダに付けて認証する。シークレットは app レイヤーで自動生成して Key Vault（`orion-notify-secret`）に格納し、backend には Key Vault 参照で、サブスクリプション登録用の ACI には secure_environment_variables で渡す。
+  - 値は Terraform state に保存される。また、Orion の `GET /v2/subscriptions` の応答にも含まれる（Orion は VNet 内からのみ到達可能）。
+  - ローテーションする場合は `orion_notify_secret_version` を上げて apply する。backend の再起動とサブスクリプションの再登録が行われるが、切り替えの間に送られた通知は 401 となり、Orion は再送しないため変更履歴が欠落する場合がある。
 - **App Service への直接アクセス**  
   App Service は公開アクセスを無効化しているため、インターネットからは `*.azurewebsites.net`・Kudu（SCM）・ポータルの SSH / ログストリームを利用できない。アプリのログは Log Analytics（`AppServiceConsoleLogs`）で確認する。再起動や設定変更など、管理プレーン（Azure Portal / `az` CLI）経由の操作は従来どおり行える。
 
