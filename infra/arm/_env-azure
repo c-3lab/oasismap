@@ -29,6 +29,9 @@ NEXTAUTH_SECRET="CHANGE_TO_RANDOM_STRING"
 
 BACKEND_URL="https://backend.example.com"
 
+# Orion から backend への通知を認証する共有シークレット（英数字と「-」「_」で32文字以上。生成例: openssl rand -hex 32）
+ORION_NOTIFY_SECRET="CHANGE_TO_RANDOM_HEX_STRING"
+
 REVERSE_GEOCODING_URL="https://nominatim.openstreetmap.org/reverse"
 
 # Cluster configuration

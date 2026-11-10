@@ -32,6 +32,11 @@ NEXTAUTH_SECRET=CHANGE_TO_RANDOM_STRING
 
 BACKEND_URL=http://localhost:4000
 
+# Orion から backend への通知（POST /change-histories/notify）を認証する共有シークレット。
+# 英数字と「-」「_」で32文字以上。未設定や条件を満たさない値では backend が起動しない。
+# 生成例: openssl rand -hex 32
+ORION_NOTIFY_SECRET=CHANGE_TO_RANDOM_HEX_STRING
+
 REVERSE_GEOCODING_URL=https://nominatim.openstreetmap.org/reverse
 
 # Google認証を使用する場合、GoogleのクライアントIDとクライアントシークレットを設定
