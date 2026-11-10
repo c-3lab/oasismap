@@ -204,13 +204,21 @@ resource "keycloak_realm_user_profile" "userprofile" {
     name               = "nickname"
     display_name       = "$${profile.attribute.nickname}"
     required_for_roles = ["admin", "user"]
+    # 登録画面・IdP 確認画面で本人が値を入れられるよう user にも編集権限を残す。
+    # 登録後の本人による変更は oasismap-nickname Validator で禁止する。
     permissions {
       view = []
       edit = ["admin", "user"]
     }
+    # Keycloak は username を小文字で保存するため、username と一致させる nickname も英小文字に限定する
     validator {
       name   = "pattern"
-      config = { pattern = "^[a-zA-Z0-9_-]+$", "error-message" = "profile.error.nickname" }
+      config = { pattern = "^[a-z0-9_-]+$", "error-message" = "profile.error.nickname" }
+    }
+    # 独自拡張（keycloak-extension）: 一意性・登録時の username 一致・本人による変更禁止
+    validator {
+      name   = "oasismap-nickname"
+      config = {}
     }
   }
 

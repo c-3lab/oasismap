@@ -177,6 +177,8 @@ docker上のコンテナから到達可能なホストOSのIPアドレスを確�
 5. `Create new User` を押下
 6. `Username`,`profile.attribute.nickname` に管理者アカウント名を入力して `Create` を選択
     ※ `Username` と `profile.attribute.nickname` は同じ値を入れてください
+    ※ `profile.attribute.nickname` は英小文字・数字・`-`・`_` のみ使用できます。他のユーザーと重複する値は登録できません
+    ※ ニックネームは投稿の所有者の判定に使うため、登録後は利用者本人が変更できません（管理画面からのみ変更できます）
 7. `Credentials` を選択して `Set password` を押下
 8. `Password` と `Password confirmation` に同じパスワードを入力し、 `Temporary` をOFFにして `Save` を押下
 9. `Save password` を押下して管理者アカウントのパスワードを保存
@@ -264,6 +266,8 @@ docker上のコンテナから到達可能なホストOSのIPアドレスを確�
 
 3. ユーザー情報を入力し、「参加同意」の内容を確認します。確認後、チェックボックスにチェックを入れ、登録ボタンをクリックします  
     ※重複するニックネームは登録できません  
+    ※ニックネームは英小文字・数字・「-」「_」のみ使用できます（英大文字で入力した場合は小文字で登録されます）  
+    ※ニックネームは登録後に変更できません  
     ※「参加同意」の内容を確認するまで、チェックボックスにはチェックを入れられません
   <p align="center">
     <img src="doc/img/general-user-3.png" width="400">

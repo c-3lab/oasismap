@@ -292,6 +292,8 @@ terraform apply
 5. `Create new User` を押下
 6. `Username`,`profile.attribute.nickname` に管理者アカウント名を入力して `Create` を選択
     ※ `Username` と `profile.attribute.nickname` は同じ値を入れてください
+    ※ `profile.attribute.nickname` は英小文字・数字・`-`・`_` のみ使用できます。他のユーザーと重複する値は登録できません
+    ※ ニックネームは投稿の所有者の判定に使うため、登録後は利用者本人が変更できません（管理画面からのみ変更できます）
 7. `Credentials` を選択して `Set password` を押下
 8. `Password` と `Password confirmation` に同じパスワードを入力し、 `Temporary` をOFFにして `Save` を押下
 9. `Save password` を押下して管理者アカウントのパスワードを保存

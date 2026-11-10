@@ -41,6 +41,15 @@
 			<#nested "beforeField" attribute>
 			<#if attribute.name == "nickname">
 			  <input type="hidden" id="${attribute.name}" name="${attribute.name}" value="" />
+			  <#-- nickname は hidden のため、サーバー側の検証エラー（重複・文字種など）はここで表示する。
+			       username 自体にエラーがある場合は同じ内容になるため表示しない -->
+			  <#if messagesPerField.existsError('${attribute.name}') && !messagesPerField.existsError('username')>
+				<div class="${properties.kcFormGroupClass!}">
+					<span id="input-error-${attribute.name}" class="${properties.kcInputErrorMessageClass!}" aria-live="polite">
+						${kcSanitize(messagesPerField.get('${attribute.name}'))?no_esc}
+					</span>
+				</div>
+			  </#if>
 			<#else>
 				<div class="${properties.kcFormGroupClass!}">
 					<div class="${properties.kcLabelWrapperClass!}">
