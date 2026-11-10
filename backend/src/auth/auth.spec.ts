@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UnauthorizedException } from '@nestjs/common';
+import {
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth';
-import { JwtPayload } from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import fetchMock from 'fetch-mock';
 import createJWKSMock from 'mock-jwks';
 import { mockDecodedToken } from 'src/auth/mocks/mock-decoded-token';
@@ -59,9 +62,12 @@ describe('AuthService', () => {
 
   describe('verifyAuthorization', () => {
     it('should return decodedToken', async () => {
-      fetchMock.get('http://example.com/.well-known/openid-configuration', {
-        jwks_uri: 'http://example.com/jwks',
-      });
+      fetchMock.get(
+        'http://example.com/realms/oasismap/.well-known/openid-configuration',
+        {
+          jwks_uri: 'http://example.com/jwks',
+        },
+      );
       const jwksMock = createJWKSMock('http://example.com', '/jwks');
       jwksMock.start();
 
@@ -106,6 +112,90 @@ describe('AuthService', () => {
       jwksMock.stop();
     });
 
+    // Authorizationヘッダが無い場合（500ではなく401）
+    it('should throw UnauthorizedException when authorization header is missing', async () => {
+      await expect(service.verifyAuthorization(undefined)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.verifyAuthorization('')).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    // Bearerの後にトークンが無い、または余分な値がある場合
+    it('should throw UnauthorizedException when authorization header is malformed', async () => {
+      await expect(service.verifyAuthorization('Bearer')).rejects.toThrow(
+        UnauthorizedException,
+      );
+      await expect(service.verifyAuthorization('Bearer a b')).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    // 別の発行者（realm）のトークン
+    it('should throw UnauthorizedException when issuer is different', async () => {
+      fetchMock.get(
+        'http://example.com/realms/oasismap/.well-known/openid-configuration',
+        { jwks_uri: 'http://example.com/jwks' },
+      );
+      const jwksMock = createJWKSMock('http://example.com', '/jwks');
+      jwksMock.start();
+
+      const token = jwksMock.token({
+        ...mockDecodedToken,
+        iss: 'http://example.com/realms/other',
+      });
+
+      await expect(
+        service.verifyAuthorization(`Bearer ${token}`),
+      ).rejects.toThrow(UnauthorizedException);
+
+      fetchMock.restore();
+      jwksMock.stop();
+    });
+
+    // 署名アルゴリズムと発行者を固定して検証する
+    // （jsonwebtoken v9 は公開鍵での HS256 検証を既定で拒否するため、拒否の挙動ではなく渡すオプションを確認する）
+    it('should verify with RS256 algorithm and issuer', async () => {
+      fetchMock.get(
+        'http://example.com/realms/oasismap/.well-known/openid-configuration',
+        { jwks_uri: 'http://example.com/jwks' },
+      );
+      const jwksMock = createJWKSMock('http://example.com', '/jwks');
+      jwksMock.start();
+      const spyVerify = jest.spyOn(jwt, 'verify');
+
+      const token = jwksMock.token(mockDecodedToken);
+      await service.verifyAuthorization(`Bearer ${token}`);
+
+      expect(spyVerify).toHaveBeenCalledWith(
+        token,
+        expect.any(Function),
+        {
+          algorithms: ['RS256'],
+          issuer: 'http://example.com/realms/oasismap',
+        },
+        expect.any(Function),
+      );
+
+      spyVerify.mockRestore();
+      fetchMock.restore();
+      jwksMock.stop();
+    });
+
+    // 発行者の設定漏れ
+    it('should throw InternalServerErrorException when KEYCLOAK_CLIENT_ISSUER is not set', async () => {
+      const original = process.env.KEYCLOAK_CLIENT_ISSUER;
+      delete process.env.KEYCLOAK_CLIENT_ISSUER;
+      try {
+        await expect(
+          service.verifyAuthorization('Bearer token'),
+        ).rejects.toThrow(InternalServerErrorException);
+      } finally {
+        process.env.KEYCLOAK_CLIENT_ISSUER = original;
+      }
+    });
+
     // トークンにBearerが無い場合
     it('should throw UnauthorizedException when token is not Bearer', async () => {
       await expect(service.verifyAuthorization('InvalidToken')).rejects.toThrow(
@@ -115,9 +205,12 @@ describe('AuthService', () => {
 
     // idpからの公開鍵の取得失敗
     it('should throw UnauthorizedException when failed to get key', async () => {
-      fetchMock.get('http://example.com/.well-known/openid-configuration', {
-        jwks_uri: 'http://example.com/jwks',
-      });
+      fetchMock.get(
+        'http://example.com/realms/oasismap/.well-known/openid-configuration',
+        {
+          jwks_uri: 'http://example.com/jwks',
+        },
+      );
       fetchMock.mock('http://example.com/jwks', 400);
       const jwksMock = createJWKSMock('http://example.com', '/dummy');
 
