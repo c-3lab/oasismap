@@ -1,8 +1,8 @@
 # terraform.tfvars にコピーして実値を設定すること。terraform.tfvars はコミットしないこと。
 # app 層適用後に実行。初期化: terraform init -backend-config=config.azurerm.tfbackend
 
-backend_resource_group_name   = "YOUR_TF_STATE_RESOURCE_GROUP_NAME"
-backend_storage_account_name  = "YOUR_TF_STATE_STORAGE_ACCOUNT_NAME"
+backend_resource_group_name  = "YOUR_TF_STATE_RESOURCE_GROUP_NAME"
+backend_storage_account_name = "YOUR_TF_STATE_STORAGE_ACCOUNT_NAME"
 
 # レルム（任意。既定値が適用される）
 # keycloak_realm_name                  = "oasismap"
@@ -11,6 +11,6 @@ backend_storage_account_name  = "YOUR_TF_STATE_STORAGE_ACCOUNT_NAME"
 # keycloak_realm_event_group_name      = "users"
 
 # Google IdP（任意。空のままならスキップ）
-keycloak_google_client_id                 = ""
-keycloak_google_client_secret             = ""
+keycloak_google_client_id                    = ""
+keycloak_google_client_secret                = ""
 keycloak_google_post_broker_login_flow_alias = ""

@@ -6,7 +6,7 @@ locals {
 }
 
 resource "time_sleep" "wait_for_orion_logs" {
-  depends_on = [azurerm_container_group.orion]
+  depends_on      = [azurerm_container_group.orion]
   create_duration = "180s"
 }
 
