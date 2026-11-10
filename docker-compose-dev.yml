@@ -35,6 +35,7 @@ services:
       - "REVERSE_GEOCODING_URL=${REVERSE_GEOCODING_URL}"
       - "USER_AGENT_EMAIL=${USER_AGENT_EMAIL}"
       - "APP_VERSION=${APP_VERSION}"
+      - "ORION_NOTIFY_SECRET=${ORION_NOTIFY_SECRET}"
     volumes:
       - ./backend:/app/backend
     networks:
