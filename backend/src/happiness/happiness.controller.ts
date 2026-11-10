@@ -79,9 +79,10 @@ export class HappinessController {
     @Headers('Authorization') authorization: string,
     @Param('id') id: string,
   ): Promise<HappinessResponse> {
-    await this.authService.getUserAttributeFromAuthorization(authorization);
+    const userAttribute =
+      await this.authService.getUserAttributeFromAuthorization(authorization);
 
-    return this.happinessDeleteService.deleteHappiness(id);
+    return this.happinessDeleteService.deleteHappiness(userAttribute, id);
   }
 
   @Get('/me')
