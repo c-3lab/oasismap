@@ -59,15 +59,17 @@ function Get-GeneratedStorageAccountName {
 $storageAccountName = Get-GeneratedStorageAccountName -Prefix $env:TF_STATE_PREFIX -ResourceGroupMd5Hash $storageAccountNameSuffix
 
 # コンテナ `platform`、`app` を削除する
-try {
-    az storage container delete --name "app" --account-name $storageAccountName
-} catch {
-    Write-Error "Failed to delete app container"
-}
-try {
-    az storage container delete --name "platform" --account-name $storageAccountName
-} catch {
-    Write-Error "Failed to delete platform container"
+# データプレーン（アカウントキー）ではなく管理プレーン（ARM）経由で操作するため container-rm を使用する
+foreach ($containerName in @("app", "platform")) {
+    try {
+        az storage container-rm delete `
+            --name $containerName `
+            --storage-account $storageAccountName `
+            --resource-group $env:TF_STATE_RESOURCE_GROUP_NAME `
+            --yes
+    } catch {
+        Write-Error "Failed to delete $containerName container"
+    }
 }
 
 # Azure CLI を使用して、ストレージアカウントを削除する

@@ -3,9 +3,9 @@
 # 認証フロー「general user browser」およびユーザープロファイルは本ファイルで実装。
 
 locals {
-  prefecture_options       = jsondecode(file("./prefectures.json")).prefectures
-  city_options             = jsondecode(file("./cities.json")).cities
-  general_user_theme       = (var.keycloak_google_client_id != "" && var.keycloak_google_client_secret != "") ? var.keycloak_realm_login_theme : var.keycloak_general_user_keycloak_login_theme
+  prefecture_options = jsondecode(file("./prefectures.json")).prefectures
+  city_options       = jsondecode(file("./cities.json")).cities
+  general_user_theme = (var.keycloak_google_client_id != "" && var.keycloak_google_client_secret != "") ? var.keycloak_realm_login_theme : var.keycloak_general_user_keycloak_login_theme
 }
 
 # -----------------------------------------------------------------------------
@@ -329,7 +329,7 @@ resource "keycloak_openid_client" "general_user_client" {
   ]
   web_origins = [local.keycloak_client_base_url]
 
-  login_theme  = local.general_user_theme
+  login_theme = local.general_user_theme
 
   dynamic "authentication_flow_binding_overrides" {
     for_each = (var.keycloak_google_client_id != "" && var.keycloak_google_client_secret != "") ? [1] : []
@@ -652,13 +652,13 @@ resource "keycloak_authentication_execution" "admin_browser_role_condition" {
 }
 
 resource "keycloak_authentication_execution_config" "admin_browser_role_condition_config" {
-  realm_id          = keycloak_realm.oasismap.id
+  realm_id     = keycloak_realm.oasismap.id
   execution_id = keycloak_authentication_execution.admin_browser_role_condition.id
   alias        = "auth-role-condition-config"
   config = {
     "condUserRole" = keycloak_role.admin_role.name
-    "role" = keycloak_role.admin_role.name
-    "negate" = "true"
+    "role"         = keycloak_role.admin_role.name
+    "negate"       = "true"
   }
 }
 

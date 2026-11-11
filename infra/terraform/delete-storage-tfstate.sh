@@ -62,8 +62,15 @@ generated_storage_account_name() {
 STORAGE_ACCOUNT_NAME=$(generated_storage_account_name "${TF_STATE_PREFIX}" "${STORAGE_ACCOUNT_NAME_SUFFIX}")
 
 # コンテナ `platform`、`app` を削除する
-az storage container delete --name "app" --account-name "${STORAGE_ACCOUNT_NAME}" || (echo "Failed to delete app container" >&2 && exit 1)
-az storage container delete --name "platform" --account-name "${STORAGE_ACCOUNT_NAME}" || (echo "Failed to delete platform container" >&2 && exit 1)
+# データプレーン（アカウントキー）ではなく管理プレーン（ARM）経由で操作するため container-rm を使用する
+for container_name in "app" "platform"; do
+  az storage container-rm delete \
+    --name "${container_name}" \
+    --storage-account "${STORAGE_ACCOUNT_NAME}" \
+    --resource-group "${TF_STATE_RESOURCE_GROUP_NAME}" \
+    --yes ||
+    (echo "Failed to delete ${container_name} container" >&2 && exit 1)
+done
 
 # Azure CLI を使用して、ストレージアカウントを削除する
 az storage account delete \

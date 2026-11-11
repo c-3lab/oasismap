@@ -1,5 +1,6 @@
 # Application Gateway 用 WAF ポリシー（README §8.1: ブロック時は Detection でログ確認など）。
 # 既定ポリシー: frontend/backend（ゲートウェイレベル）。Keycloak 用ポリシー: keycloak リスナーのみ（WAF 無効）。
+# 拒否ポリシー: backend リスナーの /change-histories/* パスのみ（常に Block）。
 
 resource "azurerm_web_application_firewall_policy" "keycloak" {
   name                = "${local.prefix}-WAFPolicy-keycloak"
@@ -23,6 +24,44 @@ resource "azurerm_web_application_firewall_policy" "keycloak" {
     managed_rule_set {
       type    = "Microsoft_BotManagerRuleSet"
       version = "1.0"
+    }
+  }
+}
+
+# 拒否専用ポリシー: backend リスナーの内部向けパス（/change-histories/*）に割り当てる。
+# 既定ポリシーの agw_waf_enabled / agw_waf_mode に依存せず、常に Prevention で全リクエストを Block する。
+resource "azurerm_web_application_firewall_policy" "deny" {
+  name                = "${local.prefix}-WAFPolicy-deny"
+  resource_group_name = local.resource_group_name
+  location            = local.location
+
+  policy_settings {
+    enabled = true
+    mode    = "Prevention"
+  }
+
+  custom_rules {
+    name      = "DenyAll"
+    priority  = 1
+    rule_type = "MatchRule"
+    action    = "Block"
+
+    # 割り当てられたパスへのリクエストを無条件に拒否する（送信元 IP 全体に一致させる）。
+    # パス文字列で照合すると、URL エンコードされたパスがパスルーティングでは一致しても WAF 条件をすり抜ける恐れがあるため使わない。
+    # 注: Operator "Any" は RequestUri と組み合わせられない（ApplicationGatewayFirewallConditionUnsupportedMatchVariable）。
+    match_conditions {
+      match_variables {
+        variable_name = "RemoteAddr"
+      }
+      operator     = "IPMatch"
+      match_values = ["0.0.0.0/0"]
+    }
+  }
+
+  managed_rules {
+    managed_rule_set {
+      type    = "OWASP"
+      version = "3.2"
     }
   }
 }

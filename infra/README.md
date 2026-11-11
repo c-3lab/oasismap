@@ -15,8 +15,8 @@ Terraform は次の **3 レイヤー**を **platform → app → keycloak-realm*
 
 | レイヤー | 主なリソース |
 | --- | --- |
-| **platform** | リソースグループ、Virtual Network（DMZ / App / DB / Application Gateway 用サブネット）、Cosmos DB（Mongo API・サーバーレス）、PostgreSQL Flexible Server、Log Analytics、Key Vault、DNS ゾーン・レコード、ユーザー割り当てマネージド ID など |
-| **app** | Azure Container Registry、Linux App Service（**frontend / backend / Keycloak**）、Azure Container Instances（**Orion**、Mongo/PostgreSQL 用ワンショット CLI、**Orion サブスクリプション登録用ワンショット** など）、Application Gateway（WAF）、Let's Encrypt（ACME DNS-01）による証明書 |
+| **platform** | リソースグループ、Virtual Network（DMZ / App / DB / Application Gateway / Private Endpoint 用サブネット）、App Service 用 Private DNS ゾーン（`privatelink.azurewebsites.net`）、Cosmos DB（Mongo API・サーバーレス）、PostgreSQL Flexible Server、Log Analytics、Key Vault、DNS ゾーン・レコード、ユーザー割り当てマネージド ID など |
+| **app** | Azure Container Registry、Linux App Service（**frontend / backend / Keycloak**）とその Private Endpoint、Azure Container Instances（**Orion**、Mongo/PostgreSQL 用ワンショット CLI、**Orion サブスクリプション登録用ワンショット** など）、Application Gateway（WAF）、Let's Encrypt（ACME DNS-01）による証明書 |
 | **keycloak-realm** | Keycloak のレルム・クライアント・IdP 等（**Keycloak Terraform プロバイダ**） |
 
 実行時の依存関係のイメージは次のとおりである。
@@ -24,6 +24,12 @@ Terraform は次の **3 レイヤー**を **platform → app → keycloak-realm*
 - **platform** がネットワーク・データストア・ログ基盤・DNSを用意する。
 - **app** が platform の remote state を参照し、アプリとゲートウェイ、ACI、証明書を構築する（初回などに **`az acr build`** によりイメージをビルド・プッシュする）。
 - **keycloak-realm** が app の remote state と Key Vault を参照し、HTTPS で Keycloak 管理 API に接続してレルムを構成する。
+
+ネットワーク上の通信経路は次のとおりである。
+
+- App Service（frontend / backend / Keycloak）は公開アクセスを無効化しており、受信は Private Endpoint 経由のみとなる。インターネットからは Application Gateway（WAF）経由でのみ到達でき、`*.azurewebsites.net`（SCM / Kudu を含む）への直接アクセスは拒否される。
+- Orion（ACI）からの履歴通知は、VNet 内の Private DNS で解決した backend の Private Endpoint に直接送られる。Application Gateway では `https://backend.<ルートドメイン>/change-histories/*` を常に拒否する。
+- Private Endpoint 用サブネットの NSG は、Application Gateway サブネットからの HTTPS と、App サブネット（Orion）から backend の Private Endpoint への HTTPS のみを許可する。
 
 ## 3. 前提ツール
 
@@ -172,7 +178,9 @@ Terraform は次の **3 レイヤー**を **platform → app → keycloak-realm*
 | app_keycloak_admin_password | Keycloak の管理者パスワード | |
 | acme_server_url | ACME サーバー URL | `https://acme-v02.api.letsencrypt.org/directory` |
 | acme_registration_email | ACME 登録メールアドレス | |
- terms_municipality_name | 参加同意書の自治体名 | 【自治体名】 |
+| orion_notify_secret_version | Orion → Backend 通知の共有シークレットのバージョン<br/>値を上げて apply するとシークレットを再生成する（§8.1） | 1 |
+| orion_log_info_payload_max_size | Orion が INFO ログに出力するペイロードの最大バイト数<br/>0 の場合は `(...)` に置き換えて出力しない（§8.1） | 0 |
+| terms_municipality_name | 参加同意書の自治体名 | 【自治体名】 |
 | terms_date | 参加同意書の日付 | yyyy年mm月dd日 |
 | terms_title_suffix | 参加同意書のタイトルの接尾辞 | （雛形） |
 
@@ -247,7 +255,15 @@ terraform apply
   - 本番向け: `acme_server_url` は既定の本番 ACME ディレクトリ（`variables.tf` のコメント参照）。
   - 検証時: レート制限回避のため **ステージング URL** に切り替え可能である。ステージング証明書はブラウザで信頼されない。運用前に本番 URL へ戻し、再 apply する。
 - **Application Gateway（WAF）**  
-  アプリがブロックされる場合は、まず **Detection** モードでログを確認するなど、従来どおり WAF とアプリの整合を取る（`agw_waf_mode` 等）。
+  アプリがブロックされる場合は、まず **Detection** モードでログを確認するなど、従来どおり WAF とアプリの整合を取る（`agw_waf_mode` 等）。  
+  なお、backend の `/change-histories/*` は専用の WAF ポリシー（`WAFPolicy-deny`）で `agw_waf_enabled` / `agw_waf_mode` の設定に関わらず常に拒否される。
+- **Orion → Backend 通知の共有シークレット**  
+  Orion から backend の `/change-histories/notify` への通知は、共有シークレット（`ORION_NOTIFY_SECRET`）を `X-Oasismap-Notify-Token` ヘッダに付けて認証する。シークレットは app レイヤーで自動生成して Key Vault（`orion-notify-secret`）に格納し、backend には Key Vault 参照で、サブスクリプション登録用の ACI には secure_environment_variables で渡す。
+  - 値は Terraform state に保存される。また、Orion の `GET /v2/subscriptions` の応答にも含まれる（Orion は VNet 内からのみ到達可能）。
+  - Orion は INFO ログにリクエストや通知のペイロードを出力するため、サブスクリプション登録時のシークレットや通知の内容（ニックネーム・位置など）が Log Analytics に残る。これを防ぐため、既定では `orion_log_info_payload_max_size = 0` としてペイロードを `(...)` に置き換えている。調査のために 0 以外にする場合や、`orion_log_level = "DEBUG"`・`orion_trace_levels` を設定する場合はペイロードが出力されうるため、一時的な利用にとどめ、元に戻した後にシークレットをローテーションする。
+  - ローテーションする場合は `orion_notify_secret_version` を上げて apply する。1 回の apply で Key Vault のシークレットの更新、backend の再起動（`ORION_NOTIFY_SECRET_VERSION` の変更により Key Vault 参照を再取得）、サブスクリプションの再登録が行われる。ただし、切り替えの間に送られた通知は 401 となり、Orion は再送しないため変更履歴が欠落する場合がある。
+- **App Service への直接アクセス**  
+  App Service は公開アクセスを無効化しているため、インターネットからは `*.azurewebsites.net`・Kudu（SCM）・ポータルの SSH / ログストリームを利用できない。アプリのログは Log Analytics（`AppServiceConsoleLogs`）で確認する。再起動や設定変更など、管理プレーン（Azure Portal / `az` CLI）経由の操作は従来どおり行える。
 
 ### 8.2. apply 後に確認する出力例
 
@@ -264,7 +280,7 @@ Keycloak が HTTPS で応答する状態になっていることを確認して�
 
 ```sh
 cd infra/terraform/keycloak-realm
-terraform init -backend-config=config.azurerm.tfbackend
+terraform init -backend-config=config.azurerm.tfbackend -lockfile=readonly
 terraform plan
 terraform apply
 ```

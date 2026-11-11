@@ -40,6 +40,31 @@ output "subnet_db_id" {
   value       = azurerm_subnet.db.id
 }
 
+output "subnet_pe_id" {
+  description = "Private Endpoint subnet ID (App Service private endpoints)."
+  value       = azurerm_subnet.pe.id
+}
+
+output "private_dns_zone_webapp_id" {
+  description = "Private DNS zone ID for privatelink.azurewebsites.net."
+  value       = azurerm_private_dns_zone.webapp.id
+}
+
+output "pe_ip_frontend" {
+  description = "Static private IP of the frontend App Service private endpoint."
+  value       = local.pe_ip_frontend
+}
+
+output "pe_ip_backend" {
+  description = "Static private IP of the backend App Service private endpoint."
+  value       = local.pe_ip_backend
+}
+
+output "pe_ip_keycloak" {
+  description = "Static private IP of the keycloak App Service private endpoint."
+  value       = local.pe_ip_keycloak
+}
+
 output "key_vault_id" {
   description = "Key Vault ID for Key Vault Reference and data source."
   value       = azurerm_key_vault.main.id

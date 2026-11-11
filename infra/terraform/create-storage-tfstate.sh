@@ -95,17 +95,24 @@ az storage account create \
   (echo "Failed to create storage account" >&2 && exit 1)
 
 # コンテナ `platform`、`app` を作成する
-platform_container_exists=$(az_ignore_not_found az storage container show --name "platform" --account-name "${STORAGE_ACCOUNT_NAME}")
-if [ -z "$platform_container_exists" ]; then
-  az storage container create --name "platform" --account-name "${STORAGE_ACCOUNT_NAME}" ||
-    (echo "Failed to create platform container" >&2 && exit 1)
-fi
-
-app_container_exists=$(az_ignore_not_found az storage container show --name "app" --account-name "${STORAGE_ACCOUNT_NAME}")
-if [ -z "$app_container_exists" ]; then
-  az storage container create --name "app" --account-name "${STORAGE_ACCOUNT_NAME}" ||
-    (echo "Failed to create app container" >&2 && exit 1)
-fi
+# データプレーン（アカウントキー）ではなく管理プレーン（ARM）経由で操作するため container-rm を使用する
+for container_name in "platform" "app"; do
+  if ! container_exists=$(az storage container-rm exists \
+    --name "${container_name}" \
+    --storage-account "${STORAGE_ACCOUNT_NAME}" \
+    --resource-group "${TF_STATE_RESOURCE_GROUP_NAME}" \
+    --query exists -o tsv); then
+    echo "Failed to check ${container_name} container" >&2
+    exit 1
+  fi
+  if [ "$container_exists" != "true" ]; then
+    az storage container-rm create \
+      --name "${container_name}" \
+      --storage-account "${STORAGE_ACCOUNT_NAME}" \
+      --resource-group "${TF_STATE_RESOURCE_GROUP_NAME}" ||
+      (echo "Failed to create ${container_name} container" >&2 && exit 1)
+  fi
+done
 
 # backend の設定ファイルを作成する
 cat <<EOF > platform/config.azurerm.tfbackend

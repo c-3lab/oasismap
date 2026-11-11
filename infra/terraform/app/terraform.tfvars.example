@@ -2,35 +2,45 @@
 # バックエンド: terraform init -backend-config=config.azurerm.tfbackend。
 # config.azurerm.tfbackend に resource_group_name と storage_account_name を記載する。
 
-backend_resource_group_name   = "YOUR_TF_STATE_RESOURCE_GROUP_NAME"
-backend_storage_account_name  = "YOUR_TF_STATE_STORAGE_ACCOUNT_NAME"
+backend_resource_group_name  = "YOUR_TF_STATE_RESOURCE_GROUP_NAME"
+backend_storage_account_name = "YOUR_TF_STATE_STORAGE_ACCOUNT_NAME"
 
-app_service_plan_sku      = "P1v3"
+app_service_plan_sku         = "P1v3"
 app_frontend_name            = "YOUR_UNIQUE_FRONTEND_APP_NAME"
 app_frontend_nextauth_secret = "CHANGE_TO_RANDOM_STRING_FOR_NEXTAUTH_SECRET"
 app_backend_name             = "YOUR_UNIQUE_BACKEND_APP_NAME"
-app_keycloak_name         = "YOUR_UNIQUE_KEYCLOAK_APP_NAME"
+app_keycloak_name            = "YOUR_UNIQUE_KEYCLOAK_APP_NAME"
 
-# Keycloak 管理者（keycloak-realm 層の app_keycloak_* と同一の値にする）
+# Keycloak 管理者（keycloak-realm 層は app 層の出力から自動で参照するため、keycloak-realm 層での設定は不要）
 app_keycloak_admin          = "YOUR_KEYCLOAK_ADMIN_USERNAME"
 app_keycloak_admin_password = "YOUR_KEYCLOAK_ADMIN_PASSWORD"
 
 # Let's Encrypt（acme_registration_email は必須）
 acme_registration_email = "your.acme.email@example.com"
 # 本番用のACMEサーバーURL
-acme_server_url       = "https://acme-v02.api.letsencrypt.org/directory"
+acme_server_url = "https://acme-v02.api.letsencrypt.org/directory"
 # 検証用のACMEサーバーURL（ブラウザで信頼されないことに注意）
 # acme_server_url             = "https://acme-staging-v02.api.letsencrypt.org/directory"
 
-aci_orion_image_tag  = "orion:latest"
-aci_mongo_cli_image_tag = "mongo-cli:latest"
+aci_orion_image_tag = "orion:latest"
+# 任意: Orion のログレベル（NONE / FATAL / ERROR / WARN / INFO / DEBUG、既定 INFO）。
+# DEBUG はリクエスト内容なども出力するため、調査時のみ一時的に使用すること（変更すると Orion の ACI は再作成される）。
+# orion_log_level = "INFO"
+# 任意: Orion のトレースレベル（-t。例: "0-255"、既定は空で無効）。内部処理の詳細ログが必要な調査時のみ一時的に使用すること。
+# orion_trace_levels = ""
+# 任意: Orion が INFO ログに出力するペイロードの最大バイト数（既定 0 で "(...)" に置き換え）。
+# 通知の共有シークレットや利用者のデータがログに残るため、0 以外は調査時のみ一時的に使用すること。
+# orion_log_info_payload_max_size = 0
+# 任意: Orion → Backend 通知の共有シークレットのバージョン（既定 1）。値を上げて apply するとシークレットを再生成する。
+# orion_notify_secret_version = 1
+aci_mongo_cli_image_tag    = "mongo-cli:latest"
 aci_postgres_cli_image_tag = "postgres-cli:latest"
 
-agw_sku           = "WAF_v2"
-agw_min_capacity  = 1
-agw_max_capacity  = 2
-agw_waf_enabled   = "Enabled"
-agw_waf_mode      = "Prevention"
+agw_sku          = "WAF_v2"
+agw_min_capacity = 1
+agw_max_capacity = 2
+agw_waf_enabled  = "Enabled"
+agw_waf_mode     = "Prevention"
 
 # 参加同意書・フロント表示（README §6.1.2。任意で上書き）
 # terms_municipality_name = "【自治体名】"

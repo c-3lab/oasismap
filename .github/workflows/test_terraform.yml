@@ -1,0 +1,57 @@
+name: Terraform CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'infra/terraform/**'
+      - '.github/workflows/test_terraform.yml'
+  pull_request:
+    paths:
+      - 'infra/terraform/**'
+      - '.github/workflows/test_terraform.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: infra/terraform
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          # infra/terraform/.tool-versions と合わせる
+          terraform_version: 1.17.1
+          terraform_wrapper: false
+
+      - name: Check format of Terraform files
+        run: |
+          # .tf / .tfvars を再帰的に検査する（.tfvars は git 管理外のため CI 上には存在しない）
+          terraform fmt -check -recursive -diff .
+
+      - name: Check format of tfvars examples
+        run: |
+          # terraform fmt は .tfvars.example を対象にしないため、標準入力経由で検査する
+          status=0
+          for f in */terraform.tfvars.example; do
+            if ! terraform fmt - < "$f" | diff -u "$f" -; then
+              echo "::error file=infra/terraform/$f::$f is not formatted. Run: terraform fmt - < $f"
+              status=1
+            fi
+          done
+          exit $status
+
+      - name: Validate Terraform configurations
+        run: |
+          # backend を使わずに初期化するため、Azure の認証情報は不要
+          for layer in platform app keycloak-realm; do
+            echo "=== $layer ==="
+            terraform -chdir="$layer" init -backend=false -input=false -lockfile=readonly
+            terraform -chdir="$layer" validate
+          done

@@ -69,3 +69,23 @@ resource "azurerm_key_vault_secret" "nextauth_secret" {
   value_wo_version = 1
   key_vault_id     = data.azurerm_key_vault.main.id
 }
+
+# Orion → Backend 通知（/change-histories/notify）を認証する共有シークレット（ORION_NOTIFY_SECRET）。
+# サブスクリプション登録用の ACI（orion_subscription）にも値を渡す必要があるため、ephemeral ではなく通常のリソースとする。
+# 注: 値は Terraform state に保存される（orion-mongo-uri などと同じ扱い）。
+# ローテーションは orion_notify_secret_version を上げて apply する。
+resource "random_password" "orion_notify_secret" {
+  length  = 64
+  special = false
+
+  keepers = {
+    version = var.orion_notify_secret_version
+  }
+}
+
+resource "azurerm_key_vault_secret" "orion_notify_secret" {
+  name             = "orion-notify-secret"
+  value_wo         = random_password.orion_notify_secret.result
+  value_wo_version = var.orion_notify_secret_version
+  key_vault_id     = data.azurerm_key_vault.main.id
+}
