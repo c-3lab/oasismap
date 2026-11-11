@@ -179,7 +179,8 @@ Terraform は次の **3 レイヤー**を **platform → app → keycloak-realm*
 | acme_server_url | ACME サーバー URL | `https://acme-v02.api.letsencrypt.org/directory` |
 | acme_registration_email | ACME 登録メールアドレス | |
 | orion_notify_secret_version | Orion → Backend 通知の共有シークレットのバージョン<br/>値を上げて apply するとシークレットを再生成する（§8.1） | 1 |
- terms_municipality_name | 参加同意書の自治体名 | 【自治体名】 |
+| orion_log_info_payload_max_size | Orion が INFO ログに出力するペイロードの最大バイト数<br/>0 の場合は `(...)` に置き換えて出力しない（§8.1） | 0 |
+| terms_municipality_name | 参加同意書の自治体名 | 【自治体名】 |
 | terms_date | 参加同意書の日付 | yyyy年mm月dd日 |
 | terms_title_suffix | 参加同意書のタイトルの接尾辞 | （雛形） |
 
@@ -259,6 +260,7 @@ terraform apply
 - **Orion → Backend 通知の共有シークレット**  
   Orion から backend の `/change-histories/notify` への通知は、共有シークレット（`ORION_NOTIFY_SECRET`）を `X-Oasismap-Notify-Token` ヘッダに付けて認証する。シークレットは app レイヤーで自動生成して Key Vault（`orion-notify-secret`）に格納し、backend には Key Vault 参照で、サブスクリプション登録用の ACI には secure_environment_variables で渡す。
   - 値は Terraform state に保存される。また、Orion の `GET /v2/subscriptions` の応答にも含まれる（Orion は VNet 内からのみ到達可能）。
+  - Orion は INFO ログにリクエストや通知のペイロードを出力するため、サブスクリプション登録時のシークレットや通知の内容（ニックネーム・位置など）が Log Analytics に残る。これを防ぐため、既定では `orion_log_info_payload_max_size = 0` としてペイロードを `(...)` に置き換えている。調査のために 0 以外にする場合や、`orion_log_level = "DEBUG"`・`orion_trace_levels` を設定する場合はペイロードが出力されうるため、一時的な利用にとどめ、元に戻した後にシークレットをローテーションする。
   - ローテーションする場合は `orion_notify_secret_version` を上げて apply する。backend の再起動とサブスクリプションの再登録が行われるが、切り替えの間に送られた通知は 401 となり、Orion は再送しないため変更履歴が欠落する場合がある。
 - **App Service への直接アクセス**  
   App Service は公開アクセスを無効化しているため、インターネットからは `*.azurewebsites.net`・Kudu（SCM）・ポータルの SSH / ログストリームを利用できない。アプリのログは Log Analytics（`AppServiceConsoleLogs`）で確認する。再起動や設定変更など、管理プレーン（Azure Portal / `az` CLI）経由の操作は従来どおり行える。

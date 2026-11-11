@@ -37,6 +37,8 @@ resource "azurerm_container_group" "orion" {
         ORION_PORT          = "1026"
         ORION_MULTI_SERVICE = "true"
         ORION_LOG_LEVEL     = var.orion_log_level
+        # INFO ログにリクエスト・通知のペイロード（通知シークレットや利用者データを含む）を出さない
+        ORION_LOG_INFO_PAYLOAD_MAX_SIZE = tostring(var.orion_log_info_payload_max_size)
       },
       var.orion_trace_levels != "" ? { ORION_TRACE = var.orion_trace_levels } : {}
     )

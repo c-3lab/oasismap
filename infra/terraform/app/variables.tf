@@ -143,6 +143,17 @@ variable "orion_trace_levels" {
   }
 }
 
+variable "orion_log_info_payload_max_size" {
+  description = "Max payload bytes Orion prints in INFO logs (-logInfoPayloadMaxSize). 0 masks payloads as \"(...)\" so that notification secrets and user data are not logged; raise only temporarily for troubleshooting."
+  type        = number
+  default     = 0
+
+  validation {
+    condition     = var.orion_log_info_payload_max_size >= 0 && floor(var.orion_log_info_payload_max_size) == var.orion_log_info_payload_max_size
+    error_message = "orion_log_info_payload_max_size must be a non-negative integer."
+  }
+}
+
 variable "orion_notify_secret_version" {
   description = "Version of the shared secret for Orion notifications (ORION_NOTIFY_SECRET). Increment to rotate the secret."
   type        = number

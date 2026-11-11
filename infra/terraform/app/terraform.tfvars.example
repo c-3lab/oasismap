@@ -28,6 +28,9 @@ aci_orion_image_tag = "orion:latest"
 # orion_log_level = "INFO"
 # 任意: Orion のトレースレベル（-t。例: "0-255"、既定は空で無効）。内部処理の詳細ログが必要な調査時のみ一時的に使用すること。
 # orion_trace_levels = ""
+# 任意: Orion が INFO ログに出力するペイロードの最大バイト数（既定 0 で "(...)" に置き換え）。
+# 通知の共有シークレットや利用者のデータがログに残るため、0 以外は調査時のみ一時的に使用すること。
+# orion_log_info_payload_max_size = 0
 # 任意: Orion → Backend 通知の共有シークレットのバージョン（既定 1）。値を上げて apply するとシークレットを再生成する。
 # orion_notify_secret_version = 1
 aci_mongo_cli_image_tag    = "mongo-cli:latest"
