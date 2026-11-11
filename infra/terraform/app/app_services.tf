@@ -97,9 +97,13 @@ resource "azurerm_linux_web_app" "backend" {
     REVERSE_GEOCODING_URL     = var.reverse_geocoding_url
     USER_AGENT_EMAIL          = var.user_agent_email
     APP_VERSION               = var.app_version
-    # バージョン付きの ID を参照し、ローテーション時に app_settings の変更として backend を再起動させる。
-    # （バージョンなしの参照では、App Service が新しい値を取得するまで最大 24 時間かかり、その間の通知が 401 になる）
-    ORION_NOTIFY_SECRET = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.orion_notify_secret.id})"
+    # バージョンなしの参照とし、ORION_NOTIFY_SECRET_VERSION（アプリでは未使用の目印）の変更で backend を再起動させる。
+    # App Service は設定変更による再起動時に Key Vault 参照を即時に再取得するため、1 回の apply で新しい値に切り替わる。
+    # （バージョン付きの id を参照すると、value_wo_version を上げても plan 時点では id が変わらず、
+    #   backend の更新が次回の apply まで遅れて、その間の通知が 401 になる）
+    # versionless_id の参照により、Key Vault の更新後に backend が更新される。
+    ORION_NOTIFY_SECRET         = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.orion_notify_secret.versionless_id})"
+    ORION_NOTIFY_SECRET_VERSION = tostring(var.orion_notify_secret_version)
   }
 
   https_only                = true

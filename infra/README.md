@@ -261,7 +261,7 @@ terraform apply
   Orion から backend の `/change-histories/notify` への通知は、共有シークレット（`ORION_NOTIFY_SECRET`）を `X-Oasismap-Notify-Token` ヘッダに付けて認証する。シークレットは app レイヤーで自動生成して Key Vault（`orion-notify-secret`）に格納し、backend には Key Vault 参照で、サブスクリプション登録用の ACI には secure_environment_variables で渡す。
   - 値は Terraform state に保存される。また、Orion の `GET /v2/subscriptions` の応答にも含まれる（Orion は VNet 内からのみ到達可能）。
   - Orion は INFO ログにリクエストや通知のペイロードを出力するため、サブスクリプション登録時のシークレットや通知の内容（ニックネーム・位置など）が Log Analytics に残る。これを防ぐため、既定では `orion_log_info_payload_max_size = 0` としてペイロードを `(...)` に置き換えている。調査のために 0 以外にする場合や、`orion_log_level = "DEBUG"`・`orion_trace_levels` を設定する場合はペイロードが出力されうるため、一時的な利用にとどめ、元に戻した後にシークレットをローテーションする。
-  - ローテーションする場合は `orion_notify_secret_version` を上げて apply する。backend の再起動とサブスクリプションの再登録が行われるが、切り替えの間に送られた通知は 401 となり、Orion は再送しないため変更履歴が欠落する場合がある。
+  - ローテーションする場合は `orion_notify_secret_version` を上げて apply する。1 回の apply で Key Vault のシークレットの更新、backend の再起動（`ORION_NOTIFY_SECRET_VERSION` の変更により Key Vault 参照を再取得）、サブスクリプションの再登録が行われる。ただし、切り替えの間に送られた通知は 401 となり、Orion は再送しないため変更履歴が欠落する場合がある。
 - **App Service への直接アクセス**  
   App Service は公開アクセスを無効化しているため、インターネットからは `*.azurewebsites.net`・Kudu（SCM）・ポータルの SSH / ログストリームを利用できない。アプリのログは Log Analytics（`AppServiceConsoleLogs`）で確認する。再起動や設定変更など、管理プレーン（Azure Portal / `az` CLI）経由の操作は従来どおり行える。
 
