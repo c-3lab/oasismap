@@ -182,3 +182,76 @@ resource "azurerm_subnet_network_security_group_association" "agw" {
   subnet_id                 = azurerm_subnet.agw.id
   network_security_group_id = azurerm_network_security_group.agw.id
 }
+
+# App Service の Private Endpoint 専用サブネット（委任なし）。
+# Private Endpoint の IP は静的に割り当て、NSG で宛先を絞るために使う。
+locals {
+  pe_ip_frontend = cidrhost(var.subnet_pe_prefix, 4)
+  pe_ip_backend  = cidrhost(var.subnet_pe_prefix, 5)
+  pe_ip_keycloak = cidrhost(var.subnet_pe_prefix, 6)
+}
+
+resource "azurerm_network_security_group" "pe" {
+  name                = "${var.prefix}-NSG-PE"
+  location            = var.location
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+# AGW から各 App Service の Private Endpoint への HTTPS。
+resource "azurerm_network_security_rule" "pe_https_from_agw" {
+  name                        = "AllowAgwHTTPSInbound"
+  priority                    = 200
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "443"
+  source_address_prefix       = var.subnet_agw_prefix
+  destination_address_prefix  = var.subnet_pe_prefix
+  resource_group_name         = azurerm_resource_group.main.name
+  network_security_group_name = azurerm_network_security_group.pe.name
+}
+
+# Orion（ACI）から backend の Private Endpoint への HTTPS（履歴通知）。
+resource "azurerm_network_security_rule" "pe_https_from_app_to_backend" {
+  name                        = "AllowAppToBackendHTTPSInbound"
+  priority                    = 210
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "Tcp"
+  source_port_range           = "*"
+  destination_port_range      = "443"
+  source_address_prefix       = var.subnet_app_prefix
+  destination_address_prefix  = "${local.pe_ip_backend}/32"
+  resource_group_name         = azurerm_resource_group.main.name
+  network_security_group_name = azurerm_network_security_group.pe.name
+}
+
+# 既定の AllowVnetInBound を打ち消すため、上記以外の受信をすべて拒否する。
+resource "azurerm_network_security_rule" "pe_deny_all_inbound" {
+  name                        = "DenyAllInbound"
+  priority                    = 4096
+  direction                   = "Inbound"
+  access                      = "Deny"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "*"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+  resource_group_name         = azurerm_resource_group.main.name
+  network_security_group_name = azurerm_network_security_group.pe.name
+}
+
+resource "azurerm_subnet" "pe" {
+  name                 = "${var.prefix}-SN-PE"
+  resource_group_name  = azurerm_resource_group.main.name
+  virtual_network_name = azurerm_virtual_network.main.name
+  address_prefixes     = [var.subnet_pe_prefix]
+  # NSG を Private Endpoint に適用するため有効化する。
+  private_endpoint_network_policies = "Enabled"
+}
+
+resource "azurerm_subnet_network_security_group_association" "pe" {
+  subnet_id                 = azurerm_subnet.pe.id
+  network_security_group_id = azurerm_network_security_group.pe.id
+}

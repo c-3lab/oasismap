@@ -113,9 +113,32 @@ docker上のコンテナから到達可能なホストOSのIPアドレスを確�
         ```sh
         ~/oasismap$ cat /dev/urandom | tr -dc 'A-Za-z0-9' | fold -w 32 | head -n 1
         ```
-5. keycloakの名前解決を設定します。
+5. Orionからbackendへの通知を認証する共有シークレットを設定します。
+    * 次のコマンドを実行して共有シークレットを生成し、 `ORION_NOTIFY_SECRET` に設定します。
+
+        ```sh
+        ~/oasismap$ openssl rand -hex 32
+        ```
+    * 英数字と「-」「_」で32文字以上の値が必要です。未設定や条件を満たさない値ではbackendが起動しません。
+
+6. keycloakの名前解決を設定します。
 
     `HOST_URL=http://YOUR_IP_ADDRESS:8080` の `YOUR_IP_ADDRESS` を、事前準備で確認したdocker上のコンテナから到達可能なホストOSのIPアドレスに置換します。
+
+7. 外部API利用時のUser Agentに関する情報を設定します。
+    * 幸福度可視化アプリでは、外部APIへのアクセス時に問い合わせ先のメールアドレスを含むUser-Agentを送信します。
+    * 以下の環境変数を設定してください。
+
+      ```sh
+      USER_AGENT_EMAIL=<問い合わせ先メールアドレス>
+      APP_VERSION=<アプリのバージョン（省略時は表示されません）>
+      ```
+    * 設定した値は、以下の形式でUser-Agentへ反映されます。
+
+      ```text
+      OasisMap[/{APP_VERSION}][ (mail) または /(mail)]
+      （バージョン＋メール: `OasisMap/1.0 (mail)`。メールのみ: `OasisMap/(mail)`。両方なし: `OasisMap`）
+      ```
 
 ### システム起動
 - Dockerコンテナを展開します
@@ -135,6 +158,7 @@ docker上のコンテナから到達可能なホストOSのIPアドレスを確�
     ```
 
 2. 以下コマンドを実行してorionにサブスクリプションの設定を行う
+    * backendは `X-Oasismap-Notify-Token` ヘッダの値が `ORION_NOTIFY_SECRET` と一致しない通知を401で拒否します。backendのコンテナ内の環境変数 `ORION_NOTIFY_SECRET` をヘッダに設定します
 
     ```sh
     root@backend:/app/backend$ wget --post-data='{
@@ -151,8 +175,11 @@ docker上のコンテナから到達可能なホストOSのIPアドレスを確�
         }
       },
       "notification": {
-        "http": {
-          "url": "http://cygnus:5055/notify"
+        "httpCustom": {
+          "url": "http://backend:4000/change-histories/notify",
+          "headers": {
+            "X-Oasismap-Notify-Token": "'"${ORION_NOTIFY_SECRET}"'"
+          }
         }
       }
     }' \
@@ -177,6 +204,8 @@ docker上のコンテナから到達可能なホストOSのIPアドレスを確�
 5. `Create new User` を押下
 6. `Username`,`profile.attribute.nickname` に管理者アカウント名を入力して `Create` を選択
     ※ `Username` と `profile.attribute.nickname` は同じ値を入れてください
+    ※ `profile.attribute.nickname` は英小文字・数字・`-`・`_` のみ使用できます。他のユーザーと重複する値は登録できません
+    ※ ニックネームは投稿の所有者の判定に使うため、登録後は利用者本人が変更できません（管理画面からのみ変更できます）
 7. `Credentials` を選択して `Set password` を押下
 8. `Password` と `Password confirmation` に同じパスワードを入力し、 `Temporary` をOFFにして `Save` を押下
 9. `Save password` を押下して管理者アカウントのパスワードを保存
@@ -264,6 +293,8 @@ docker上のコンテナから到達可能なホストOSのIPアドレスを確�
 
 3. ユーザー情報を入力し、「参加同意」の内容を確認します。確認後、チェックボックスにチェックを入れ、登録ボタンをクリックします  
     ※重複するニックネームは登録できません  
+    ※ニックネームは英小文字・数字・「-」「_」のみ使用できます（英大文字で入力した場合は小文字で登録されます）  
+    ※ニックネームは登録後に変更できません  
     ※「参加同意」の内容を確認するまで、チェックボックスにはチェックを入れられません
   <p align="center">
     <img src="doc/img/general-user-3.png" width="400">
@@ -361,7 +392,6 @@ docker上のコンテナから到達可能なホストOSのIPアドレスを確�
 - [prettier 3系](https://prettier.io/)
 - [jest 29.5.0](https://jestjs.io/ja/)
 - [Postgresql 17.2](https://www.postgresql.org/)
-- [FIWARE Cygnus 3.15.0](https://fiware-cygnus.readthedocs.io/en/master/index.html)
 - [FIWARE Orion 4.1.0](https://fiware-orion.readthedocs.io/en/master/index.html)
 - [keycloak 26.1.4](https://www.keycloak.org/)
 - [mongoDB 8.0.4](https://www.mongodb.com/)

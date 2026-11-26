@@ -32,11 +32,11 @@ data "azurerm_key_vault_secret" "kc_admin_client_secret" {
 
 # 頻繁に使用するplatformのstateのエイリアス
 locals {
-  root_domain_name = data.terraform_remote_state.platform.outputs.root_domain_name
-  app_keycloak_admin = data.terraform_remote_state.app.outputs.app_keycloak_admin
+  root_domain_name            = data.terraform_remote_state.platform.outputs.root_domain_name
+  app_keycloak_admin          = data.terraform_remote_state.app.outputs.app_keycloak_admin
   app_keycloak_admin_password = data.terraform_remote_state.app.outputs.app_keycloak_admin_password
-  acme_server_url = data.terraform_remote_state.app.outputs.acme_server_url
-  general_user_client_secret = data.azurerm_key_vault_secret.kc_general_user_client_secret.value
-  admin_client_secret = data.azurerm_key_vault_secret.kc_admin_client_secret.value
-  keycloak_client_base_url = "https://${data.terraform_remote_state.platform.outputs.root_domain_name}"
+  acme_server_url             = data.terraform_remote_state.app.outputs.acme_server_url
+  general_user_client_secret  = data.azurerm_key_vault_secret.kc_general_user_client_secret.value
+  admin_client_secret         = data.azurerm_key_vault_secret.kc_admin_client_secret.value
+  keycloak_client_base_url    = "https://${data.terraform_remote_state.platform.outputs.root_domain_name}"
 }

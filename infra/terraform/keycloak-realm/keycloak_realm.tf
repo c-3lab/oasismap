@@ -3,9 +3,9 @@
 # 認証フロー「general user browser」およびユーザープロファイルは本ファイルで実装。
 
 locals {
-  prefecture_options       = jsondecode(file("./prefectures.json")).prefectures
-  city_options             = jsondecode(file("./cities.json")).cities
-  general_user_theme       = (var.keycloak_google_client_id != "" && var.keycloak_google_client_secret != "") ? var.keycloak_realm_login_theme : var.keycloak_general_user_keycloak_login_theme
+  prefecture_options = jsondecode(file("./prefectures.json")).prefectures
+  city_options       = jsondecode(file("./cities.json")).cities
+  general_user_theme = (var.keycloak_google_client_id != "" && var.keycloak_google_client_secret != "") ? var.keycloak_realm_login_theme : var.keycloak_general_user_keycloak_login_theme
 }
 
 # -----------------------------------------------------------------------------
@@ -204,13 +204,21 @@ resource "keycloak_realm_user_profile" "userprofile" {
     name               = "nickname"
     display_name       = "$${profile.attribute.nickname}"
     required_for_roles = ["admin", "user"]
+    # 登録画面・IdP 確認画面で本人が値を入れられるよう user にも編集権限を残す。
+    # 登録後の本人による変更は oasismap-nickname Validator で禁止する。
     permissions {
       view = []
       edit = ["admin", "user"]
     }
+    # Keycloak は username を小文字で保存するため、username と一致させる nickname も英小文字に限定する
     validator {
       name   = "pattern"
-      config = { pattern = "^[a-zA-Z0-9_-]+$", "error-message" = "profile.error.nickname" }
+      config = { pattern = "^[a-z0-9_-]+$", "error-message" = "profile.error.nickname" }
+    }
+    # 独自拡張（keycloak-extension）: 一意性・登録時の username 一致・本人による変更禁止
+    validator {
+      name   = "oasismap-nickname"
+      config = {}
     }
   }
 
@@ -321,7 +329,7 @@ resource "keycloak_openid_client" "general_user_client" {
   ]
   web_origins = [local.keycloak_client_base_url]
 
-  login_theme  = local.general_user_theme
+  login_theme = local.general_user_theme
 
   dynamic "authentication_flow_binding_overrides" {
     for_each = (var.keycloak_google_client_id != "" && var.keycloak_google_client_secret != "") ? [1] : []
@@ -644,13 +652,13 @@ resource "keycloak_authentication_execution" "admin_browser_role_condition" {
 }
 
 resource "keycloak_authentication_execution_config" "admin_browser_role_condition_config" {
-  realm_id          = keycloak_realm.oasismap.id
+  realm_id     = keycloak_realm.oasismap.id
   execution_id = keycloak_authentication_execution.admin_browser_role_condition.id
   alias        = "auth-role-condition-config"
   config = {
     "condUserRole" = keycloak_role.admin_role.name
-    "role" = keycloak_role.admin_role.name
-    "negate" = "true"
+    "role"         = keycloak_role.admin_role.name
+    "negate"       = "true"
   }
 }
 

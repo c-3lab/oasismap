@@ -115,7 +115,10 @@ describe('HappinessController', () => {
       expect(
         authService.getUserAttributeFromAuthorization,
       ).toHaveBeenCalledWith('authorization');
-      expect(happinessDeleteService.deleteHappiness).toHaveBeenCalledWith(id);
+      expect(happinessDeleteService.deleteHappiness).toHaveBeenCalledWith(
+        mockUserAttributesResponse,
+        id,
+      );
       expect(result).toEqual(mockHappinessDeleteResponse);
     });
   });

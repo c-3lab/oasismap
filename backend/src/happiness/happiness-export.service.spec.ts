@@ -1,9 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { HappinessExportService } from './happiness-export.service';
-import { Happiness } from './happiness.entity';
-import { getRepositoryToken } from '@nestjs/typeorm';
 import { mockHappinessRecord } from './mocks/postgres/mock-happiness-record';
 import { ModuleMocker, MockFunctionMetadata } from 'jest-mock';
+import { ChangeHistoriesService } from 'src/change-histories/change-histories.service';
 
 const moduleMocker = new ModuleMocker(global);
 
@@ -15,8 +14,10 @@ describe('HappinessExportService', () => {
       providers: [HappinessExportService],
     })
       .useMocker((token) => {
-        if (token === getRepositoryToken(Happiness)) {
-          return { find: jest.fn().mockResolvedValue(mockHappinessRecord) };
+        if (token === ChangeHistoriesService) {
+          return {
+            find: jest.fn().mockResolvedValue(mockHappinessRecord),
+          };
         }
         if (typeof token === 'function') {
           const mockMetadata = moduleMocker.getMetadata(

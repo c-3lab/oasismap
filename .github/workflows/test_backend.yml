@@ -63,6 +63,9 @@ jobs:
         run: |
           # Copy _env file to .env for docker-compose
           cp _env .env
+          # 通知用シークレットを実行ごとにランダム生成して差し替える
+          sed -i "s/^ORION_NOTIFY_SECRET=.*/ORION_NOTIFY_SECRET=$(openssl rand -hex 32)/" .env
+          grep -qE '^ORION_NOTIFY_SECRET=[0-9a-f]{64}$' .env || { echo "ORION_NOTIFY_SECRET の差し替えに失敗しました" >&2; exit 1; }
 
       - name: Start application with docker-compose
         run: |

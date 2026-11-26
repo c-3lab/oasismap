@@ -44,6 +44,11 @@ resource "azurerm_linux_web_app" "frontend" {
   https_only                = true
   virtual_network_subnet_id = data.terraform_remote_state.platform.outputs.subnet_dmz_id
 
+  # 受信は Private Endpoint 経由（AGW / Orion）のみ。SCM も含めインターネットからの直接アクセスを拒否する。
+  public_network_access_enabled                  = false
+  ftp_publish_basic_authentication_enabled       = false
+  webdeploy_publish_basic_authentication_enabled = false
+
   lifecycle {
     action_trigger {
       events  = [before_create]
@@ -87,18 +92,38 @@ resource "azurerm_linux_web_app" "backend" {
     POSTGRES_HOST             = data.azurerm_postgresql_flexible_server.main.fqdn
     POSTGRES_PORT             = "5432"
     POSTGRES_USER             = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${azurerm_key_vault_secret.kc_db_username.name})"
-    POSTGRES_PASSWORD         = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${data.azurerm_key_vault_secret.cygnus_postgres_password.name})"
-    POSTGRES_DATABASE         = "cygnus"
+    POSTGRES_PASSWORD         = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${data.azurerm_key_vault_secret.oasismap_context_data_postgres_password.name})"
+    POSTGRES_DATABASE         = "oasismap_context_data"
     REVERSE_GEOCODING_URL     = var.reverse_geocoding_url
+    USER_AGENT_EMAIL          = var.user_agent_email
+    APP_VERSION               = var.app_version
+    # バージョンなしの参照とし、ORION_NOTIFY_SECRET_VERSION（アプリでは未使用の目印）の変更で backend を再起動させる。
+    # App Service は設定変更による再起動時に Key Vault 参照を即時に再取得するため、1 回の apply で新しい値に切り替わる。
+    # （バージョン付きの id を参照すると、value_wo_version を上げても plan 時点では id が変わらず、
+    #   backend の更新が次回の apply まで遅れて、その間の通知が 401 になる）
+    # versionless_id の参照により、Key Vault の更新後に backend が更新される。
+    ORION_NOTIFY_SECRET         = "@Microsoft.KeyVault(SecretUri=${azurerm_key_vault_secret.orion_notify_secret.versionless_id})"
+    ORION_NOTIFY_SECRET_VERSION = tostring(var.orion_notify_secret_version)
   }
 
   https_only                = true
   virtual_network_subnet_id = data.terraform_remote_state.platform.outputs.subnet_dmz_id
 
+  # 受信は Private Endpoint 経由（AGW / Orion）のみ。SCM も含めインターネットからの直接アクセスを拒否する。
+  public_network_access_enabled                  = false
+  ftp_publish_basic_authentication_enabled       = false
+  webdeploy_publish_basic_authentication_enabled = false
+
   lifecycle {
     action_trigger {
       events  = [before_create]
       actions = [action.local_command.build_backend]
+    }
+
+    # Orion の ACI が正常に稼働していないと ip_address が 0.0.0.0 になる。その値で ORION_URI を更新しないよう失敗させる。
+    precondition {
+      condition     = azurerm_container_group.orion.ip_address != "0.0.0.0"
+      error_message = "Orion container group has no valid private IP (0.0.0.0). Check that Orion is running (az container show / az container logs) before applying."
     }
   }
 
@@ -140,7 +165,7 @@ resource "azurerm_linux_web_app" "keycloak" {
     KC_DB                   = "postgres"
     KC_DB_URL               = "jdbc:postgresql://${data.azurerm_postgresql_flexible_server.main.fqdn}:5432/postgres"
     KC_DB_USERNAME          = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${azurerm_key_vault_secret.kc_db_username.name})"
-    KC_DB_PASSWORD          = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${data.azurerm_key_vault_secret.cygnus_postgres_password.name})"
+    KC_DB_PASSWORD          = "@Microsoft.KeyVault(SecretUri=${data.azurerm_key_vault.main.vault_uri}secrets/${data.azurerm_key_vault_secret.oasismap_context_data_postgres_password.name})"
     KC_HOSTNAME_STRICT      = "false"
     KC_HTTP_ENABLED         = "true"
     KC_PROXY_HEADERS        = "xforwarded"
@@ -150,6 +175,11 @@ resource "azurerm_linux_web_app" "keycloak" {
   client_affinity_enabled   = true
   https_only                = true
   virtual_network_subnet_id = data.terraform_remote_state.platform.outputs.subnet_dmz_id
+
+  # 受信は Private Endpoint 経由（AGW / Orion）のみ。SCM も含めインターネットからの直接アクセスを拒否する。
+  public_network_access_enabled                  = false
+  ftp_publish_basic_authentication_enabled       = false
+  webdeploy_publish_basic_authentication_enabled = false
 
   lifecycle {
     action_trigger {
@@ -163,6 +193,6 @@ resource "azurerm_linux_web_app" "keycloak" {
     azurerm_key_vault_secret.keycloak_admin,
     azurerm_key_vault_secret.keycloak_admin_password,
     azurerm_key_vault_secret.kc_db_username,
-    data.azurerm_key_vault_secret.cygnus_postgres_password
+    data.azurerm_key_vault_secret.oasismap_context_data_postgres_password
   ]
 }

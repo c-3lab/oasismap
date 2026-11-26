@@ -121,10 +121,66 @@ variable "orion_fiware_service_path" {
   default     = "/Happiness"
 }
 
+variable "orion_log_level" {
+  description = "Orion log level (-logLevel). DEBUG outputs request details; use only temporarily for troubleshooting."
+  type        = string
+  default     = "INFO"
+
+  validation {
+    condition     = contains(["NONE", "FATAL", "ERROR", "WARN", "INFO", "DEBUG"], var.orion_log_level)
+    error_message = "orion_log_level must be one of NONE, FATAL, ERROR, WARN, INFO, DEBUG."
+  }
+}
+
+variable "orion_trace_levels" {
+  description = "Orion trace levels (-t, e.g. \"0-255\"). Empty disables tracing. Use only temporarily for troubleshooting."
+  type        = string
+  default     = ""
+
+  validation {
+    condition     = can(regex("^$|^[0-9]+(-[0-9]+)?(,[0-9]+(-[0-9]+)?)*$", var.orion_trace_levels))
+    error_message = "orion_trace_levels must be empty or a comma-separated list of levels/ranges (e.g. \"0-255\" or \"50,200-210\")."
+  }
+}
+
+variable "orion_log_info_payload_max_size" {
+  description = "Max payload bytes Orion prints in INFO logs (-logInfoPayloadMaxSize). 0 masks payloads as \"(...)\" so that notification secrets and user data are not logged; raise only temporarily for troubleshooting."
+  type        = number
+  default     = 0
+
+  validation {
+    condition     = var.orion_log_info_payload_max_size >= 0 && floor(var.orion_log_info_payload_max_size) == var.orion_log_info_payload_max_size
+    error_message = "orion_log_info_payload_max_size must be a non-negative integer."
+  }
+}
+
+variable "orion_notify_secret_version" {
+  description = "Version of the shared secret for Orion notifications (ORION_NOTIFY_SECRET). Increment to rotate the secret."
+  type        = number
+  default     = 1
+
+  validation {
+    condition     = var.orion_notify_secret_version >= 1 && floor(var.orion_notify_secret_version) == var.orion_notify_secret_version
+    error_message = "orion_notify_secret_version must be an integer greater than or equal to 1."
+  }
+}
+
 variable "reverse_geocoding_url" {
   description = "Optional reverse geocoding API URL for backend."
   type        = string
   default     = "https://nominatim.openstreetmap.org/reverse"
+}
+
+variable "user_agent_email" {
+  description = "User Agent Email for backend"
+  type        = string
+  default     = "TISI_WB@ml.tisi.jp"
+}
+
+variable "app_version" {
+  description = "App version."
+  type        = string
+  default     = "1.2.5"
 }
 
 variable "app_keycloak_name" {
@@ -154,17 +210,11 @@ variable "app_keycloak_admin_password" {
   sensitive   = true
 }
 
-# --- ACI（Orion, Cygnus）---
+# --- ACI（Orion）---
 variable "aci_orion_image_tag" {
   description = "Container image tag for Orion ACI."
   type        = string
   default     = "orion:latest"
-}
-
-variable "aci_cygnus_image_tag" {
-  description = "Container image tag for Cygnus ACI."
-  type        = string
-  default     = "cygnus:latest"
 }
 
 # --- ACI mongo-cli（ワンショット MongoDB インデックス作成）---
